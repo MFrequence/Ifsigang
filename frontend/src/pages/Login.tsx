@@ -72,12 +72,46 @@ export default function Login() {
         </div>
       </header>
 
-      <main className="flex flex-1 items-start justify-center px-4 pb-16 sm:items-center">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 pb-16 sm:px-6 lg:grid-cols-[1.05fr_minmax(0,420px)] lg:gap-14 lg:px-8">
+        <section className="hidden lg:block">
+          <h2 className="font-heading text-4xl font-black leading-[1.05] tracking-tight text-white xl:text-5xl">
+            Toutes les fiches de la promo,
+            <span className="text-sky-400"> révisées au bon moment.</span>
+          </h2>
+          <p className="mt-5 max-w-lg text-base leading-relaxed text-slate-300">
+            Dépose tes fiches, récupère celles des autres, et laisse la méthode des J te dire
+            exactement quoi réviser chaque jour.
+          </p>
+          <div className="mt-8 overflow-hidden rounded-3xl border border-slate-800">
+            <img
+              src="https://images.unsplash.com/photo-1741707040258-b772f0c2876d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxudXJzaW5nJTIwc3R1ZGVudCUyMG1lZGljYWwlMjBzdHVkeXxlbnwwfHx8fDE3OTA3OTE1NTZ8MA&ixlib=rb-4.1.0&q=85"
+              alt="Étudiante infirmière en train de réviser ses fiches"
+              className="h-64 w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+          <ul className="mt-8 grid grid-cols-3 gap-3 text-sm">
+            {[
+              ["Flashcards & QCM", "générés par IA"],
+              ["Méthode des J", "J0 → J30"],
+              ["Classement", "de la promo"],
+            ].map(([title, sub]) => (
+              <li
+                key={title}
+                className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3"
+              >
+                <p className="font-heading font-bold text-white">{title}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{sub}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <div className="w-full max-w-md justify-self-center rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
             <Lock className="h-6 w-6" />
           </div>
-          <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="mt-4 font-heading text-2xl font-black tracking-tight text-slate-900">
             Espace promo
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">

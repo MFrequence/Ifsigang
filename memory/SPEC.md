@@ -116,3 +116,22 @@ personnel et **classement de la promo**.
 
 ## Identifiants de test
 `memory/test_credentials.md` — comptes de démo + code d'invitation.
+
+## Série de jours (streak) — ajout
+- Règle : un jour compte comme validé quand **toutes** les révisions dues ce jour-là sont
+  terminées. La validation est écrite à la volée dans `revision_days` ({user_id, date})
+  par `lib/streak.mark_day_if_cleared()`, appelée après chaque `POST /progress/answer`
+  (la réponse renvoie `day_completed`). Non recalculable a posteriori (les échéances bougent).
+- `GET /api/revision/streak` → `Streak` : current, best, completed_today, remaining_today,
+  total_days, days[7] ({date, completed, is_today}) — dates ancrées serveur (lib/dates.py).
+- Frontend : `components/StreakCard.tsx` (flamme animée `animate-flame-pulse`, compteur,
+  pastilles des 7 derniers jours) en haut de `pages/Today.tsx`, query `["revision-streak"]`
+  invalidée par `StudyRunner` après chaque réponse.
+
+## Refonte design (dernière itération)
+- `index.css` : keyframes `flame-pulse`, `subtle-float`, `rise-in` + utilitaires
+  `.animate-flame-pulse/.animate-float/.animate-rise`, `.mesh-bg`, `.glass-card`,
+  et `prefers-reduced-motion` désactivant les animations.
+- Today : hero typographique, carte streak sombre, tuiles bento en verre dépoli avec
+  dégradés d'icônes, graphe des J en dégradé. Library : fond mesh + barre de filtres glass.
+  Login : split layout (panneau visuel promo + image Unsplash à gauche, formulaire à droite).

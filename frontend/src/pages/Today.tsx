@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
+  ArrowUpRight,
   BookOpen,
   CalendarCheck,
   CheckCircle2,
@@ -10,14 +11,12 @@ import {
   Upload,
 } from "lucide-react";
 import { apiGet } from "@/lib/api";
-import type { RevisionPlan, Sheet, User } from "@/lib/types";
+import type { RevisionPlan, Sheet, Streak, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import DailyRevisionDialog from "@/components/DailyRevisionDialog";
 import ProgressDialog from "@/components/ProgressDialog";
+import StreakCard from "@/components/StreakCard";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface TodayProps {
@@ -40,6 +39,8 @@ function ActionTile({
   onClick,
   to,
   accent,
+  ring,
+  wide,
 }: {
   title: string;
   description: string;
@@ -49,33 +50,41 @@ function ActionTile({
   onClick?: () => void;
   to?: string;
   accent: string;
+  ring: string;
+  wide?: boolean;
 }) {
   const inner = (
     <>
       <div className="flex items-start justify-between gap-3">
         <div
           className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm",
+            "flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3",
             accent,
           )}
         >
           {icon}
         </div>
-        {badge ? (
-          <Badge variant="outline" className="border-slate-200 bg-white text-slate-700">
-            {badge}
-          </Badge>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {badge ? (
+            <span className="rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 font-mono text-[11px] font-semibold text-slate-600">
+              {badge}
+            </span>
+          ) : null}
+          <ArrowUpRight className="h-4 w-4 text-slate-300 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-500" />
+        </div>
       </div>
-      <div className="mt-4">
-        <p className="font-heading text-lg font-semibold tracking-tight text-slate-900">{title}</p>
-        <p className="mt-1 text-sm leading-relaxed text-slate-600">{description}</p>
+      <div className="mt-6">
+        <p className="font-heading text-lg font-bold tracking-tight text-slate-900">{title}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{description}</p>
       </div>
     </>
   );
 
-  const shell =
-    "flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500";
+  const shell = cn(
+    "group glass-card flex h-full flex-col rounded-3xl border border-slate-200/80 p-5 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:p-6",
+    ring,
+    wide && "sm:col-span-2",
+  );
 
   return to ? (
     <Link to={to} data-testid={testId} className={shell}>
@@ -94,10 +103,16 @@ export default function Today({ user }: TodayProps) {
   const [dailyOpen, setDailyOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const planQuery = useQuery({
     queryKey: ["revision-plan"],
     queryFn: () => apiGet<RevisionPlan>("/revision/plan"),
+    refetchOnWindowFocus: false,
+  });
+  const streakQuery = useQuery({
+    queryKey: ["revision-streak"],
+    queryFn: () => apiGet<Streak>("/revision/streak"),
     refetchOnWindowFocus: false,
   });
   const sheetsQuery = useQuery({
@@ -114,6 +129,11 @@ export default function Today({ user }: TodayProps) {
   const toDoNow = dueCount > 0 ? dueCount : Math.min(newCount, 20);
   const maxUpcoming = Math.max(1, ...(plan?.upcoming ?? []).map((d) => d.count));
 
+  const openDaily = () => {
+    void queryClient.invalidateQueries({ queryKey: ["revision-today"] });
+    setDailyOpen(true);
+  };
+
   return (
     <div className="min-h-svh bg-background">
       <AppHeader
@@ -123,20 +143,21 @@ export default function Today({ user }: TodayProps) {
         onProgressClick={() => setProgressOpen(true)}
       />
 
-      <main className="dot-grid mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="mb-10">
-          <p className="font-mono text-xs uppercase tracking-wider text-slate-500">
+      <main className="mesh-bg mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <section className="mb-8 max-w-2xl">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sky-700">
             Bonjour {firstName}
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Que veux-tu faire aujourd'hui ?
+          <h1 className="mt-3 font-heading text-4xl font-black leading-[1.05] tracking-tight text-slate-900 sm:text-5xl">
+            Que veux-tu faire
+            <span className="text-sky-700"> aujourd'hui&nbsp;?</span>
           </h1>
           {planQuery.isLoading ? (
-            <p className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+            <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" /> Calcul de ton programme…
             </p>
           ) : (
-            <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-600">
+            <p className="mt-4 text-base leading-relaxed text-slate-600">
               {dueCount > 0 ? (
                 <>
                   Tu as{" "}
@@ -162,31 +183,41 @@ export default function Today({ user }: TodayProps) {
           )}
         </section>
 
-        <section className="grid gap-5 sm:grid-cols-2">
+        <StreakCard
+          streak={streakQuery.data}
+          loading={streakQuery.isLoading}
+          onRevise={openDaily}
+        />
+
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <ActionTile
             testId="action-revise-today"
             title="Réviser aujourd'hui"
             description="Ton paquet du jour, calculé sur tes oublis : J0, J1, J3, J7, J15, J30."
             icon={<CalendarCheck className="h-5 w-5" />}
             badge={toDoNow > 0 ? `${toDoNow} carte${toDoNow > 1 ? "s" : ""}` : "à jour"}
-            accent="bg-sky-700"
-            onClick={() => setDailyOpen(true)}
+            accent="bg-gradient-to-br from-sky-500 to-sky-700 shadow-sky-600/30"
+            ring="hover:border-sky-400/60"
+            wide
+            onClick={openDaily}
           />
           <ActionTile
             testId="action-browse-library"
             title="Voir les cours"
-            description="Parcourir les fiches de la promo par domaine et par UE, prévisualiser, télécharger."
+            description="Les fiches de la promo par domaine et UE : aperçu, téléchargement, révision."
             icon={<BookOpen className="h-5 w-5" />}
             badge={`${sheets.length} fiche${sheets.length > 1 ? "s" : ""}`}
-            accent="bg-emerald-700"
+            accent="bg-gradient-to-br from-emerald-500 to-teal-700 shadow-emerald-600/30"
+            ring="hover:border-emerald-400/60"
             to="/cours"
           />
           <ActionTile
             testId="action-upload-sheet"
             title="Déposer une fiche"
-            description="Partage tes révisions : les flashcards et QCM sont générés automatiquement."
+            description="Partage tes révisions : flashcards et QCM sont générés automatiquement."
             icon={<Upload className="h-5 w-5" />}
-            accent="bg-amber-700"
+            accent="bg-gradient-to-br from-amber-500 to-orange-600 shadow-amber-600/30"
+            ring="hover:border-amber-400/60"
             onClick={() => setUploadOpen(true)}
           />
           <ActionTile
@@ -196,34 +227,38 @@ export default function Today({ user }: TodayProps) {
             icon={<TrendingUp className="h-5 w-5" />}
             badge={
               plan && plan.scheduled > 0
-                ? `${plan.scheduled} carte${plan.scheduled > 1 ? "s" : ""} suivie${plan.scheduled > 1 ? "s" : ""}`
+                ? `${plan.scheduled} suivie${plan.scheduled > 1 ? "s" : ""}`
                 : undefined
             }
-            accent="bg-purple-700"
+            accent="bg-gradient-to-br from-violet-500 to-purple-700 shadow-violet-600/30"
+            ring="hover:border-violet-400/60"
+            wide
             onClick={() => setProgressOpen(true)}
           />
         </section>
 
         {plan && plan.scheduled > 0 ? (
           <section className="mt-10">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="font-heading text-lg font-semibold tracking-tight text-slate-900">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
                 Mon planning des J
               </h2>
-              <span className="text-xs text-slate-500">
+              <span className="font-mono text-xs text-slate-500">
                 {plan.mastered} au palier J30 · {plan.scheduled} carte
                 {plan.scheduled > 1 ? "s" : ""} dans le cycle
               </span>
             </div>
-            <Card className="flex flex-col gap-4 border-slate-200 p-5">
-              <div className="flex items-end gap-2" data-testid="revision-plan-chart">
+            <div className="glass-card flex flex-col gap-5 rounded-3xl border border-slate-200/80 p-5 shadow-sm sm:p-6">
+              <div className="flex items-end gap-2 sm:gap-3" data-testid="revision-plan-chart">
                 {plan.upcoming.map((day) => (
                   <div key={day.date} className="flex flex-1 flex-col items-center gap-2">
-                    <div className="flex h-24 w-full items-end">
+                    <div className="flex h-28 w-full items-end">
                       <div
                         className={cn(
-                          "w-full rounded-t-md transition-all duration-300",
-                          day.count > 0 ? "bg-sky-600" : "bg-slate-100",
+                          "w-full rounded-t-lg transition-all duration-500",
+                          day.count > 0
+                            ? "bg-gradient-to-t from-sky-700 to-sky-400 shadow-inner"
+                            : "bg-slate-200",
                         )}
                         style={{
                           height: day.count > 0 ? `${(day.count / maxUpcoming) * 100}%` : "4px",
@@ -232,15 +267,17 @@ export default function Today({ user }: TodayProps) {
                       />
                     </div>
                     <span className="text-[10px] text-slate-500">{dayLabel(day.date)}</span>
-                    <span className="font-mono text-xs text-slate-700">{day.count}</span>
+                    <span className="font-mono text-xs font-semibold text-slate-800">
+                      {day.count}
+                    </span>
                   </div>
                 ))}
               </div>
-              <p className="flex items-center gap-2 text-xs text-slate-500">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              <p className="flex items-center gap-2 text-xs leading-relaxed text-slate-500">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                 Une carte réussie repart au palier suivant ; une carte ratée revient dès demain.
               </p>
-            </Card>
+            </div>
           </section>
         ) : null}
 
@@ -248,7 +285,7 @@ export default function Today({ user }: TodayProps) {
           <Link
             to="/cours"
             data-testid="secondary-library-link"
-            className={buttonVariants({ variant: "outline" })}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors duration-200 hover:border-sky-400 hover:text-sky-700"
           >
             <BookOpen className="h-4 w-4" /> Aller à la bibliothèque de fiches
           </Link>

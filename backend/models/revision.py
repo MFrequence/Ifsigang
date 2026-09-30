@@ -51,6 +51,22 @@ class RevisionPlan(BaseModel):
     upcoming: list[DayLoad]  # charge des 7 prochains jours
 
 
+class StreakDay(BaseModel):
+    date: str
+    completed: bool  # toutes les révisions dues ce jour-là ont été faites
+    is_today: bool
+
+
+class Streak(BaseModel):
+    today: str
+    current: int  # jours consécutifs validés
+    best: int  # meilleure série
+    completed_today: bool
+    remaining_today: int  # cartes encore dues aujourd'hui
+    total_days: int
+    days: list[StreakDay]  # 7 derniers jours, du plus ancien au plus récent
+
+
 class CardReport(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     card_id: str

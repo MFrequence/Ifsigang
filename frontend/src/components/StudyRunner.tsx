@@ -108,6 +108,7 @@ export default function StudyRunner({
       void queryClient.invalidateQueries({ queryKey: ["progress"] });
       void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
       void queryClient.invalidateQueries({ queryKey: ["revision-plan"] });
+      void queryClient.invalidateQueries({ queryKey: ["revision-streak"] });
     },
   });
 

@@ -1,38 +1,17 @@
 {
   "theme": {
-    "default_mode": "light",
-    "rationale": "Medical/nursing study documents and revision sheets require high legibility, clean document reading aesthetics, and warm, calming tones. We mix Swiss archival precision with medical editorial warmth: warm off-white canvas, deep slate/navy ink, crisp border lines, and distinct jewel/earth accent tags per Domain (A-E)."
-  },
-  "fonts": {
-    "heading_font": "Plus Jakarta Sans Variable",
-    "body_font": "DM Sans Variable",
-    "mono_font": "JetBrains Mono Variable",
-    "css_import": "@import \"@fontsource-variable/plus-jakarta-sans\";\n@import \"@fontsource-variable/dm-sans\";\n@import \"@fontsource-variable/jetbrains-mono\";",
-    "pairing_rationale": "Plus Jakarta Sans brings a crisp, modern, confident editorial structure for domain titles and headers without the generic AI slop look. DM Sans provides relaxed, ultra-readable body text for revision notes, author tags, and file details."
-  },
-  "typography": {
-    "scale_px": {
-      "display": 52,
-      "h1": 36,
-      "h2": 28,
-      "h3": 22,
-      "body": 16,
-      "caption": 14
-    },
-    "rules": {
-      "display": "font-heading font-extrabold tracking-tight text-3xl sm:text-4xl lg:text-5xl leading-tight text-slate-900",
-      "h1": "font-heading font-bold tracking-tight text-2xl sm:text-3xl text-slate-900",
-      "h2": "font-heading font-semibold tracking-tight text-xl sm:text-2xl text-slate-900",
-      "h3": "font-heading font-semibold text-lg sm:text-xl text-slate-900",
-      "body": "font-sans text-base leading-relaxed text-slate-700",
-      "caption": "font-sans text-sm text-slate-500",
-      "mono_label": "font-mono text-xs uppercase tracking-wider text-slate-500"
+    "archetype": "Organic Clinical & Precision Gamified (IFSI French Nursing Promo)",
+    "description": "Palette inspirée du milieu infirmier moderne (sarcelle/cyan chirurgical profond, ambre chaleureux pour la flamme/streak, émeraude de réussite, lavande de mémoire) mélangé à un design tactile premium avec micro-textures, compteurs dynamiques et cartes bento asymétriques.",
+    "fonts": {
+      "heading": "Plus Jakarta Sans Variable",
+      "body": "DM Sans Variable",
+      "mono": "JetBrains Mono Variable"
     }
   },
   "colors": {
     "surfaces": [
       {
-        "name": "page",
+        "name": "page_light",
         "kind": "solid",
         "bg": "#F8FAFC",
         "on_bg": "#0F172A",
@@ -40,229 +19,201 @@
         "roles": {
           "link": "#0284C7",
           "error": "#BE123C",
-          "success": "#047857"
+          "success": "#059669",
+          "warning": "#D97706"
         }
       },
       {
-        "name": "panel",
+        "name": "card_light",
         "kind": "solid",
         "bg": "#FFFFFF",
         "on_bg": "#0F172A",
-        "on_bg_muted": "#475569",
+        "on_bg_muted": "#64748B",
         "roles": {
-          "link": "#0284C7",
-          "error": "#BE123C",
-          "success": "#047857"
+          "border": "#E2E8F0",
+          "hover_border": "#CBD5E1",
+          "badge_bg": "#F1F5F9",
+          "badge_fg": "#334155"
         }
       },
       {
-        "name": "panel_subtle",
+        "name": "streak_banner_hero",
         "kind": "solid",
-        "bg": "#F1F5F9",
-        "on_bg": "#0F172A",
-        "on_bg_muted": "#475569"
+        "bg": "#0B1528",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "flame_core": "#F59E0B",
+          "flame_glow": "#EA580C",
+          "flame_light": "#FEF08A",
+          "active_pill_bg": "#D97706",
+          "active_pill_fg": "#FFFFFF",
+          "done_pill_bg": "#10B981",
+          "done_pill_fg": "#FFFFFF",
+          "inactive_pill_bg": "#1E293B",
+          "inactive_pill_fg": "#64748B"
+        }
       },
       {
-        "name": "inverse",
+        "name": "page_dark",
         "kind": "solid",
-        "bg": "#0F172A",
+        "bg": "#0B1120",
         "on_bg": "#F8FAFC",
         "on_bg_muted": "#94A3B8",
         "roles": {
           "link": "#38BDF8",
           "error": "#FB7185",
-          "success": "#34D399"
+          "success": "#34D399",
+          "warning": "#FBBF24"
         }
       },
       {
-        "name": "gate_hero",
+        "name": "login_brand_panel",
         "kind": "solid",
-        "bg": "#0F172A",
-        "on_bg": "#F8FAFC",
-        "on_bg_muted": "#CBD5E1",
+        "bg": "#091428",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#94A3B8",
         "roles": {
-          "link": "#38BDF8",
-          "error": "#FDA4AF",
-          "success": "#6EE7B7"
+          "pill_border": "#1E293B",
+          "accent_chip": "#0284C7"
         }
-      },
-      {
-        "name": "domain_a_surface",
-        "kind": "solid",
-        "bg": "#F0FDF4",
-        "on_bg": "#14532D",
-        "on_bg_muted": "#166534"
-      },
-      {
-        "name": "domain_b_surface",
-        "kind": "solid",
-        "bg": "#EFF6FF",
-        "on_bg": "#1E3A8A",
-        "on_bg_muted": "#1E40AF"
-      },
-      {
-        "name": "domain_c_surface",
-        "kind": "solid",
-        "bg": "#FFFBEB",
-        "on_bg": "#78350F",
-        "on_bg_muted": "#92400E"
-      },
-      {
-        "name": "domain_d_surface",
-        "kind": "solid",
-        "bg": "#FAF5FF",
-        "on_bg": "#581C87",
-        "on_bg_muted": "#6B21A8"
-      },
-      {
-        "name": "domain_e_surface",
-        "kind": "solid",
-        "bg": "#FFF1F2",
-        "on_bg": "#881337",
-        "on_bg_muted": "#9F1239"
       }
     ],
     "accent": "#0284C7",
     "on_accent": "#FFFFFF",
-    "accent_hover": "#0369A1",
-    "domains": {
-      "A": {
-        "code": "Domaine A",
-        "label": "Sciences humaines, sociales et droit",
-        "badge_bg": "bg-emerald-50 text-emerald-800 border-emerald-200",
-        "chip_active": "bg-emerald-700 text-white shadow-sm",
-        "indicator": "bg-emerald-600",
-        "border_accent": "border-l-emerald-600"
-      },
-      "B": {
-        "code": "Domaine B",
-        "label": "Sciences biologiques et médicales",
-        "badge_bg": "bg-blue-50 text-blue-800 border-blue-200",
-        "chip_active": "bg-blue-700 text-white shadow-sm",
-        "indicator": "bg-blue-600",
-        "border_accent": "border-l-blue-600"
-      },
-      "C": {
-        "code": "Domaine C",
-        "label": "Sciences et techniques infirmières : fondements",
-        "badge_bg": "bg-amber-50 text-amber-900 border-amber-200",
-        "chip_active": "bg-amber-700 text-white shadow-sm",
-        "indicator": "bg-amber-600",
-        "border_accent": "border-l-amber-600"
-      },
-      "D": {
-        "code": "Domaine D",
-        "label": "Sciences et techniques infirmières : interventions",
-        "badge_bg": "bg-purple-50 text-purple-900 border-purple-200",
-        "chip_active": "bg-purple-700 text-white shadow-sm",
-        "indicator": "bg-purple-600",
-        "border_accent": "border-l-purple-600"
-      },
-      "E": {
-        "code": "Domaine E",
-        "label": "Intégration des savoirs et posture professionnelle",
-        "badge_bg": "bg-rose-50 text-rose-900 border-rose-200",
-        "chip_active": "bg-rose-700 text-white shadow-sm",
-        "indicator": "bg-rose-600",
-        "border_accent": "border-l-rose-600"
-      }
+    "flame_accent": "#F59E0B",
+    "on_flame": "#451A03"
+  },
+  "typography": {
+    "scale_px": {
+      "display": 56,
+      "h1": 40,
+      "h2": 28,
+      "h3": 20,
+      "h4": 18,
+      "body": 16,
+      "caption": 14
+    },
+    "font_family_tokens": {
+      "heading": "var(--font-heading)",
+      "sans": "var(--font-sans)",
+      "mono": "var(--font-mono)"
+    },
+    "tracking": {
+      "tight": "-0.025em",
+      "tighter": "-0.04em",
+      "label": "0.15em"
     }
   },
   "entry_surfaces": {
-    "/": "Branded IFSI Hub header with promo lock state, domain pill filters & search bar, asymmetric action header with upload CTA, and rich responsive revision sheet cards with inline preview drawer."
+    "/": "editorial split today view — animated streak flame banner top, 4 asymmetric action cards, spacing J visualizer",
+    "/cours": "categorized medical library — domain pills A-E with UE badges, search bar, preview cards with flashcard counts",
+    "/login": "split branded login — promo positioning & value props left, auth tabs and code promo form right"
   },
-  "visual_enhancers": {
-    "texture": "Subtle dot-grid pattern on background for archival revision desk feel",
-    "borders": "1px crisp slate borders with subtle inner shadow on active modals",
-    "chips": "Tactile domain filter chips with instant count badges and keyboard navigation",
-    "modals": "Dialog for file dropzone (drag-and-drop, domain picker, author input, progress animation)",
-    "preview": "Sheet/Drawer side panel for inline preview of PDF (iframe/object) and images with zoom/download CTA"
-  },
-  "grids_and_layouts": {
-    "desktop": {
-      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
-      "header_layout": "flex items-center justify-between border-b border-slate-200 pb-6 mb-8",
-      "filter_bar": "flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs",
-      "sheets_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-    },
-    "mobile": {
-      "stack": "flex flex-col gap-4",
-      "domain_scroll": "flex overflow-x-auto pb-2 scrollbar-none gap-2"
+  "streak_card_blueprint": {
+    "placement": "Sur la page Aujourd'hui, tout en haut de <main>, au-dessus ou sous le titre de bienvenue",
+    "visual_hierarchy": {
+      "container": "relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-[#0B1528] via-[#101F3C] to-[#0A1120] p-6 sm:p-8 text-white shadow-xl shadow-amber-950/20",
+      "flame_section": {
+        "badge": "inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-amber-300",
+        "flame_animation": "animate-flame-pulse relative flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-300 shadow-[0_0_30px_rgba(245,158,11,0.4)]",
+        "counter": "font-heading text-4xl sm:text-5xl font-black tracking-tight text-white flex items-baseline gap-2",
+        "label": "text-sm text-slate-300 font-medium"
+      },
+      "pills_7_days": {
+        "container": "mt-6 grid grid-cols-7 gap-2 sm:gap-3 border-t border-slate-700/60 pt-5",
+        "day_pill": {
+          "completed": "flex flex-col items-center justify-center rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-2 sm:p-2.5 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]",
+          "today_pending": "flex flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-950/50 p-2 sm:p-2.5 text-amber-300 animate-pulse",
+          "today_done": "flex flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-gradient-to-b from-amber-500 to-orange-600 p-2 sm:p-2.5 text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]",
+          "missed_past": "flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-900/60 p-2 sm:p-2.5 text-slate-500"
+        }
+      }
     }
   },
-  "motion": {
-    "fade_in": "transition-opacity duration-200 ease-out",
-    "card_hover": "transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md",
-    "button_press": "active:scale-[0.98] transition-transform duration-75",
-    "dialog_transition": "animate-in fade-in-0 zoom-in-95 duration-150"
+  "action_tiles_redesign": {
+    "grid": "grid gap-5 sm:grid-cols-2 lg:grid-cols-4",
+    "cards": [
+      {
+        "id": "action-revise-today",
+        "title": "Réviser aujourd'hui",
+        "gradient": "from-sky-500/10 to-transparent",
+        "border": "hover:border-sky-500/40",
+        "icon_bg": "bg-sky-600 text-white shadow-sky-600/30",
+        "badge_variant": "sky"
+      },
+      {
+        "id": "action-browse-library",
+        "title": "Voir les cours",
+        "gradient": "from-emerald-500/10 to-transparent",
+        "border": "hover:border-emerald-500/40",
+        "icon_bg": "bg-emerald-600 text-white shadow-emerald-600/30",
+        "badge_variant": "emerald"
+      },
+      {
+        "id": "action-upload-sheet",
+        "title": "Déposer une fiche",
+        "gradient": "from-amber-500/10 to-transparent",
+        "border": "hover:border-amber-500/40",
+        "icon_bg": "bg-amber-600 text-white shadow-amber-600/30",
+        "badge_variant": "amber"
+      },
+      {
+        "id": "action-view-progress",
+        "title": "Ma progression",
+        "gradient": "from-purple-500/10 to-transparent",
+        "border": "hover:border-purple-500/40",
+        "icon_bg": "bg-purple-600 text-white shadow-purple-600/30",
+        "badge_variant": "purple"
+      }
+    ]
   },
-  "accessibility": {
-    "wcag_compliance": "AA (4.5:1 minimum on all body copy and badges)",
-    "touch_targets": "Minimum 44px on mobile buttons and filter pills",
-    "screen_readers": "Aria attributes on search input, domain filters (role=tablist), and upload dropzone (aria-live for upload status)",
-    "keyboard_nav": "Full tab and focus ring visibility (`focus-visible:ring-2 focus-visible:ring-sky-500`)"
+  "css_tokens_index_css": {
+    "keyframes": "@keyframes flame-pulse {\n  0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 16px rgba(245,158,11,0.6)); }\n  50% { transform: scale(1.08) rotate(2deg); filter: drop-shadow(0 0 26px rgba(234,88,12,0.85)); }\n}\n@keyframes subtle-float {\n  0%, 100% { transform: translateY(0px); }\n  50% { transform: translateY(-4px); }\n}",
+    "utility_classes": ".animate-flame-pulse {\n  animation: flame-pulse 2.2s ease-in-out infinite;\n}\n.animate-float {\n  animation: subtle-float 3.5s ease-in-out infinite;\n}"
   },
-  "key_components": [
+  "image_urls": [
     {
-      "name": "AccessGateModal",
-      "path": "frontend/src/components/AccessGateModal.tsx",
-      "description": "Promo code unlock modal if the user is not authenticated yet. Prompts for promo code, calls /api/auth/unlock, sets session, and smoothly reveals the dashboard."
+      "category": "auth_login_visual",
+      "url": "https://images.unsplash.com/photo-1741707040258-b772f0c2876d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxudXJzaW5nJTIwc3R1ZGVudCUyMG1lZGljYWwlMjBzdHVkeXxlbnwwfHx8fDE3OTA3OTE1NTZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Étudiante infirmière travaillant sur ordinateur et dossiers cliniques pour le volet gauche de la page de connexion",
+      "placement": "Page de connexion (Login.tsx) - panel visuel promo à gauche"
     },
     {
-      "name": "AppHeader",
-      "path": "frontend/src/components/AppHeader.tsx",
-      "description": "Displays IFSI Promo banner, cohort name, lock status badge, total revision sheets count, search bar, and primary 'Déposer une fiche' button."
-    },
-    {
-      "name": "DomainFilterBar",
-      "path": "frontend/src/components/DomainFilterBar.tsx",
-      "description": "Tabs or pill bar for filtering by 'Tous' or 'Domaine A-E' with active count indicators and descriptive tooltips/subtitles for nursing students."
-    },
-    {
-      "name": "SheetCard",
-      "path": "frontend/src/components/SheetCard.tsx",
-      "description": "Card showing sheet title, domain badge with distinct domain color, file type icon (PDF/DOCX/IMG/TXT), author name, upload date, file size, download count, direct download action, preview trigger, and delete confirmation button."
-    },
-    {
-      "name": "UploadSheetDialog",
-      "path": "frontend/src/components/UploadSheetDialog.tsx",
-      "description": "Drag-and-drop file upload modal with validation for file types (pdf, png, jpg, docx, txt) and max 10MB size, title input, domain select (A-E), author name input, and optional description notes."
-    },
-    {
-      "name": "SheetPreviewDrawer",
-      "path": "frontend/src/components/SheetPreviewDrawer.tsx",
-      "description": "Side drawer or modal for previewing PDF files inline or viewing uploaded high-res study charts/diagrams without forcing download."
-    },
-    {
-      "name": "EmptyState",
-      "path": "frontend/src/components/EmptyState.tsx",
-      "description": "Clean, encouraging empty state for domains with no uploaded sheets yet or when a search returns zero results, with a fast 'Déposer la première fiche' action."
+      "category": "promo_study_library",
+      "url": "https://images.unsplash.com/photo-1770235623162-2cb204c57bb5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxudXJzaW5nJTIwc3R1ZGVudCUyMG1lZGljYWwlMjBzdHVkeXxlbnwwfHx8fDE3OTA3OTE1NTZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Étudiante en bibliothèque avec classeurs et fiches de révision",
+      "placement": "Bannière ou modal explicative de la bibliothèque de fiches"
     }
   ],
-  "testing_attributes": {
-    "gate_input": "data-testid=\"promo-code-input\"",
-    "gate_submit": "data-testid=\"promo-code-submit-button\"",
-    "search_input": "data-testid=\"sheet-search-input\"",
-    "upload_trigger_btn": "data-testid=\"open-upload-modal-button\"",
-    "upload_dropzone": "data-testid=\"file-dropzone-input\"",
-    "upload_title_input": "data-testid=\"upload-title-input\"",
-    "upload_domain_select": "data-testid=\"upload-domain-select\"",
-    "upload_author_input": "data-testid=\"upload-author-input\"",
-    "upload_submit_btn": "data-testid=\"upload-submit-button\"",
-    "domain_tab_prefix": "data-testid=\"domain-tab-\"",
-    "sheet_card_prefix": "data-testid=\"sheet-card-\"",
-    "sheet_download_btn_prefix": "data-testid=\"sheet-download-button-\"",
-    "sheet_preview_btn_prefix": "data-testid=\"sheet-preview-button-\"",
-    "sheet_delete_btn_prefix": "data-testid=\"sheet-delete-button-\""
+  "accessibility": {
+    "contrast_ratio": "4.5:1 minimum pour le texte normal et muted",
+    "data_testids": [
+      "streak-card",
+      "streak-counter-value",
+      "streak-flame-icon",
+      "streak-day-pill-0",
+      "streak-day-pill-1",
+      "streak-day-pill-2",
+      "streak-day-pill-3",
+      "streak-day-pill-4",
+      "streak-day-pill-5",
+      "streak-day-pill-6",
+      "action-revise-today",
+      "action-browse-library",
+      "action-upload-sheet",
+      "action-view-progress",
+      "revision-plan-chart",
+      "due-today-count"
+    ],
+    "reduced_motion": "@media (prefers-reduced-motion: reduce) { .animate-flame-pulse, .animate-float { animation: none !important; } }"
   },
   "instructions_to_main_agent": [
-    "1. Setup Tailwind v4 font imports in frontend/src/index.css using @fontsource-variable/plus-jakarta-sans, @fontsource-variable/dm-sans, and @fontsource-variable/jetbrains-mono.",
-    "2. Implement the Promo Code gate logic: store promo access in an httpOnly session cookie via FastAPI backend endpoint `/api/auth/unlock` and check status via `/api/auth/status` (or pre-seed a default promo code like 'IFSI2026' or 'PROMO2026' with option to configure).",
-    "3. Implement full domain categorization for Domaine A, Domaine B, Domaine C, Domaine D, and Domaine E with precise titles from the IFSI curriculum.",
-    "4. Support file uploads up to 10MB (PDF, PNG, JPG, JPEG, DOCX, TXT) storing files in local backend storage (`backend/uploads/`) with metadata saved in MongoDB.",
-    "5. Provide quick instant search filtering on the frontend and category tab switching with live count updates.",
-    "6. Include a delete feature with confirmation dialog, download tracking counter, and inline preview for PDF and image revision sheets.",
-    "7. Include all `data-testid` attributes on interactive elements as defined in testing_attributes.",
-    "8. Use Sonner for toast notifications in French (e.g. 'Fiche déposée avec succès', 'Code promo validé', 'Téléchargement démarré', 'Fiche supprimée')."
+    "1. Mettre à jour `frontend/src/index.css` pour inclure les keyframes flame-pulse et utility classes d'animation.",
+    "2. Dans `frontend/src/pages/Today.tsx`, ajouter en haut de la page la carte 'Série de jours' (Streak) avec l'icône de flamme animée (Lucide `Flame`), le compteur de jours consécutifs calculé ou simulé (ex: 5 jours d'affilée), un badge de statut 'Série en cours', et la rangée des pastilles des 7 derniers jours (L M M J V S D) avec états validé (vert), aujourd'hui actif (ambre vibrant), et manqué/futur (sombre).",
+    "3. Réorganiser la grille des 4 tuiles d'action en layout bento moderne responsive (2 colonnes sur tablette, 4 colonnes ou grille 2x2 valorisée sur desktop) avec des effets de survol lissés et des micro-bordures lumineuses.",
+    "4. Améliorer la carte 'Mon planning des J' avec des barres de progression stylisées, gradients subtils et indicateurs de palier J0/J1/J3/J7/J15/J30.",
+    "5. Sublimer la page `Login.tsx` en exploitant l'image Unsplash sélectionnée dans un panneau de présentation gauche (split layout) valorisant l'ambiance étudiante IFSI.",
+    "6. Conserver scrupuleusement tous les `data-testid` existants et ajouter les nouveaux pour la carte de streak."
   ]
 }

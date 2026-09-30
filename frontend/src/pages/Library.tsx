@@ -110,7 +110,7 @@ export default function Library({ user }: LibraryProps) {
         onProgressClick={() => setProgressOpen(true)}
       />
 
-      <main className="dot-grid mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mesh-bg mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="mb-8">
           <Link
             to="/"
@@ -119,8 +119,8 @@ export default function Library({ user }: LibraryProps) {
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Accueil
           </Link>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Les fiches de révision de la promo
+          <h1 className="font-heading text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            Les fiches de révision <span className="text-sky-700">de la promo</span>
           </h1>
           <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate-600">
             Dépose tes fiches par domaine et UE, révise-les en flashcards ou en QCM, et suis ta
@@ -128,7 +128,7 @@ export default function Library({ user }: LibraryProps) {
           </p>
         </section>
 
-        <div className="mb-8 flex flex-col gap-4 rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs md:flex-row md:items-start md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-200/80 glass-card p-4 shadow-sm md:flex-row md:items-start md:justify-between">
           <DomainFilterBar
             active={domain}
             counts={counts}

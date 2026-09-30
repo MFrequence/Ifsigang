@@ -35,7 +35,7 @@ export default function AppHeader({
     .join("");
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link
@@ -43,11 +43,11 @@ export default function AppHeader({
             data-testid="header-home-link"
             className="flex items-center gap-3 rounded-lg transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-700 text-white shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-800 text-white shadow-lg shadow-sky-600/25">
               <GraduationCap className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-heading text-lg font-bold tracking-tight text-slate-900">
+              <p className="font-heading text-lg font-black tracking-tight text-slate-900">
                 Fiches IFSI
               </p>
               <p className="text-xs text-slate-500">Bibliothèque de fiches de la promo</p>

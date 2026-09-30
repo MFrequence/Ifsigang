@@ -69,6 +69,23 @@ export interface RevisionPlan {
   upcoming: DayLoad[];
 }
 
+// Mirror of StreakDay / Streak in backend/models/revision.py.
+export interface StreakDay {
+  date: string;
+  completed: boolean;
+  is_today: boolean;
+}
+
+export interface Streak {
+  today: string;
+  current: number;
+  best: number;
+  completed_today: boolean;
+  remaining_today: number;
+  total_days: number;
+  days: StreakDay[];
+}
+
 // Mirror of ReportOut in backend/models/revision.py.
 export interface CardReport {
   id: string;

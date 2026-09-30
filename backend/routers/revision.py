@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends, Query
 from lib.dates import today_iso
 from lib.db import db
 from lib.revision import MAX_LEVEL, next_level, stage_label
-from models.revision import DayLoad, RevisionCard, RevisionPlan
+from lib.streak import compute_streak
+from models.revision import DayLoad, RevisionCard, RevisionPlan, Streak
 from routers.auth import current_user
 
 router = APIRouter(prefix="/revision", tags=["revision"])
@@ -82,6 +83,12 @@ async def today_deck(
             )
         )
     return deck
+
+
+@router.get("/streak", response_model=Streak)
+async def my_streak(user: dict = Depends(current_user)):
+    """Série de jours consécutifs où toutes les révisions dues ont été terminées."""
+    return Streak(**await compute_streak(user["id"]))
 
 
 @router.get("/plan", response_model=RevisionPlan)
