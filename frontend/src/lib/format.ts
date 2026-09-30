@@ -13,10 +13,14 @@ export function formatDate(iso: string): string {
   return format(date, "d MMM yyyy", { locale: fr });
 }
 
-const TEXT_MIMES = [
-  "text/plain",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
+const DOCX_MIME =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const TEXT_MIMES = ["text/plain", DOCX_MIME];
+
+/** DOCX : rendu en HTML (mise en forme conservée) via /sheets/{id}/html. */
+export function isDocx(mime: string): boolean {
+  return mime === DOCX_MIME;
+}
 
 /** TXT et DOCX : lus en texte via /sheets/{id}/text, sans téléchargement. */
 export function isTextReadable(mime: string): boolean {

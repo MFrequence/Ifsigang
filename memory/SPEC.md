@@ -324,8 +324,13 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
 - `GET /api/sheets/{id}/text` → `SheetText {text, truncated}` : texte extrait par
   `lib/extract.py::extract_text(..., limit=READ_CHARS=200000)` (TXT, DOCX, PDF).
   422 sur une image ou un document scanné/illisible, 404 si le fichier est introuvable.
+- `GET /api/sheets/{id}/html` → `SheetHtml {html}` : **DOCX rendu en HTML** via
+  `lib/docx_html.py` (mammoth + style map FR/EN) — titres, gras, listes, tableaux et images
+  du document (base64 inline) conservés. 422 hors .docx ou si la mise en forme est illisible.
+  LibreOffice (vraie conversion PDF) est impossible : aucun paquet système en production.
 - `components/SheetPreviewDialog.tsx` : PDF en `<iframe>`, images en `<img>`,
-  **TXT/DOCX en lecture texte** (`sheet-text-content`, `sheet-text-loading`,
-  `sheet-text-error`), zone défilable + mention si tronqué.
+  **DOCX en HTML** (`sheet-html-content`, styles Tailwind sur le HTML injecté),
+  **TXT en texte** (`sheet-text-content`) ; un DOCX dont le HTML échoue retombe sur le texte.
+  États partagés : `sheet-reader-loading`, `sheet-reader-error`.
 - `lib/format.ts::isTextReadable` / `isPreviewable` : tous les formats acceptés sont
   maintenant lisibles en ligne → le bouton de la carte s'appelle « Lire ».

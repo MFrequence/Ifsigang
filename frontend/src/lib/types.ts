@@ -39,6 +39,11 @@ export interface SheetText {
   truncated: boolean;
 }
 
+// Mirror of SheetHtml in backend/models/sheet.py.
+export interface SheetHtml {
+  html: string;
+}
+
 // Mirror of SheetReportOut in backend/models/sheet.py.
 export interface SheetReport {
   id: string;

@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, Response
 from pymongo import DESCENDING
 
 from lib.db import db
+from lib.docx_html import docx_to_html
 from lib.extract import READ_CHARS, extract_text
 from lib.flashcards import build_deck_for_sheet
 from lib.storage import get_object, object_path, put_object
@@ -32,6 +33,7 @@ from models.sheet import (
     SheetOut,
     SheetReport,
     SheetReportOut,
+    SheetHtml,
     SheetReportRequest,
     SheetText,
 )
@@ -43,12 +45,13 @@ router = APIRouter(tags=["sheets"])
 
 MAX_SIZE = 10 * 1024 * 1024  # 10 Mo
 ALLOWED_EXTS = {"pdf", "png", "jpg", "jpeg", "docx", "txt"}
+DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 MIME_BY_EXT = {
     "pdf": "application/pdf",
     "png": "image/png",
     "jpg": "image/jpeg",
     "jpeg": "image/jpeg",
-    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "docx": DOCX_MIME,
     "txt": "text/plain",
 }
 UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
@@ -254,6 +257,23 @@ async def sheet_text(sheet_id: str, _: dict = Depends(current_user)):
             detail="Impossible d'extraire le texte de cette fiche (document scanné ou illisible)",
         )
     return SheetText(text=text, truncated=len(text) >= READ_CHARS)
+
+
+@router.get("/sheets/{sheet_id}/html", response_model=SheetHtml)
+async def sheet_html(sheet_id: str, _: dict = Depends(current_user)):
+    """Rendu HTML d'un DOCX : titres, gras, listes, tableaux et images du document."""
+    doc = await _find_or_404(sheet_id)
+    if doc["mime"] != DOCX_MIME:
+        raise HTTPException(status_code=422, detail="Rendu HTML réservé aux fiches Word (.docx)")
+    path = await ensure_local_file(doc)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
+    html = docx_to_html(path)
+    if not html:
+        raise HTTPException(
+            status_code=422, detail="Impossible de lire la mise en forme de ce document"
+        )
+    return SheetHtml(html=html)
 
 
 @router.get("/sheets/{sheet_id}/download")

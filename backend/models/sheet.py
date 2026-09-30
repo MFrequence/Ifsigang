@@ -76,6 +76,12 @@ class SheetText(BaseModel):
     truncated: bool = False
 
 
+class SheetHtml(BaseModel):
+    """Rendu HTML d'une fiche DOCX (mise en forme conservée), servi tel quel au client."""
+
+    html: str
+
+
 class SheetReportRequest(BaseModel):
     reason: str = Field(default="", max_length=300)
 
