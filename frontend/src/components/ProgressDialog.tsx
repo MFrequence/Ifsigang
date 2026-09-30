@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, Medal, Target, TrendingUp, Upload } from "lucide-react";
 import { apiGet } from "@/lib/api";
 import { DOMAIN_MAP } from "@/lib/domains";
-import type { DomainKey, LeaderboardEntry, ProgressStats } from "@/lib/types";
+import type { DiagramSummary, DomainKey, LeaderboardEntry, ProgressStats } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -53,6 +53,13 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
     queryFn: () => apiGet<ProgressStats>("/progress/me"),
     enabled: open,
   });
+  const diagrams = useQuery({
+    queryKey: ["anatomy"],
+    queryFn: () => apiGet<DiagramSummary[]>("/anatomy"),
+    enabled: open,
+    refetchOnWindowFocus: false,
+  });
+
   const board = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => apiGet<LeaderboardEntry[]>("/progress/leaderboard"),
@@ -81,7 +88,7 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="me" className="pt-4">
+          <TabsContent value="me" className="flex flex-col gap-4 pt-4">
             {progress.isLoading ? (
               <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin" /> Chargement…
@@ -161,6 +168,36 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
                 </p>
               </div>
             )}
+
+                {(diagrams.data ?? []).some((d) => d.attempts > 0) ? (
+              <div className="flex flex-col gap-2" data-testid="progress-anatomy-section">
+                <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Schémas d'anatomie
+                </p>
+                {(diagrams.data ?? [])
+                  .filter((d) => d.attempts > 0)
+                  .map((d) => (
+                    <div
+                      key={d.slug}
+                      className="flex items-center gap-3"
+                      data-testid={`progress-anatomy-${d.slug}`}
+                    >
+                      <span className="w-24 shrink-0 truncate text-sm text-muted-foreground">
+                        {d.title}
+                      </span>
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${(d.best_score / d.marker_count) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-20 shrink-0 text-right text-xs text-muted-foreground">
+                        {d.best_score}/{d.marker_count}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            ) : null}
           </TabsContent>
 
           <TabsContent value="board" className="pt-4">

@@ -2,6 +2,7 @@ import { FolderOpen, GraduationCap, KeyRound, LogOut, ShieldCheck, TrendingUp, U
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog";
+import ProgressDialog from "@/components/ProgressDialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { endSession } from "@/lib/session";
@@ -33,6 +34,9 @@ export default function AppHeader({
 }: AppHeaderProps) {
   const navigate = useNavigate();
   const [passwordOpen, setPasswordOpen] = useState(false);
+  // Les pages secondaires ne passent pas de handler : l'en-tête ouvre alors son propre dialogue.
+  const [progressOpen, setProgressOpen] = useState(false);
+  const openProgress = onProgressClick ?? (() => setProgressOpen(true));
   const initials = user.name
     .split(/\s+/)
     .slice(0, 2)
@@ -79,6 +83,13 @@ export default function AppHeader({
             Lexique
           </Link>
           <Link
+            to="/schemas"
+            data-testid="nav-anatomy-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Schémas
+          </Link>
+          <Link
             to="/pharmacologie"
             data-testid="nav-pharmaco-link"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
@@ -103,7 +114,7 @@ export default function AppHeader({
             <Button
               variant="outline"
               data-testid="open-progress-button"
-              onClick={onProgressClick}
+              onClick={openProgress}
               className="transition-transform duration-75 active:scale-[0.98]"
             >
               <TrendingUp className="h-4 w-4" />
@@ -140,11 +151,9 @@ export default function AppHeader({
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {onProgressClick ? (
-                  <DropdownMenuItem data-testid="menu-progress-item" onClick={onProgressClick}>
-                    <TrendingUp className="h-4 w-4" /> Ma progression
-                  </DropdownMenuItem>
-                ) : null}
+                <DropdownMenuItem data-testid="menu-progress-item" onClick={openProgress}>
+                  <TrendingUp className="h-4 w-4" /> Ma progression
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   data-testid="menu-change-password-item"
                   onClick={() => setPasswordOpen(true)}
@@ -171,6 +180,8 @@ export default function AppHeader({
           </DropdownMenu>
         </div>
       </div>
+
+      <ProgressDialog open={progressOpen} onOpenChange={setProgressOpen} />
 
       <ChangePasswordDialog
         open={passwordOpen || user.must_change_password}

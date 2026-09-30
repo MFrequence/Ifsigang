@@ -21,6 +21,7 @@ from lib.lexicon_seed import seed_lexicon
 
 # App routers — one APIRouter per resource, folded into api_router below
 from routers.admin import router as admin_router
+from routers.anatomy import router as anatomy_router
 from routers.auth import router as auth_router
 from routers.flashcards import router as flashcards_router
 from routers.lexicon import router as lexicon_router
@@ -86,6 +87,7 @@ api_router.include_router(reports_router)
 api_router.include_router(admin_router)
 api_router.include_router(lexicon_router)
 api_router.include_router(pharmaco_router)
+api_router.include_router(anatomy_router)
 
 # Include the router in the main app
 app.include_router(api_router)

@@ -6,6 +6,7 @@ import {
   BookMarked,
   BookOpen,
   Pill,
+  ShapesIcon,
   CalendarCheck,
   CheckCircle2,
   Loader2,
@@ -239,6 +240,16 @@ export default function Today({ user }: TodayProps) {
             accent="bg-gradient-to-br from-rose-500 to-red-700 shadow-rose-600/30"
             ring="hover:border-rose-400/60"
             to="/pharmacologie"
+          />
+          <ActionTile
+            testId="action-anatomy"
+            title="Schémas à compléter"
+            description="Cœur, poumons, rein, digestif, squelette, neurone : place les étiquettes."
+            icon={<ShapesIcon className="h-5 w-5" />}
+            accent="bg-gradient-to-br from-indigo-500 to-blue-700 shadow-indigo-600/30"
+            ring="hover:border-indigo-400/60"
+            wide
+            to="/schemas"
           />
           <ActionTile
             testId="action-view-progress"

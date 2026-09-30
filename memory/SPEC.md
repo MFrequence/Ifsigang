@@ -218,3 +218,19 @@ personnel et **classement de la promo**.
   `DELETE /api/pharmaco/favorites/{cis}`. Purgés à la suppression du compte (routers/admin.py).
 - Frontend : bouton « Épingler à mon stage » dans l'en-tête de fiche + section
   « Les médicaments de mon stage » en haut de /pharmacologie (query `["drug-favorites"]`).
+
+## Schémas d'anatomie à compléter (/schemas)
+- 6 schémas générés pour la plateforme (repères numérotés, AUCUN nom visible) définis dans
+  `backend/lib/anatomy.py` : cœur, appareil respiratoire, rein, appareil digestif, squelette,
+  neurone. Le mapping numéro → étiquette **reste serveur** : `GET /api/anatomy/{slug}` renvoie
+  les numéros + les étiquettes **mélangées**, la correction se fait dans
+  `POST /api/anatomy/{slug}/attempt` (comparaison insensible à la casse et aux accents) qui
+  renvoie score, repères justes et la solution, puis enregistre la tentative
+  (`anatomy_attempts`). `GET /api/anatomy` liste les schémas avec le meilleur score de l'étudiant.
+- Frontend `pages/Anatomie.tsx` : glisser-déposer maison en **pointer events** (souris + tactile,
+  le DnD HTML5 natif ne marche pas sur mobile) avec fantôme suivant le curseur ; un simple tap
+  sélectionne l'étiquette puis le repère. Correction en vert/rouge avec la bonne réponse affichée.
+- Progression : section « Schémas d'anatomie » dans `ProgressDialog` (hors du bloc flashcards,
+  donc visible même sans carte révisée). Tentatives purgées à la suppression d'un compte.
+- `AppHeader` : `onProgressClick` optionnel — sans handler, l'en-tête monte son propre
+  ProgressDialog, donc « Ma progression » est accessible depuis toutes les pages.

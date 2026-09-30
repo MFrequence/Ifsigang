@@ -205,3 +205,36 @@ export interface DrugCard {
   nursing_watch: string[];
   source: string;
 }
+
+// Mirror of DiagramSummary in backend/models/anatomy.py.
+export interface DiagramSummary {
+  slug: string;
+  title: string;
+  system: string;
+  hint: string;
+  image_url: string;
+  marker_count: number;
+  best_score: number;
+  attempts: number;
+}
+
+// Mirror of DiagramExercise in backend/models/anatomy.py.
+export interface DiagramExercise {
+  slug: string;
+  title: string;
+  system: string;
+  hint: string;
+  image_url: string;
+  numbers: number[];
+  labels: string[];
+}
+
+// Mirror of DiagramAttemptResult in backend/models/anatomy.py.
+export interface DiagramAttemptResult {
+  slug: string;
+  score: number;
+  total: number;
+  correct_numbers: number[];
+  solution: Record<string, string>;
+  best_score: number;
+}
