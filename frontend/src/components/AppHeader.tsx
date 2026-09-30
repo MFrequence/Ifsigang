@@ -1,5 +1,7 @@
-import { FolderOpen, GraduationCap, LogOut, ShieldCheck, TrendingUp, Upload } from "lucide-react";
+import { FolderOpen, GraduationCap, KeyRound, LogOut, ShieldCheck, TrendingUp, Upload } from "lucide-react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ChangePasswordDialog from "@/components/ChangePasswordDialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { endSession } from "@/lib/session";
@@ -30,6 +32,7 @@ export default function AppHeader({
   onProgressClick,
 }: AppHeaderProps) {
   const navigate = useNavigate();
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const initials = user.name
     .split(/\s+/)
     .slice(0, 2)
@@ -119,6 +122,12 @@ export default function AppHeader({
                   </DropdownMenuItem>
                 ) : null}
                 <DropdownMenuItem
+                  data-testid="menu-change-password-item"
+                  onClick={() => setPasswordOpen(true)}
+                >
+                  <KeyRound className="h-4 w-4" /> Changer mon mot de passe
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   data-testid="menu-admin-item"
                   onClick={() => void navigate("/admin")}
                 >
@@ -138,6 +147,12 @@ export default function AppHeader({
           </DropdownMenu>
         </div>
       </div>
+
+      <ChangePasswordDialog
+        open={passwordOpen || user.must_change_password}
+        onOpenChange={setPasswordOpen}
+        forced={user.must_change_password}
+      />
     </header>
   );
 }

@@ -68,6 +68,31 @@ class SheetOut(BaseModel):
         return cls(**doc)
 
 
+class SheetReportRequest(BaseModel):
+    reason: str = Field(default="", max_length=300)
+
+
+class SheetReport(BaseModel):
+    """Signalement d'une fiche (contenu faux, hors-sujet, doublon…)."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sheet_id: str
+    sheet_title: str = ""
+    user_id: str
+    user_name: str = ""
+    reason: str = ""
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class SheetReportOut(BaseModel):
+    id: str
+    sheet_id: str
+    sheet_title: str = ""
+    user_name: str = ""
+    reason: str = ""
+    created_at: datetime
+
+
 class UnlockRequest(BaseModel):
     code: str
 

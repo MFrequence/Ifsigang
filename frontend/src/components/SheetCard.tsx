@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Download, Eye, FileText, Image as ImageIcon, Layers, Trash2, User } from "lucide-react";
+import { Calendar, Download, Eye, FileText, Flag, Image as ImageIcon, Layers, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ReportSheetDialog from "@/components/ReportSheetDialog";
 import { DOMAIN_MAP } from "@/lib/domains";
 import { formatBytes, formatDate, isPreviewable } from "@/lib/format";
 import type { Sheet } from "@/lib/types";
@@ -19,14 +20,25 @@ import { cn } from "@/lib/utils";
 
 interface SheetCardProps {
   sheet: Sheet;
+  currentUserId: string;
   onPreview: (sheet: Sheet) => void;
   onRevise: (sheet: Sheet) => void;
   onDelete: (sheet: Sheet) => void;
   deleting: boolean;
 }
 
-export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleting }: SheetCardProps) {
+export default function SheetCard({
+  sheet,
+  currentUserId,
+  onPreview,
+  onRevise,
+  onDelete,
+  deleting,
+}: SheetCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  // Chacun ne supprime que ses propres fiches ; l'admin passe par la page /admin.
+  const isOwner = sheet.uploader_id === currentUserId;
   const domain = DOMAIN_MAP[sheet.domain];
   const Icon = sheet.mime.startsWith("image/") ? ImageIcon : FileText;
 
@@ -51,16 +63,30 @@ export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleti
           <Badge variant="outline" className={domain.badge}>
             {domain.label}
           </Badge>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground/70 hover:text-destructive"
-            aria-label="Supprimer la fiche"
-            data-testid={`sheet-delete-button-${sheet.id}`}
-            onClick={() => setConfirmOpen(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {isOwner ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground/70 hover:text-destructive"
+              aria-label="Supprimer la fiche"
+              data-testid={`sheet-delete-button-${sheet.id}`}
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground/70 hover:text-destructive"
+              aria-label="Signaler la fiche"
+              title="Signaler cette fiche"
+              data-testid={`sheet-report-button-${sheet.id}`}
+              onClick={() => setReportOpen(true)}
+            >
+              <Flag className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -120,6 +146,8 @@ export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleti
           <Download className="h-4 w-4" /> Télécharger
         </a>
       </div>
+
+      <ReportSheetDialog sheet={sheet} open={reportOpen} onOpenChange={setReportOpen} />
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="max-w-md">

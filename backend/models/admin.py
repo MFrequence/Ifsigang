@@ -14,6 +14,12 @@ class AdminStatus(BaseModel):
     configured: bool  # un mot de passe admin est défini côté serveur
 
 
+class TemporaryPassword(BaseModel):
+    user_id: str
+    email: str
+    temporary_password: str
+
+
 class AdminUser(BaseModel):
     id: str
     name: str

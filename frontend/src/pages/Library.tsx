@@ -209,6 +209,7 @@ export default function Library({ user }: LibraryProps) {
               <SheetCard
                 key={sheet.id}
                 sheet={sheet}
+                currentUserId={user.id}
                 onPreview={openPreview}
                 onRevise={openRevise}
                 onDelete={(s) => deleteSheet.mutate(s)}

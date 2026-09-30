@@ -7,12 +7,13 @@ n'est renvoyé en JSON, aucun token n'est manipulé côté frontend.
 import os
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from lib.db import db
 from lib.security import hash_password, verify_password
 from models.user import (
     SESSION_DAYS,
+    ChangePasswordRequest,
     LoginRequest,
     Session,
     SignupRequest,
@@ -45,6 +46,15 @@ async def _open_session(response: Response, user_id: str) -> None:
     session = Session(user_id=user_id)
     await db.sessions.insert_one(session.model_dump())
     _set_session_cookie(response, session.token)
+
+
+def _out(user: dict) -> UserOut:
+    return UserOut(
+        id=user["id"],
+        email=user["email"],
+        name=user["name"],
+        must_change_password=bool(user.get("must_change_password")),
+    )
 
 
 async def current_user(request: Request) -> dict:
@@ -95,13 +105,30 @@ async def login(payload: LoginRequest, response: Response):
     if not user or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
     await _open_session(response, user["id"])
-    return UserOut(id=user["id"], email=user["email"], name=user["name"])
+    return _out(user)
 
 
 @router.get("/me", response_model=UserOut)
 async def me(request: Request):
     user = await current_user(request)
-    return UserOut(id=user["id"], email=user["email"], name=user["name"])
+    return _out(user)
+
+
+@router.post("/change-password", response_model=UserOut)
+async def change_password(payload: ChangePasswordRequest, user: dict = Depends(current_user)):
+    """Changement de mot de passe par le titulaire du compte (mot de passe actuel exigé)."""
+    if not verify_password(payload.current_password, user["password_hash"]):
+        raise HTTPException(status_code=403, detail="Mot de passe actuel incorrect")
+    if payload.new_password == payload.current_password:
+        raise HTTPException(status_code=422, detail="Choisis un mot de passe différent")
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {
+            "password_hash": hash_password(payload.new_password),
+            "must_change_password": False,
+        }},
+    )
+    return _out({**user, "must_change_password": False})
 
 
 @router.post("/logout", status_code=204)

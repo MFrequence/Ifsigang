@@ -7,14 +7,30 @@ metadata lives in Mongo. Toutes les routes exigent une session (compte étudiant
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import FileResponse, Response
 from pymongo import DESCENDING
 
 from lib.db import db
 from lib.flashcards import build_deck_for_sheet
-from models.sheet import DOMAINS, Sheet, SheetOut
-from routers.auth import current_user
+from models.sheet import (
+    DOMAINS,
+    Sheet,
+    SheetOut,
+    SheetReport,
+    SheetReportOut,
+    SheetReportRequest,
+)
+from routers.auth import COOKIE_NAME, current_user
 
 router = APIRouter(tags=["sheets"])
 
@@ -137,13 +153,38 @@ async def sheet_download(sheet_id: str, _: dict = Depends(current_user)):
     return FileResponse(path, media_type=doc["mime"], filename=doc["filename"])
 
 
-@router.delete("/sheets/{sheet_id}", status_code=204)
-async def delete_sheet(sheet_id: str, _: dict = Depends(current_user)):
+@router.post("/sheets/{sheet_id}/report", response_model=SheetReportOut, status_code=201)
+async def report_sheet(
+    sheet_id: str,
+    payload: SheetReportRequest,
+    user: dict = Depends(current_user),
+):
+    """Signaler une fiche (contenu faux, hors-sujet, doublon). Visible dans l'espace admin."""
     doc = await _find_or_404(sheet_id)
+    report = SheetReport(
+        sheet_id=sheet_id,
+        sheet_title=doc.get("title", ""),
+        user_id=user["id"],
+        user_name=user["name"],
+        reason=payload.reason.strip()[:300],
+    )
+    await db.sheet_reports.insert_one(report.model_dump())
+    return SheetReportOut(**report.model_dump())
+
+
+@router.delete("/sheets/{sheet_id}", status_code=204)
+async def delete_sheet(sheet_id: str, request: Request, user: dict = Depends(current_user)):
+    doc = await _find_or_404(sheet_id)
+    # Chacun supprime ses propres fiches ; l'admin (session déverrouillée) peut tout supprimer.
+    session = await db.sessions.find_one({"token": request.cookies.get(COOKIE_NAME)})
+    is_admin = bool((session or {}).get("is_admin"))
+    if doc.get("uploader_id") != user["id"] and not is_admin:
+        raise HTTPException(status_code=403, detail="Seul l'auteur de la fiche peut la supprimer")
     await db.sheets.delete_one({"id": sheet_id})
     await db.flashcards.delete_many({"sheet_id": sheet_id})  # pas de paquet orphelin
     await db.card_results.delete_many({"sheet_id": sheet_id})
     await db.card_schedules.delete_many({"sheet_id": sheet_id})
     await db.card_reports.delete_many({"sheet_id": sheet_id})
+    await db.sheet_reports.delete_many({"sheet_id": sheet_id})
     (UPLOADS_DIR / doc["stored_name"]).unlink(missing_ok=True)
     return Response(status_code=204)

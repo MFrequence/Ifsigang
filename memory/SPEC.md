@@ -169,3 +169,18 @@ personnel et **classement de la promo**.
   `animate-flame`, `animate-ecg`, `animate-rise`, `animate-float` + prefers-reduced-motion.
 - Domaines A–E : classes badge/chip déclinées clair+sombre dans `lib/domains.ts`.
 - Base repartie à zéro après vérification (0 fiche, 0 flashcard, 1 compte : brianpro1@outlook.fr).
+
+## Sécurité & modération (avant publication)
+- **Mot de passe oublié (réinitialisation admin)** : `POST /api/admin/users/{id}/reset-password`
+  → génère `IFSI-XXXXXX-NN`, pose `must_change_password: true`, **révoque toutes les sessions**
+  du compte et renvoie le mot de passe temporaire (affiché + copiable dans /admin).
+  `POST /api/auth/change-password` (current_password + new_password ≥ 6) → 403 si mot de passe
+  actuel faux, 422 si identique. `UserOut.must_change_password` force l'ouverture du dialogue
+  `ChangePasswordDialog` (non fermable tant que le mot de passe n'est pas changé).
+- **Signalement de fiche** : `POST /api/sheets/{id}/report` {reason} → collection `sheet_reports`.
+  Admin : `GET /api/admin/sheet-reports`, `DELETE /api/admin/sheet-reports/{id}` (marquer traité),
+  onglet « Signalements » avec compteur. Supprimer une fiche purge ses signalements.
+- **Droits de suppression** : `DELETE /api/sheets/{id}` n'autorise que l'auteur
+  (`uploader_id == user.id`) **ou** une session admin déverrouillée → 403 sinon. Dans la
+  bibliothèque, la corbeille n'apparaît que sur ses propres fiches ; sur celles des autres, c'est
+  un bouton « signaler ».

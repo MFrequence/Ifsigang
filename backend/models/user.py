@@ -17,6 +17,7 @@ class User(BaseModel):
     email: str
     name: str
     password_hash: str
+    must_change_password: bool = False  # vrai après une réinitialisation admin
     created_at: datetime = Field(default_factory=utcnow)
 
 
@@ -24,6 +25,12 @@ class UserOut(BaseModel):
     id: str
     email: str
     name: str
+    must_change_password: bool = False
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=6, max_length=128)
 
 
 class SignupRequest(BaseModel):

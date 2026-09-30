@@ -23,6 +23,24 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  must_change_password: boolean;
+}
+
+// Mirror of TemporaryPassword in backend/models/admin.py.
+export interface TemporaryPassword {
+  user_id: string;
+  email: string;
+  temporary_password: string;
+}
+
+// Mirror of SheetReportOut in backend/models/sheet.py.
+export interface SheetReport {
+  id: string;
+  sheet_id: string;
+  sheet_title: string;
+  user_name: string;
+  reason: string;
+  created_at: string;
 }
 
 // Mirror of FlashcardOut in backend/models/flashcard.py.

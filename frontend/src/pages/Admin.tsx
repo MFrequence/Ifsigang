@@ -3,10 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
+  Copy,
   FileText,
+  Flag,
   KeyRound,
   Loader2,
   Lock,
+  RotateCcw,
   ShieldCheck,
   Trash2,
   Users,
@@ -14,7 +17,14 @@ import {
 import { toast } from "sonner";
 import { apiDelete, apiGet, apiPost } from "@/lib/api";
 import { DOMAIN_MAP } from "@/lib/domains";
-import type { AdminStatus, AdminUser, Sheet, User } from "@/lib/types";
+import type {
+  AdminStatus,
+  AdminUser,
+  Sheet,
+  SheetReport,
+  TemporaryPassword,
+  User,
+} from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +41,7 @@ export default function Admin({ user }: AdminProps) {
   const [password, setPassword] = useState("");
   const [confirmUser, setConfirmUser] = useState<string | null>(null);
   const [confirmSheet, setConfirmSheet] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<TemporaryPassword | null>(null);
   const queryClient = useQueryClient();
 
   const statusQuery = useQuery({
@@ -51,6 +62,32 @@ export default function Admin({ user }: AdminProps) {
     queryFn: () => apiGet<Sheet[]>("/sheets"),
     enabled: unlocked,
     refetchOnWindowFocus: false,
+  });
+
+  const reportsQuery = useQuery({
+    queryKey: ["admin-sheet-reports"],
+    queryFn: () => apiGet<SheetReport[]>("/admin/sheet-reports"),
+    enabled: unlocked,
+    refetchOnWindowFocus: false,
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: (id: string) =>
+      apiPost<TemporaryPassword>(`/admin/users/${id}/reset-password`, {}),
+    onSuccess: (data) => {
+      setTempPassword(data);
+      toast.success("Mot de passe temporaire généré");
+    },
+    onError: () => toast.error("Réinitialisation impossible — réessaie"),
+  });
+
+  const dismissReport = useMutation({
+    mutationFn: (id: string) => apiDelete<void>(`/admin/sheet-reports/${id}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-sheet-reports"] });
+      toast.success("Signalement traité");
+    },
+    onError: () => toast.error("Action impossible — réessaie"),
   });
 
   const unlock = useMutation({
@@ -170,6 +207,14 @@ export default function Admin({ user }: AdminProps) {
               <TabsTrigger value="sheets" data-testid="admin-tab-sheets">
                 <FileText className="h-4 w-4" /> Fiches
               </TabsTrigger>
+              <TabsTrigger value="reports" data-testid="admin-tab-reports">
+                <Flag className="h-4 w-4" /> Signalements
+                {(reportsQuery.data ?? []).length > 0 ? (
+                  <span className="ml-1.5 rounded-full bg-destructive px-1.5 font-mono text-[10px] text-white">
+                    {(reportsQuery.data ?? []).length}
+                  </span>
+                ) : null}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="accounts">
@@ -200,6 +245,17 @@ export default function Admin({ user }: AdminProps) {
                           {account.answers} réponse{account.answers > 1 ? "s" : ""}
                         </p>
                       </div>
+                      <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        data-testid={`admin-reset-password-${account.id}`}
+                        disabled={resetPassword.isPending}
+                        onClick={() => resetPassword.mutate(account.id)}
+                        className="text-muted-foreground"
+                      >
+                        <RotateCcw className="h-4 w-4" /> Réinitialiser
+                      </Button>
                       {account.is_me ? (
                         <span className="text-xs text-muted-foreground/70">Compte connecté</span>
                       ) : confirmUser === account.id ? (
@@ -232,8 +288,40 @@ export default function Admin({ user }: AdminProps) {
                           <Trash2 className="h-4 w-4" /> Supprimer
                         </Button>
                       )}
+                      </div>
                     </div>
                   ))}
+                  {tempPassword ? (
+                    <div
+                      data-testid="admin-temp-password"
+                      className="rounded-2xl border border-primary/40 bg-primary/10 p-4"
+                    >
+                      <p className="text-sm text-foreground">
+                        Mot de passe temporaire pour <strong>{tempPassword.email}</strong> — envoie-le
+                        lui, il devra le changer à la connexion.
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <code className="rounded-lg border border-border bg-card px-3 py-1.5 font-mono text-sm">
+                          {tempPassword.temporary_password}
+                        </code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid="admin-copy-temp-password"
+                          onClick={() => {
+                            void navigator.clipboard
+                              .writeText(tempPassword.temporary_password)
+                              .then(() => toast.success("Copié"));
+                          }}
+                        >
+                          <Copy className="h-4 w-4" /> Copier
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setTempPassword(null)}>
+                          Masquer
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </TabsContent>
@@ -297,6 +385,49 @@ export default function Admin({ user }: AdminProps) {
                           <Trash2 className="h-4 w-4" /> Supprimer
                         </Button>
                       )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="reports">
+              {reportsQuery.isPending ? (
+                <div className="flex items-center gap-2 py-10 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" /> Chargement des signalements…
+                </div>
+              ) : (reportsQuery.data ?? []).length === 0 ? (
+                <p className="py-10 text-sm text-muted-foreground" data-testid="admin-reports-empty">
+                  Aucun signalement — tout va bien.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3 pt-4" data-testid="admin-reports-list">
+                  {(reportsQuery.data ?? []).map((report) => (
+                    <div
+                      key={report.id}
+                      data-testid={`admin-report-row-${report.id}`}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-heading text-sm font-bold text-foreground">
+                          {report.sheet_title || "Fiche supprimée"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Signalée par {report.user_name}
+                        </p>
+                        <p className="mt-1 text-sm text-foreground">
+                          {report.reason || "Aucun motif précisé"}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`admin-dismiss-report-${report.id}`}
+                        disabled={dismissReport.isPending}
+                        onClick={() => dismissReport.mutate(report.id)}
+                      >
+                        Traité
+                      </Button>
                     </div>
                   ))}
                 </div>
