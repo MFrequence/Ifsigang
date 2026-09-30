@@ -1,10 +1,8 @@
 import { FolderOpen, GraduationCap, LogOut, ShieldCheck, TrendingUp, Upload } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { endSession } from "@/lib/session";
 import type { User } from "@/lib/types";
-import AdminDialog from "@/components/AdminDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +18,8 @@ import {
 interface AppHeaderProps {
   user: User;
   totalSheets: number;
-  onUploadClick: () => void;
-  onProgressClick: () => void;
+  onUploadClick?: () => void;
+  onProgressClick?: () => void;
 }
 
 export default function AppHeader({
@@ -30,7 +28,7 @@ export default function AppHeader({
   onUploadClick,
   onProgressClick,
 }: AppHeaderProps) {
-  const [adminOpen, setAdminOpen] = useState(false);
+  const navigate = useNavigate();
   const initials = user.name
     .split(/\s+/)
     .slice(0, 2)
@@ -68,24 +66,28 @@ export default function AppHeader({
             {totalSheets} fiche{totalSheets === 1 ? "" : "s"}
           </Badge>
 
-          <Button
-            variant="outline"
-            data-testid="open-progress-button"
-            onClick={onProgressClick}
-            className="transition-transform duration-75 active:scale-[0.98]"
-          >
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Ma progression</span>
-          </Button>
+          {onProgressClick ? (
+            <Button
+              variant="outline"
+              data-testid="open-progress-button"
+              onClick={onProgressClick}
+              className="transition-transform duration-75 active:scale-[0.98]"
+            >
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Ma progression</span>
+            </Button>
+          ) : null}
 
-          <Button
-            data-testid="open-upload-modal-button"
-            onClick={onUploadClick}
-            className="transition-transform duration-75 active:scale-[0.98]"
-          >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Déposer une fiche</span>
-          </Button>
+          {onUploadClick ? (
+            <Button
+              data-testid="open-upload-modal-button"
+              onClick={onUploadClick}
+              className="transition-transform duration-75 active:scale-[0.98]"
+            >
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Déposer une fiche</span>
+            </Button>
+          ) : null}
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -105,12 +107,14 @@ export default function AppHeader({
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem data-testid="menu-progress-item" onClick={onProgressClick}>
-                  <TrendingUp className="h-4 w-4" /> Ma progression
-                </DropdownMenuItem>
+                {onProgressClick ? (
+                  <DropdownMenuItem data-testid="menu-progress-item" onClick={onProgressClick}>
+                    <TrendingUp className="h-4 w-4" /> Ma progression
+                  </DropdownMenuItem>
+                ) : null}
                 <DropdownMenuItem
                   data-testid="menu-admin-item"
-                  onClick={() => setAdminOpen(true)}
+                  onClick={() => void navigate("/admin")}
                 >
                   <ShieldCheck className="h-4 w-4" /> Espace admin
                 </DropdownMenuItem>
@@ -128,8 +132,6 @@ export default function AppHeader({
           </DropdownMenu>
         </div>
       </div>
-
-      <AdminDialog open={adminOpen} onOpenChange={setAdminOpen} />
     </header>
   );
 }

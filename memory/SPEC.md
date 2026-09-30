@@ -146,3 +146,12 @@ personnel et **classement de la promo**.
   compte, ses sessions, puis le user. 400 si c'est le compte connecté, 404 si inconnu.
 - Frontend : `components/AdminDialog.tsx` monté dans `AppHeader` (menu avatar → Espace admin),
   confirmation en deux temps avant suppression.
+
+## Page admin dédiée (/admin) — remplace le pop-up
+- Route `/admin` (`pages/Admin.tsx`, montée dans App.tsx), accès par le menu avatar
+  (`menu-admin-item` → navigate("/admin")). `AdminDialog` supprimé ; `AppHeader` accepte
+  désormais `onUploadClick`/`onProgressClick` optionnels (masqués sur la page admin).
+- Onglet **Comptes** : liste + suppression totale (`DELETE /api/admin/users/{id}`).
+- Onglet **Fiches** : toutes les fiches de la promo + suppression via `DELETE /api/sheets/{id}`
+  (cascade fichier disque, flashcards, résultats, échéances, signalements).
+- Base remise à zéro avant publication : seul compte = `brianpro1@outlook.fr`, 0 fiche.

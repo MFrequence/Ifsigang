@@ -3,6 +3,7 @@ import { Link, Route, Routes } from "react-router-dom";
 import { ApiError, apiGet } from "@/lib/api";
 import type { User } from "@/lib/types";
 import { Toaster } from "@/components/ui/sonner";
+import Admin from "@/pages/Admin";
 import Library from "@/pages/Library";
 import Login from "@/pages/Login";
 import Today from "@/pages/Today";
@@ -52,6 +53,7 @@ export default function App() {
           {/* L'accueil demande ce qu'on veut faire ; la bibliothèque est une destination. */}
           <Route path="/" element={<Today user={user} />} />
           <Route path="/cours" element={<Library user={user} />} />
+          <Route path="/admin" element={<Admin user={user} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}

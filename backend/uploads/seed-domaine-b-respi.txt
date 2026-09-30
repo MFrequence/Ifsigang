@@ -1,8 +1,0 @@
-FICHE DE RÉVISION — DOMAINE B (UE B1, sciences biologiques et médicales)
-
-Physiologie respiratoire :
-- Ventilation : mouvements inspiratoires (diaphragme) / expiratoires.
-- Hématose : échange alvéolo-capillaire de l'O2 et du CO2.
-- VEMS : volume expiratoire maximal en 1 seconde (spirométrie).
-- Régulation : centre respiratoire bulbaire, chimiorécepteurs CO2.
-- Fréquence respiratoire normale adulte : 12 à 20 cycles par minute.
