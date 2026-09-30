@@ -1,0 +1,6 @@
+FICHE DE RÉVISION — DOMAINE D (sciences et techniques infirmières : interventions)
+
+Asepsie vs antisepsie :
+- Asepsie : absence de micro-organismes (geste aseptique, champs stériles).
+- Antisepsie : réduction transitoire des germes sur la peau (antiseptique, détersion).
+- Traçabilité : produit, lot, horaire, opérateur dans le dossier de soins.

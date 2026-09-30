@@ -1,0 +1,268 @@
+{
+  "theme": {
+    "default_mode": "light",
+    "rationale": "Medical/nursing study documents and revision sheets require high legibility, clean document reading aesthetics, and warm, calming tones. We mix Swiss archival precision with medical editorial warmth: warm off-white canvas, deep slate/navy ink, crisp border lines, and distinct jewel/earth accent tags per Domain (A-E)."
+  },
+  "fonts": {
+    "heading_font": "Plus Jakarta Sans Variable",
+    "body_font": "DM Sans Variable",
+    "mono_font": "JetBrains Mono Variable",
+    "css_import": "@import \"@fontsource-variable/plus-jakarta-sans\";\n@import \"@fontsource-variable/dm-sans\";\n@import \"@fontsource-variable/jetbrains-mono\";",
+    "pairing_rationale": "Plus Jakarta Sans brings a crisp, modern, confident editorial structure for domain titles and headers without the generic AI slop look. DM Sans provides relaxed, ultra-readable body text for revision notes, author tags, and file details."
+  },
+  "typography": {
+    "scale_px": {
+      "display": 52,
+      "h1": 36,
+      "h2": 28,
+      "h3": 22,
+      "body": 16,
+      "caption": 14
+    },
+    "rules": {
+      "display": "font-heading font-extrabold tracking-tight text-3xl sm:text-4xl lg:text-5xl leading-tight text-slate-900",
+      "h1": "font-heading font-bold tracking-tight text-2xl sm:text-3xl text-slate-900",
+      "h2": "font-heading font-semibold tracking-tight text-xl sm:text-2xl text-slate-900",
+      "h3": "font-heading font-semibold text-lg sm:text-xl text-slate-900",
+      "body": "font-sans text-base leading-relaxed text-slate-700",
+      "caption": "font-sans text-sm text-slate-500",
+      "mono_label": "font-mono text-xs uppercase tracking-wider text-slate-500"
+    }
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#F8FAFC",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569",
+        "roles": {
+          "link": "#0284C7",
+          "error": "#BE123C",
+          "success": "#047857"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569",
+        "roles": {
+          "link": "#0284C7",
+          "error": "#BE123C",
+          "success": "#047857"
+        }
+      },
+      {
+        "name": "panel_subtle",
+        "kind": "solid",
+        "bg": "#F1F5F9",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569"
+      },
+      {
+        "name": "inverse",
+        "kind": "solid",
+        "bg": "#0F172A",
+        "on_bg": "#F8FAFC",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#FB7185",
+          "success": "#34D399"
+        }
+      },
+      {
+        "name": "gate_hero",
+        "kind": "solid",
+        "bg": "#0F172A",
+        "on_bg": "#F8FAFC",
+        "on_bg_muted": "#CBD5E1",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#FDA4AF",
+          "success": "#6EE7B7"
+        }
+      },
+      {
+        "name": "domain_a_surface",
+        "kind": "solid",
+        "bg": "#F0FDF4",
+        "on_bg": "#14532D",
+        "on_bg_muted": "#166534"
+      },
+      {
+        "name": "domain_b_surface",
+        "kind": "solid",
+        "bg": "#EFF6FF",
+        "on_bg": "#1E3A8A",
+        "on_bg_muted": "#1E40AF"
+      },
+      {
+        "name": "domain_c_surface",
+        "kind": "solid",
+        "bg": "#FFFBEB",
+        "on_bg": "#78350F",
+        "on_bg_muted": "#92400E"
+      },
+      {
+        "name": "domain_d_surface",
+        "kind": "solid",
+        "bg": "#FAF5FF",
+        "on_bg": "#581C87",
+        "on_bg_muted": "#6B21A8"
+      },
+      {
+        "name": "domain_e_surface",
+        "kind": "solid",
+        "bg": "#FFF1F2",
+        "on_bg": "#881337",
+        "on_bg_muted": "#9F1239"
+      }
+    ],
+    "accent": "#0284C7",
+    "on_accent": "#FFFFFF",
+    "accent_hover": "#0369A1",
+    "domains": {
+      "A": {
+        "code": "Domaine A",
+        "label": "Sciences humaines, sociales et droit",
+        "badge_bg": "bg-emerald-50 text-emerald-800 border-emerald-200",
+        "chip_active": "bg-emerald-700 text-white shadow-sm",
+        "indicator": "bg-emerald-600",
+        "border_accent": "border-l-emerald-600"
+      },
+      "B": {
+        "code": "Domaine B",
+        "label": "Sciences biologiques et médicales",
+        "badge_bg": "bg-blue-50 text-blue-800 border-blue-200",
+        "chip_active": "bg-blue-700 text-white shadow-sm",
+        "indicator": "bg-blue-600",
+        "border_accent": "border-l-blue-600"
+      },
+      "C": {
+        "code": "Domaine C",
+        "label": "Sciences et techniques infirmières : fondements",
+        "badge_bg": "bg-amber-50 text-amber-900 border-amber-200",
+        "chip_active": "bg-amber-700 text-white shadow-sm",
+        "indicator": "bg-amber-600",
+        "border_accent": "border-l-amber-600"
+      },
+      "D": {
+        "code": "Domaine D",
+        "label": "Sciences et techniques infirmières : interventions",
+        "badge_bg": "bg-purple-50 text-purple-900 border-purple-200",
+        "chip_active": "bg-purple-700 text-white shadow-sm",
+        "indicator": "bg-purple-600",
+        "border_accent": "border-l-purple-600"
+      },
+      "E": {
+        "code": "Domaine E",
+        "label": "Intégration des savoirs et posture professionnelle",
+        "badge_bg": "bg-rose-50 text-rose-900 border-rose-200",
+        "chip_active": "bg-rose-700 text-white shadow-sm",
+        "indicator": "bg-rose-600",
+        "border_accent": "border-l-rose-600"
+      }
+    }
+  },
+  "entry_surfaces": {
+    "/": "Branded IFSI Hub header with promo lock state, domain pill filters & search bar, asymmetric action header with upload CTA, and rich responsive revision sheet cards with inline preview drawer."
+  },
+  "visual_enhancers": {
+    "texture": "Subtle dot-grid pattern on background for archival revision desk feel",
+    "borders": "1px crisp slate borders with subtle inner shadow on active modals",
+    "chips": "Tactile domain filter chips with instant count badges and keyboard navigation",
+    "modals": "Dialog for file dropzone (drag-and-drop, domain picker, author input, progress animation)",
+    "preview": "Sheet/Drawer side panel for inline preview of PDF (iframe/object) and images with zoom/download CTA"
+  },
+  "grids_and_layouts": {
+    "desktop": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+      "header_layout": "flex items-center justify-between border-b border-slate-200 pb-6 mb-8",
+      "filter_bar": "flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs",
+      "sheets_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    },
+    "mobile": {
+      "stack": "flex flex-col gap-4",
+      "domain_scroll": "flex overflow-x-auto pb-2 scrollbar-none gap-2"
+    }
+  },
+  "motion": {
+    "fade_in": "transition-opacity duration-200 ease-out",
+    "card_hover": "transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md",
+    "button_press": "active:scale-[0.98] transition-transform duration-75",
+    "dialog_transition": "animate-in fade-in-0 zoom-in-95 duration-150"
+  },
+  "accessibility": {
+    "wcag_compliance": "AA (4.5:1 minimum on all body copy and badges)",
+    "touch_targets": "Minimum 44px on mobile buttons and filter pills",
+    "screen_readers": "Aria attributes on search input, domain filters (role=tablist), and upload dropzone (aria-live for upload status)",
+    "keyboard_nav": "Full tab and focus ring visibility (`focus-visible:ring-2 focus-visible:ring-sky-500`)"
+  },
+  "key_components": [
+    {
+      "name": "AccessGateModal",
+      "path": "frontend/src/components/AccessGateModal.tsx",
+      "description": "Promo code unlock modal if the user is not authenticated yet. Prompts for promo code, calls /api/auth/unlock, sets session, and smoothly reveals the dashboard."
+    },
+    {
+      "name": "AppHeader",
+      "path": "frontend/src/components/AppHeader.tsx",
+      "description": "Displays IFSI Promo banner, cohort name, lock status badge, total revision sheets count, search bar, and primary 'Déposer une fiche' button."
+    },
+    {
+      "name": "DomainFilterBar",
+      "path": "frontend/src/components/DomainFilterBar.tsx",
+      "description": "Tabs or pill bar for filtering by 'Tous' or 'Domaine A-E' with active count indicators and descriptive tooltips/subtitles for nursing students."
+    },
+    {
+      "name": "SheetCard",
+      "path": "frontend/src/components/SheetCard.tsx",
+      "description": "Card showing sheet title, domain badge with distinct domain color, file type icon (PDF/DOCX/IMG/TXT), author name, upload date, file size, download count, direct download action, preview trigger, and delete confirmation button."
+    },
+    {
+      "name": "UploadSheetDialog",
+      "path": "frontend/src/components/UploadSheetDialog.tsx",
+      "description": "Drag-and-drop file upload modal with validation for file types (pdf, png, jpg, docx, txt) and max 10MB size, title input, domain select (A-E), author name input, and optional description notes."
+    },
+    {
+      "name": "SheetPreviewDrawer",
+      "path": "frontend/src/components/SheetPreviewDrawer.tsx",
+      "description": "Side drawer or modal for previewing PDF files inline or viewing uploaded high-res study charts/diagrams without forcing download."
+    },
+    {
+      "name": "EmptyState",
+      "path": "frontend/src/components/EmptyState.tsx",
+      "description": "Clean, encouraging empty state for domains with no uploaded sheets yet or when a search returns zero results, with a fast 'Déposer la première fiche' action."
+    }
+  ],
+  "testing_attributes": {
+    "gate_input": "data-testid=\"promo-code-input\"",
+    "gate_submit": "data-testid=\"promo-code-submit-button\"",
+    "search_input": "data-testid=\"sheet-search-input\"",
+    "upload_trigger_btn": "data-testid=\"open-upload-modal-button\"",
+    "upload_dropzone": "data-testid=\"file-dropzone-input\"",
+    "upload_title_input": "data-testid=\"upload-title-input\"",
+    "upload_domain_select": "data-testid=\"upload-domain-select\"",
+    "upload_author_input": "data-testid=\"upload-author-input\"",
+    "upload_submit_btn": "data-testid=\"upload-submit-button\"",
+    "domain_tab_prefix": "data-testid=\"domain-tab-\"",
+    "sheet_card_prefix": "data-testid=\"sheet-card-\"",
+    "sheet_download_btn_prefix": "data-testid=\"sheet-download-button-\"",
+    "sheet_preview_btn_prefix": "data-testid=\"sheet-preview-button-\"",
+    "sheet_delete_btn_prefix": "data-testid=\"sheet-delete-button-\""
+  },
+  "instructions_to_main_agent": [
+    "1. Setup Tailwind v4 font imports in frontend/src/index.css using @fontsource-variable/plus-jakarta-sans, @fontsource-variable/dm-sans, and @fontsource-variable/jetbrains-mono.",
+    "2. Implement the Promo Code gate logic: store promo access in an httpOnly session cookie via FastAPI backend endpoint `/api/auth/unlock` and check status via `/api/auth/status` (or pre-seed a default promo code like 'IFSI2026' or 'PROMO2026' with option to configure).",
+    "3. Implement full domain categorization for Domaine A, Domaine B, Domaine C, Domaine D, and Domaine E with precise titles from the IFSI curriculum.",
+    "4. Support file uploads up to 10MB (PDF, PNG, JPG, JPEG, DOCX, TXT) storing files in local backend storage (`backend/uploads/`) with metadata saved in MongoDB.",
+    "5. Provide quick instant search filtering on the frontend and category tab switching with live count updates.",
+    "6. Include a delete feature with confirmation dialog, download tracking counter, and inline preview for PDF and image revision sheets.",
+    "7. Include all `data-testid` attributes on interactive elements as defined in testing_attributes.",
+    "8. Use Sonner for toast notifications in French (e.g. 'Fiche déposée avec succès', 'Code promo validé', 'Téléchargement démarré', 'Fiche supprimée')."
+  ]
+}
