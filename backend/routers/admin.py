@@ -14,7 +14,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from lib.db import db
 from lib.security import hash_password
-from models.admin import AdminStatus, AdminUnlockRequest, AdminUser, TemporaryPassword
+from models.admin import (
+    AdminAnswer,
+    AdminQuestion,
+    AdminStatus,
+    AdminUnlockRequest,
+    AdminUser,
+    TemporaryPassword,
+)
 from models.sheet import SheetReportOut
 from routers.auth import COOKIE_NAME, current_user
 
@@ -174,3 +181,61 @@ async def delete_user(user_id: str, session: dict = Depends(admin_guard)):
     await db.users.delete_one({"id": user_id})
 
     return {"deleted": True, "user_id": user_id, "sheets_deleted": len(sheet_ids)}
+
+
+@router.get("/questions", response_model=list[AdminQuestion])
+async def list_questions(_: dict = Depends(admin_guard)):
+    """Toutes les questions d'entraide, la plus récente d'abord (modération)."""
+    questions = await db.sheet_questions.find({}).to_list(1000)
+    questions.sort(key=lambda q: q.get("created_at") or "", reverse=True)
+    if not questions:
+        return []
+
+    sheets = await db.sheets.find({"id": {"$in": [q["sheet_id"] for q in questions]}}).to_list(500)
+    titles = {s["id"]: s.get("title", "") for s in sheets}
+    answers = await db.sheet_answers.find(
+        {"question_id": {"$in": [q["id"] for q in questions]}}
+    ).to_list(2000)
+    by_question: dict[str, list[AdminAnswer]] = {}
+    for answer in answers:
+        by_question.setdefault(answer["question_id"], []).append(
+            AdminAnswer(
+                id=answer["id"],
+                author=answer.get("author", ""),
+                body=answer["body"],
+                best=bool(answer.get("best")),
+            )
+        )
+
+    return [
+        AdminQuestion(
+            id=q["id"],
+            sheet_id=q["sheet_id"],
+            sheet_title=titles.get(q["sheet_id"], "Fiche supprimée"),
+            author=q.get("author", ""),
+            body=q["body"],
+            answer_count=len(by_question.get(q["id"], [])),
+            answers=by_question.get(q["id"], []),
+            created_at=q.get("created_at"),
+        )
+        for q in questions
+    ]
+
+
+@router.delete("/questions/{question_id}", status_code=204)
+async def delete_question(question_id: str, _: dict = Depends(admin_guard)):
+    """Supprime une question d'entraide et toutes ses réponses."""
+    result = await db.sheet_questions.delete_one({"id": question_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Question introuvable")
+    await db.sheet_answers.delete_many({"question_id": question_id})
+    return Response(status_code=204)
+
+
+@router.delete("/answers/{answer_id}", status_code=204)
+async def delete_answer(answer_id: str, _: dict = Depends(admin_guard)):
+    """Supprime une seule réponse (message hors-sujet ou faux)."""
+    result = await db.sheet_answers.delete_one({"id": answer_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Réponse introuvable")
+    return Response(status_code=204)

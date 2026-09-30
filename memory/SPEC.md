@@ -381,6 +381,12 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
   Front : `components/SheetQuestionsDialog.tsx`, ouvert par `sheet-questions-button-{id}`
   sur chaque carte (badge de compteur).
 - Tout est purgé en cascade à la suppression d'une fiche.
+- **Modération admin** (onglet « Entraide » de `/admin`, derrière `admin_guard`) :
+  `GET /api/admin/questions` (toutes les questions + leurs réponses, plus récentes d'abord),
+  `DELETE /api/admin/questions/{id}` (supprime aussi ses réponses),
+  `DELETE /api/admin/answers/{id}` (une seule réponse). 403 sans session admin, 404 si absent.
+  Front : `admin-tab-questions`, `admin-question-row-{id}`, `admin-delete-question-{id}`,
+  `admin-answer-row-{id}`, `admin-delete-answer-{id}`, `admin-questions-empty`.
 
 ## Rappel du planning sur l'accueil
 

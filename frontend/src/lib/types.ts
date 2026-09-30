@@ -191,6 +191,25 @@ export interface AdminStatus {
   configured: boolean;
 }
 
+// Mirrors of AdminAnswer / AdminQuestion in backend/models/admin.py.
+export interface AdminAnswer {
+  id: string;
+  author: string;
+  body: string;
+  best: boolean;
+}
+
+export interface AdminQuestion {
+  id: string;
+  sheet_id: string;
+  sheet_title: string;
+  author: string;
+  body: string;
+  answer_count: number;
+  answers: AdminAnswer[];
+  created_at: string | null;
+}
+
 export interface AdminUser {
   id: string;
   name: string;

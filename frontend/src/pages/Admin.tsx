@@ -9,6 +9,7 @@ import {
   KeyRound,
   Loader2,
   Lock,
+  MessagesSquare,
   RotateCcw,
   ShieldCheck,
   Trash2,
@@ -21,6 +22,7 @@ import type {
   AdminStatus,
   AdminUser,
   Sheet,
+  AdminQuestion,
   SheetReport,
   TemporaryPassword,
   User,
@@ -69,6 +71,32 @@ export default function Admin({ user }: AdminProps) {
     queryFn: () => apiGet<SheetReport[]>("/admin/sheet-reports"),
     enabled: unlocked,
     refetchOnWindowFocus: false,
+  });
+
+  const questionsQuery = useQuery({
+    queryKey: ["admin-questions"],
+    queryFn: () => apiGet<AdminQuestion[]>("/admin/questions"),
+    enabled: unlocked,
+    refetchOnWindowFocus: false,
+  });
+
+  const removeQuestion = useMutation({
+    mutationFn: (id: string) => apiDelete<void>(`/admin/questions/${id}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-questions"] });
+      void queryClient.invalidateQueries({ queryKey: ["question-counts"] });
+      toast.success("Question et réponses supprimées");
+    },
+    onError: () => toast.error("Suppression impossible — réessaie"),
+  });
+
+  const removeAnswer = useMutation({
+    mutationFn: (id: string) => apiDelete<void>(`/admin/answers/${id}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-questions"] });
+      toast.success("Réponse supprimée");
+    },
+    onError: () => toast.error("Suppression impossible — réessaie"),
   });
 
   const resetPassword = useMutation({
@@ -212,6 +240,14 @@ export default function Admin({ user }: AdminProps) {
                 {(reportsQuery.data ?? []).length > 0 ? (
                   <span className="ml-1.5 rounded-full bg-destructive px-1.5 font-mono text-[10px] text-white">
                     {(reportsQuery.data ?? []).length}
+                  </span>
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger value="questions" data-testid="admin-tab-questions">
+                <MessagesSquare className="h-4 w-4" /> Entraide
+                {(questionsQuery.data ?? []).length > 0 ? (
+                  <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 font-mono text-[10px] text-primary">
+                    {(questionsQuery.data ?? []).length}
                   </span>
                 ) : null}
               </TabsTrigger>
@@ -427,6 +463,81 @@ export default function Admin({ user }: AdminProps) {
                         onClick={() => dismissReport.mutate(report.id)}
                       >
                         Traité
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="questions">
+              {questionsQuery.isPending ? (
+                <div className="flex items-center gap-2 py-10 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" /> Chargement de l'entraide…
+                </div>
+              ) : (questionsQuery.data ?? []).length === 0 ? (
+                <p
+                  className="py-10 text-sm text-muted-foreground"
+                  data-testid="admin-questions-empty"
+                >
+                  Aucune question posée pour l'instant.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3 pt-4" data-testid="admin-questions-list">
+                  {(questionsQuery.data ?? []).map((question) => (
+                    <div
+                      key={question.id}
+                      data-testid={`admin-question-row-${question.id}`}
+                      className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border bg-card p-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-heading text-sm font-bold text-foreground">
+                          {question.sheet_title}
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed text-foreground">
+                          {question.body}
+                        </p>
+                        <p className="mt-0.5 font-mono text-[11px] text-muted-foreground/70">
+                          {question.author} · {question.answer_count} réponse
+                          {question.answer_count > 1 ? "s" : ""}
+                        </p>
+                        {question.answers.length > 0 ? (
+                          <ul className="mt-2 space-y-1 border-l-2 border-border pl-3">
+                            {question.answers.map((answer) => (
+                              <li
+                                key={answer.id}
+                                data-testid={`admin-answer-row-${answer.id}`}
+                                className="flex items-start justify-between gap-2 text-xs text-muted-foreground"
+                              >
+                                <span className="min-w-0">
+                                  <span className="text-foreground">{answer.body}</span>{" "}
+                                  <span className="font-mono text-[10px]">— {answer.author}</span>
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  data-testid={`admin-delete-answer-${answer.id}`}
+                                  aria-label="Supprimer cette réponse"
+                                  disabled={removeAnswer.isPending}
+                                  onClick={() => removeAnswer.mutate(answer.id)}
+                                  className="text-muted-foreground/70 hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        data-testid={`admin-delete-question-${question.id}`}
+                        disabled={removeQuestion.isPending}
+                        onClick={() => removeQuestion.mutate(question.id)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" /> Supprimer
                       </Button>
                     </div>
                   ))}

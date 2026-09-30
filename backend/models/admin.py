@@ -28,3 +28,23 @@ class AdminUser(BaseModel):
     sheets: int = 0
     answers: int = 0
     is_me: bool = False
+
+
+class AdminAnswer(BaseModel):
+    id: str
+    author: str = ""
+    body: str
+    best: bool = False
+
+
+class AdminQuestion(BaseModel):
+    """Question d'entraide vue depuis l'espace admin (modération)."""
+
+    id: str
+    sheet_id: str
+    sheet_title: str = ""
+    author: str = ""
+    body: str
+    answer_count: int = 0
+    answers: list[AdminAnswer] = []
+    created_at: datetime | None = None
