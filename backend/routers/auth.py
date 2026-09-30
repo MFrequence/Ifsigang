@@ -22,6 +22,12 @@ def code_matches(candidate: str | None) -> bool:
     return bool(expected) and bool(candidate) and candidate.strip().casefold() == expected.casefold()
 
 
+async def require_access(request: Request) -> None:
+    """Shared dependency: every protected route rides the promo-code cookie."""
+    if not code_matches(request.cookies.get(COOKIE_NAME)):
+        raise HTTPException(status_code=401, detail="Accès réservé à la promo — entre le code")
+
+
 @router.post("/unlock", response_model=UnlockStatus)
 async def unlock(payload: UnlockRequest, response: Response):
     if not code_matches(payload.code):

@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileUp, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { ApiError, apiPostForm } from "@/lib/api";
+import { ApiError, apiPost, apiPostForm } from "@/lib/api";
 import { DOMAINS, DOMAIN_MAP } from "@/lib/domains";
 import { formatBytes } from "@/lib/format";
 import type { DomainKey, Sheet } from "@/lib/types";
@@ -33,21 +33,31 @@ const ALLOWED = [".pdf", ".png", ".jpg", ".jpeg", ".docx", ".txt"];
 interface UploadSheetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  sheets: Sheet[];
 }
 
-export default function UploadSheetDialog({ open, onOpenChange }: UploadSheetDialogProps) {
+export default function UploadSheetDialog({ open, onOpenChange, sheets }: UploadSheetDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [domain, setDomain] = useState<DomainKey>("A");
+  const [unit, setUnit] = useState("");
   const [author, setAuthor] = useState(() => localStorage.getItem("fiches-author") ?? "");
   const [description, setDescription] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
+  const unitSuggestions = useMemo(() => {
+    const set = new Set(
+      sheets.filter((s) => s.domain === domain).map((s) => (s.unit || "").trim()).filter(Boolean),
+    );
+    return [...set].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
+  }, [sheets, domain]);
+
   const reset = () => {
     setFile(null);
     setTitle("");
+    setUnit("");
     setDescription("");
     setDragging(false);
     if (inputRef.current) inputRef.current.value = "";
@@ -77,16 +87,23 @@ export default function UploadSheetDialog({ open, onOpenChange }: UploadSheetDia
       fd.set("file", file);
       fd.set("title", title.trim());
       fd.set("domain", domain);
+      fd.set("unit", unit.trim());
       fd.set("author", author.trim());
       fd.set("description", description.trim());
       return apiPostForm<Sheet>("/sheets", fd);
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       localStorage.setItem("fiches-author", author.trim());
       void queryClient.invalidateQueries({ queryKey: ["sheets"] });
       toast.success("Fiche déposée avec succès");
       reset();
       onOpenChange(false);
+      // Génération automatique des flashcards pour les formats texte-extractibles.
+      if (!created.mime.startsWith("image/")) {
+        void apiPost<unknown>(`/sheets/${created.id}/flashcards/generate`)
+          .then(() => queryClient.invalidateQueries({ queryKey: ["flashcards"] }))
+          .catch(() => {});
+      }
     },
     onError: (err: unknown) => {
       if (err instanceof ApiError) {
@@ -109,7 +126,8 @@ export default function UploadSheetDialog({ open, onOpenChange }: UploadSheetDia
         <DialogHeader>
           <DialogTitle>Déposer une fiche</DialogTitle>
           <DialogDescription>
-            PDF, image, DOCX ou TXT — 10 Mo maximum. La fiche sera visible par toute la promo.
+            PDF, image, DOCX ou TXT — 10 Mo maximum. Les flashcards seront générées automatiquement
+            pour les fichiers lisibles.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -176,22 +194,45 @@ export default function UploadSheetDialog({ open, onOpenChange }: UploadSheetDia
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="upload-domain">Domaine</Label>
-            <Select value={domain} onValueChange={(value: string) => setDomain(value as DomainKey)}>
-              <SelectTrigger id="upload-domain" data-testid="upload-domain-select" className="w-full">
-                <SelectValue>
-                  {(value: string) => DOMAIN_MAP[value as DomainKey]?.label ?? "Choisir un domaine"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {DOMAINS.map((d) => (
-                  <SelectItem key={d.key} value={d.key}>
-                    {d.label} — {d.description}
-                  </SelectItem>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="upload-domain">Domaine</Label>
+              <Select
+                value={domain}
+                onValueChange={(value: string) => setDomain(value as DomainKey)}
+              >
+                <SelectTrigger id="upload-domain" data-testid="upload-domain-select" className="w-full">
+                  <SelectValue>
+                    {(value: string) => DOMAIN_MAP[value as DomainKey]?.label ?? "Choisir un domaine"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {DOMAINS.map((d) => (
+                    <SelectItem key={d.key} value={d.key}>
+                      {d.label} — {d.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="upload-unit">UE / sous-catégorie</Label>
+              <Input
+                id="upload-unit"
+                data-testid="upload-unit-input"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="Ex. A1"
+                list="unit-suggestions"
+                maxLength={40}
+              />
+              <datalist id="unit-suggestions">
+                {unitSuggestions.map((u) => (
+                  <option key={u} value={u} />
                 ))}
-              </SelectContent>
-            </Select>
+              </datalist>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2">

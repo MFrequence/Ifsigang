@@ -7,6 +7,7 @@ export interface Sheet {
   id: string;
   title: string;
   domain: DomainKey;
+  unit: string;
   author: string;
   description: string;
   filename: string;
@@ -19,4 +20,12 @@ export interface Sheet {
 // Mirror of UnlockStatus in backend/models/sheet.py.
 export interface UnlockStatus {
   unlocked: boolean;
+}
+
+// Mirror of FlashcardOut in backend/models/flashcard.py.
+export interface Flashcard {
+  id: string;
+  question: string;
+  answer: string;
+  order: number;
 }

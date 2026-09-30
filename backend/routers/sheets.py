@@ -7,13 +7,13 @@ metadata lives in Mongo. Every route rides the promo-code cookie set by /api/aut
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Cookie, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
 from pymongo import DESCENDING
 
 from lib.db import db
 from models.sheet import DOMAINS, Sheet, SheetOut
-from routers.auth import code_matches
+from routers.auth import require_access
 
 router = APIRouter(tags=["sheets"])
 
@@ -31,11 +31,6 @@ UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 CHUNK = 1024 * 1024
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-
-
-async def require_access(promo_access: str | None = Cookie(default=None)) -> None:
-    if not code_matches(promo_access):
-        raise HTTPException(status_code=401, detail="Accès réservé à la promo — entre le code")
 
 
 async def _find_or_404(sheet_id: str) -> dict:
@@ -63,11 +58,13 @@ async def upload_sheet(
     domain: str = Form(),
     author: str = Form(min_length=1, max_length=80),
     description: str = Form(default="", max_length=500),
+    unit: str = Form(default="", max_length=40),
     _: None = Depends(require_access),
 ):
     title = title.strip()
     author = author.strip()
     description = description.strip()
+    unit = unit.strip()[:40]
     if not title:
         raise HTTPException(status_code=422, detail="Le titre est obligatoire")
     if not author:
@@ -96,6 +93,7 @@ async def upload_sheet(
     sheet = Sheet(
         title=title[:200],
         domain=domain,
+        unit=unit,
         author=author[:80],
         description=description[:500],
         filename=original[:255],
@@ -136,5 +134,6 @@ async def sheet_download(sheet_id: str, _: None = Depends(require_access)):
 async def delete_sheet(sheet_id: str, _: None = Depends(require_access)):
     doc = await _find_or_404(sheet_id)
     await db.sheets.delete_one({"id": sheet_id})
+    await db.flashcards.delete_many({"sheet_id": sheet_id})  # pas de paquet orphelin
     (UPLOADS_DIR / doc["stored_name"]).unlink(missing_ok=True)
     return Response(status_code=204)

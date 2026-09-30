@@ -25,6 +25,7 @@ class Sheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     domain: str
+    unit: str = ""
     author: str
     description: str = ""
     filename: str
@@ -41,6 +42,7 @@ class SheetOut(BaseModel):
     id: str
     title: str
     domain: str
+    unit: str = ""
     author: str
     description: str = ""
     filename: str
@@ -56,6 +58,9 @@ class SheetOut(BaseModel):
         if isinstance(created, datetime) and created.tzinfo is None:
             created = created.replace(tzinfo=timezone.utc)
             doc = {**doc, "created_at": created}
+        # Documents written before `unit` existed carry None — coerce so the str field validates.
+        if doc.get("unit") is None:
+            doc = {**doc, "unit": ""}
         return cls(**doc)
 
 

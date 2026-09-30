@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Download, Eye, FileText, Image as ImageIcon, Trash2, User } from "lucide-react";
+import { Calendar, Download, Eye, FileText, Image as ImageIcon, Layers, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -20,11 +20,12 @@ import { cn } from "@/lib/utils";
 interface SheetCardProps {
   sheet: Sheet;
   onPreview: (sheet: Sheet) => void;
+  onRevise: (sheet: Sheet) => void;
   onDelete: (sheet: Sheet) => void;
   deleting: boolean;
 }
 
-export default function SheetCard({ sheet, onPreview, onDelete, deleting }: SheetCardProps) {
+export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleting }: SheetCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const domain = DOMAIN_MAP[sheet.domain];
   const Icon = sheet.mime.startsWith("image/") ? ImageIcon : FileText;
@@ -42,6 +43,11 @@ export default function SheetCard({ sheet, onPreview, onDelete, deleting }: Shee
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex items-center gap-1">
+          {sheet.unit ? (
+            <Badge variant="outline" className="border-slate-200 text-slate-600">
+              {sheet.unit}
+            </Badge>
+          ) : null}
           <Badge variant="outline" className={domain.badge}>
             {domain.label}
           </Badge>
@@ -86,7 +92,15 @@ export default function SheetCard({ sheet, onPreview, onDelete, deleting }: Shee
         </span>
       </div>
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-wrap gap-2 pt-1">
+        <Button
+          variant="outline"
+          size="sm"
+          data-testid={`sheet-revise-button-${sheet.id}`}
+          onClick={() => onRevise(sheet)}
+        >
+          <Layers className="h-4 w-4" /> Réviser
+        </Button>
         {isPreviewable(sheet.mime) && (
           <Button
             variant="outline"
@@ -112,7 +126,8 @@ export default function SheetCard({ sheet, onPreview, onDelete, deleting }: Shee
           <DialogHeader>
             <DialogTitle>Supprimer cette fiche ?</DialogTitle>
             <DialogDescription>
-              « {sheet.title} » sera définitivement supprimée pour toute la promo.
+              « {sheet.title} » et ses éventuelles flashcards seront définitivement supprimées pour
+              toute la promo.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

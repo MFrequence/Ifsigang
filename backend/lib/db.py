@@ -24,6 +24,10 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("created_at", DESCENDING)], name="created_desc"),
         IndexModel([("domain", ASCENDING), ("created_at", DESCENDING)], name="domain_created"),
     ],
+    "flashcards": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("sheet_id", ASCENDING), ("order", ASCENDING)], name="sheet_order"),
+    ],
 }
 
 
