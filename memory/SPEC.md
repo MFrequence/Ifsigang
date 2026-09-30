@@ -99,6 +99,9 @@ personnel et **classement de la promo**.
 - `pages/Home.tsx` : AppHeader (compteur, « Ma progression », « Déposer une fiche », menu compte
   avec déconnexion), DomainFilterBar (Tous + A–E + rangée UE), recherche client-side,
   bouton **« Réviser la sélection »** (domaine ou UE selon les filtres actifs), grille SheetCard.
+  **Barre de tri** au-dessus de la grille (`sheet-sort-bar`, client-side) : « Plus récentes »
+  (défaut), « Plus téléchargées », « Par auteur (A-Z) » — départage toujours par date récente ;
+  affiche aussi le nombre de fiches filtrées (`sheet-result-count`).
   Le domaine est **obligatoire et sans présélection** à l'upload (évite les fiches mal classées).
 - `components/StudyRunner.tsx` : moteur partagé flashcards/QCM, auto-évaluation, mélange,
   score final, **badge de palier J** (`showStage`), **bouton de signalement**, hauteur bornée

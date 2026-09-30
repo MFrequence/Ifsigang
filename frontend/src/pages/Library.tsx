@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Layers, Search } from "lucide-react";
+import { ArrowDownNarrowWide, ArrowLeft, Layers, Search } from "lucide-react";
 import { toast } from "sonner";
 import { apiDelete, apiGet } from "@/lib/api";
 import { DOMAIN_MAP } from "@/lib/domains";
@@ -23,10 +23,19 @@ interface LibraryProps {
   user: User;
 }
 
+type SortKey = "recent" | "downloads" | "author";
+
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: "recent", label: "Plus récentes" },
+  { key: "downloads", label: "Plus téléchargées" },
+  { key: "author", label: "Par auteur (A-Z)" },
+];
+
 export default function Library({ user }: LibraryProps) {
   const [domain, setDomain] = useState<DomainFilter>("ALL");
   const [unit, setUnit] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortKey>("recent");
   const [uploadOpen, setUploadOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSheet, setPreviewSheet] = useState<Sheet | null>(null);
@@ -62,7 +71,7 @@ export default function Library({ user }: LibraryProps) {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return sheets.filter(
+    const list = sheets.filter(
       (sheet) =>
         (domain === "ALL" || sheet.domain === domain) &&
         (!unit || (sheet.unit || "").trim() === unit) &&
@@ -71,7 +80,16 @@ export default function Library({ user }: LibraryProps) {
             .toLowerCase()
             .includes(q)),
     );
-  }, [sheets, domain, unit, search]);
+    const byRecent = (a: Sheet, b: Sheet) => b.created_at.localeCompare(a.created_at);
+    return [...list].sort((a, b) => {
+      if (sort === "downloads") return b.downloads - a.downloads || byRecent(a, b);
+      if (sort === "author") {
+        const byAuthor = a.author.localeCompare(b.author, "fr", { sensitivity: "base" });
+        return byAuthor || byRecent(a, b);
+      }
+      return byRecent(a, b);
+    });
+  }, [sheets, domain, unit, search, sort]);
 
   const deleteSheet = useMutation({
     mutationFn: (sheet: Sheet) => apiDelete<void>(`/sheets/${sheet.id}`),
@@ -167,6 +185,40 @@ export default function Library({ user }: LibraryProps) {
             </Button>
           </div>
         </div>
+
+        {!sheetsQuery.isError && !sheetsQuery.isPending && sheets.length > 0 ? (
+          <div
+            data-testid="sheet-sort-bar"
+            className="mb-4 flex flex-wrap items-center justify-between gap-3"
+          >
+            <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+              <span data-testid="sheet-result-count">{filtered.length}</span>{" "}
+              {filtered.length > 1 ? "fiches" : "fiche"}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <ArrowDownNarrowWide
+                className="h-3.5 w-3.5 text-muted-foreground/70"
+                aria-hidden
+              />
+              {SORTS.map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  data-testid={`sheet-sort-${option.key}-button`}
+                  aria-pressed={sort === option.key}
+                  onClick={() => setSort(option.key)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+                    sort === option.key
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {sheetsQuery.isError ? (
           <Card className="flex flex-col items-center gap-3 border-border p-10 text-center">
