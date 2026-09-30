@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 import { apiDelete, apiGet, apiPost } from "@/lib/api";
 import { DOMAINS, DOMAIN_MAP } from "@/lib/domains";
-import type { DomainKey, RevisionPlan, User } from "@/lib/types";
+import type { DomainKey, ExamPlan, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import ProgressDialog from "@/components/ProgressDialog";
 import SheetPreviewDialog from "@/components/SheetPreviewDialog";
@@ -50,7 +50,7 @@ export default function Planning({ user }: PlanningProps) {
 
   const plansQuery = useQuery({
     queryKey: ["plans"],
-    queryFn: () => apiGet<RevisionPlan[]>("/plans"),
+    queryFn: () => apiGet<ExamPlan[]>("/plans"),
     refetchOnWindowFocus: false,
   });
   const plans = plansQuery.data ?? [];
@@ -65,7 +65,7 @@ export default function Planning({ user }: PlanningProps) {
 
   const createPlan = useMutation({
     mutationFn: () =>
-      apiPost<RevisionPlan>("/plans", {
+      apiPost<ExamPlan>("/plans", {
         title: title.trim(),
         domain,
         unit: unit.trim(),
@@ -84,7 +84,7 @@ export default function Planning({ user }: PlanningProps) {
 
   const toggleSheet = useMutation({
     mutationFn: ({ planId, sheetId }: { planId: string; sheetId: string }) =>
-      apiPost<RevisionPlan>(`/plans/${planId}/sheets/${sheetId}/toggle`, {}),
+      apiPost<ExamPlan>(`/plans/${planId}/sheets/${sheetId}/toggle`, {}),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["plans"] }),
     onError: () => toast.error("Impossible de mettre à jour l'avancement"),
   });

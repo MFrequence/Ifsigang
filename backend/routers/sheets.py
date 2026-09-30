@@ -320,5 +320,10 @@ async def delete_sheet(sheet_id: str, request: Request, user: dict = Depends(cur
     await db.card_reports.delete_many({"sheet_id": sheet_id})
     await db.sheet_reports.delete_many({"sheet_id": sheet_id})
     await db.sheet_favorites.delete_many({"sheet_id": sheet_id})  # plus d'épingle orpheline
+    await db.sheet_highlights.delete_many({"sheet_id": sheet_id})
+    questions = await db.sheet_questions.find({"sheet_id": sheet_id}).to_list(500)
+    if questions:
+        await db.sheet_answers.delete_many({"question_id": {"$in": [q["id"] for q in questions]}})
+        await db.sheet_questions.delete_many({"sheet_id": sheet_id})
     (UPLOADS_DIR / doc["stored_name"]).unlink(missing_ok=True)
     return Response(status_code=204)

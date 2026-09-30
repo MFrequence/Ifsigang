@@ -11,17 +11,20 @@ import {
   ShapesIcon,
   Timer,
   CalendarCheck,
+  CalendarClock,
   CheckCircle2,
   Loader2,
   TrendingUp,
   Upload,
 } from "lucide-react";
 import { apiGet } from "@/lib/api";
-import type { RevisionCard, RevisionPlan, Sheet, Streak, User } from "@/lib/types";
+import type { PlanToday, RevisionCard, RevisionPlan, Sheet, Streak, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
+import { Button } from "@/components/ui/button";
 import StreakCard from "@/components/StreakCard";
 import DailyRevisionDialog from "@/components/DailyRevisionDialog";
 import MistakesDialog from "@/components/MistakesDialog";
+import StudySessionDialog from "@/components/StudySessionDialog";
 import ProgressDialog from "@/components/ProgressDialog";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
 import { cn } from "@/lib/utils";
@@ -111,6 +114,7 @@ export default function Today({ user }: TodayProps) {
   const [mistakesOpen, setMistakesOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
+  const [planSheetIds, setPlanSheetIds] = useState<string[] | null>(null);
   const queryClient = useQueryClient();
 
   const planQuery = useQuery({
@@ -123,6 +127,13 @@ export default function Today({ user }: TodayProps) {
     queryFn: () => apiGet<Streak>("/revision/streak"),
     refetchOnWindowFocus: false,
   });
+  // Programme du jour du planning avant partiel le plus proche (null s'il n'y en a pas).
+  const examPlanQuery = useQuery({
+    queryKey: ["plan-today"],
+    queryFn: () => apiGet<PlanToday | null>("/plans/today"),
+    refetchOnWindowFocus: false,
+  });
+
   const mistakesQuery = useQuery({
     queryKey: ["revision-mistakes"],
     queryFn: () => apiGet<RevisionCard[]>("/revision/mistakes"),
@@ -158,6 +169,63 @@ export default function Today({ user }: TodayProps) {
       />
 
       <main className="clinical-grid mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        {examPlanQuery.data ? (
+          <section
+            data-testid="plan-today-card"
+            className="mb-8 rounded-2xl border border-primary/40 bg-primary/5 p-5 backdrop-blur-md"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  <CalendarClock className="h-3.5 w-3.5" /> Planning ·{" "}
+                  <span data-testid="plan-today-countdown">
+                    {examPlanQuery.data.days_left === 0
+                      ? "c'est aujourd'hui"
+                      : `J-${examPlanQuery.data.days_left}`}
+                  </span>
+                  {examPlanQuery.data.is_review ? " · révision générale" : ""}
+                </p>
+                <h2 className="mt-2 font-heading text-xl font-semibold text-foreground">
+                  {examPlanQuery.data.title}
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {examPlanQuery.data.sheets.length > 0
+                    ? `Au programme aujourd'hui : ${examPlanQuery.data.sheets
+                        .map((sheet) => sheet.title)
+                        .join(", ")}`
+                    : "Journée libre — profite-en pour revoir tes cartes du jour."}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {examPlanQuery.data.done_count}/{examPlanQuery.data.total_sheets} fiches déjà
+                  révisées
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {examPlanQuery.data.sheets.length > 0 ? (
+                  <Button
+                    size="sm"
+                    data-testid="plan-today-study-button"
+                    onClick={() =>
+                      setPlanSheetIds(
+                        (examPlanQuery.data?.sheets ?? []).map((sheet) => sheet.id),
+                      )
+                    }
+                  >
+                    <BookOpen className="h-4 w-4" /> Réviser le programme
+                  </Button>
+                ) : null}
+                <Link
+                  to="/planning"
+                  data-testid="plan-today-open-link"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors duration-150 hover:text-primary"
+                >
+                  Voir le planning <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         <section className="mb-8 grid items-center gap-6 lg:grid-cols-[1.15fr_minmax(0,380px)] lg:gap-10">
           <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
@@ -368,6 +436,15 @@ export default function Today({ user }: TodayProps) {
 
       <DailyRevisionDialog open={dailyOpen} onOpenChange={setDailyOpen} />
       <MistakesDialog open={mistakesOpen} onOpenChange={setMistakesOpen} />
+      <StudySessionDialog
+        domain={null}
+        unit={null}
+        sheetIds={planSheetIds}
+        open={planSheetIds !== null}
+        onOpenChange={(open) => {
+          if (!open) setPlanSheetIds(null);
+        }}
+      />
       <UploadSheetDialog open={uploadOpen} onOpenChange={setUploadOpen} sheets={sheets} />
       <ProgressDialog open={progressOpen} onOpenChange={setProgressOpen} />
     </div>

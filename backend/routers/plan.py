@@ -11,7 +11,7 @@ from pymongo import ASCENDING
 from lib.db import db
 from lib.dates import today_iso
 from lib.plan import parse_iso, schedule
-from models.plan import PlanCreate, PlanDay, PlanOut, PlanSheet, RevisionPlan
+from models.plan import PlanCreate, PlanDay, PlanOut, PlanSheet, PlanToday, RevisionPlan
 from models.sheet import DOMAINS
 from routers.auth import current_user
 
@@ -83,6 +83,33 @@ async def list_plans(user: dict = Depends(current_user)):
     docs = await db.revision_plans.find({"user_id": user["id"]}).to_list(100)
     docs.sort(key=lambda p: p["exam_date"])
     return [await _build(doc) for doc in docs]
+
+
+@router.get("/today", response_model=PlanToday | None)
+async def plan_today(user: dict = Depends(current_user)):
+    """Programme du jour de l'épreuve la plus proche, ou `null` s'il n'y a rien à faire."""
+    docs = await db.revision_plans.find({"user_id": user["id"]}).to_list(100)
+    if not docs:
+        return None
+    docs.sort(key=lambda p: p["exam_date"])
+    for doc in docs:
+        plan = await _build(doc)
+        day = next((d for d in plan.days if d.is_today), None)
+        if day is None:
+            continue
+        return PlanToday(
+            plan_id=plan.id,
+            title=plan.title,
+            domain=plan.domain,
+            unit=plan.unit,
+            exam_date=plan.exam_date,
+            days_left=plan.days_left,
+            is_review=day.is_review,
+            done_count=plan.done_count,
+            total_sheets=plan.total_sheets,
+            sheets=day.sheets,
+        )
+    return None
 
 
 @router.post("", response_model=PlanOut, status_code=201)

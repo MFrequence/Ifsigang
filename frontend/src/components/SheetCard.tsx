@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Download, Eye, FileText, Flag, Image as ImageIcon, Layers, Star, Trash2, User } from "lucide-react";
+import { Calendar, Download, Eye, FileText, Flag, Image as ImageIcon, Layers, MessagesSquare, Star, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -27,6 +27,8 @@ interface SheetCardProps {
   deleting: boolean;
   favorite: boolean;
   onToggleFavorite: (sheet: Sheet, next: boolean) => void;
+  questionCount?: number;
+  onOpenQuestions: (sheet: Sheet) => void;
 }
 
 export default function SheetCard({
@@ -38,6 +40,8 @@ export default function SheetCard({
   deleting,
   favorite,
   onToggleFavorite,
+  questionCount = 0,
+  onOpenQuestions,
 }: SheetCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -138,6 +142,20 @@ export default function SheetCard({
       </div>
 
       <div className="flex flex-wrap gap-2 pt-1">
+        <Button
+          variant="outline"
+          size="sm"
+          data-testid={`sheet-questions-button-${sheet.id}`}
+          onClick={() => onOpenQuestions(sheet)}
+          title="Entraide de promo : questions et réponses"
+        >
+          <MessagesSquare className="h-4 w-4" /> Entraide
+          {questionCount > 0 ? (
+            <span className="ml-1 rounded-full bg-primary/15 px-1.5 text-xs text-primary">
+              {questionCount}
+            </span>
+          ) : null}
+        </Button>
         <Button
           variant="outline"
           size="sm"

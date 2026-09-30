@@ -13,6 +13,7 @@ import FlashcardsDialog from "@/components/FlashcardsDialog";
 import ProgressDialog from "@/components/ProgressDialog";
 import SheetCard from "@/components/SheetCard";
 import SheetPreviewDialog from "@/components/SheetPreviewDialog";
+import SheetQuestionsDialog from "@/components/SheetQuestionsDialog";
 import StudySessionDialog from "@/components/StudySessionDialog";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export default function Library({ user }: LibraryProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [questionsSheet, setQuestionsSheet] = useState<Sheet | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSheet, setPreviewSheet] = useState<Sheet | null>(null);
@@ -64,6 +66,14 @@ export default function Library({ user }: LibraryProps) {
     () => new Set(favoritesQuery.data ?? []),
     [favoritesQuery.data],
   );
+
+  // Un seul appel pour les compteurs d'entraide de toute la bibliothèque.
+  const countsQuery = useQuery({
+    queryKey: ["question-counts"],
+    queryFn: () => apiGet<Record<string, number>>("/sheets/questions/counts"),
+    refetchOnWindowFocus: false,
+  });
+  const questionCounts = countsQuery.data ?? {};
 
   const toggleFavorite = useMutation({
     mutationFn: async ({ sheet, next }: { sheet: Sheet; next: boolean }) => {
@@ -310,6 +320,8 @@ export default function Library({ user }: LibraryProps) {
                 onDelete={(s) => deleteSheet.mutate(s)}
                 favorite={favorites.has(sheet.id)}
                 onToggleFavorite={(s, next) => toggleFavorite.mutate({ sheet: s, next })}
+                questionCount={questionCounts[sheet.id] ?? 0}
+                onOpenQuestions={setQuestionsSheet}
                 deleting={deleteSheet.isPending && deleteSheet.variables?.id === sheet.id}
               />
             ))}
@@ -319,6 +331,13 @@ export default function Library({ user }: LibraryProps) {
 
       <UploadSheetDialog open={uploadOpen} onOpenChange={setUploadOpen} sheets={sheets} />
       <SheetPreviewDialog sheet={previewSheet} open={previewOpen} onOpenChange={setPreviewOpen} />
+      <SheetQuestionsDialog
+        sheet={questionsSheet}
+        open={questionsSheet !== null}
+        onOpenChange={(open) => {
+          if (!open) setQuestionsSheet(null);
+        }}
+      />
       <FlashcardsDialog sheet={reviseSheet} open={reviseOpen} onOpenChange={setReviseOpen} />
       <StudySessionDialog
         domain={domain === "ALL" ? null : (domain as DomainKey)}

@@ -45,6 +45,21 @@ class PlanDay(BaseModel):
     sheets: list[PlanSheet] = []
 
 
+class PlanToday(BaseModel):
+    """Le programme du jour du planning le plus proche — affiché sur l'accueil."""
+
+    plan_id: str
+    title: str
+    domain: str
+    unit: str = ""
+    exam_date: str
+    days_left: int
+    is_review: bool = False
+    done_count: int = 0
+    total_sheets: int = 0
+    sheets: list[PlanSheet] = []
+
+
 class PlanOut(BaseModel):
     id: str
     title: str

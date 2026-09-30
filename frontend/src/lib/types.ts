@@ -57,7 +57,7 @@ export interface PlanDay {
   sheets: PlanSheet[];
 }
 
-export interface RevisionPlan {
+export interface ExamPlan {
   id: string;
   title: string;
   domain: DomainKey;
@@ -68,6 +68,45 @@ export interface RevisionPlan {
   done_count: number;
   cards_total: number;
   days: PlanDay[];
+}
+
+// Mirrors of backend/models/community.py.
+export interface SheetHighlight {
+  id: string;
+  text: string;
+  created_at: string;
+}
+
+export interface SheetAnswer {
+  id: string;
+  author: string;
+  body: string;
+  best: boolean;
+  mine: boolean;
+  created_at: string;
+}
+
+export interface SheetQuestion {
+  id: string;
+  author: string;
+  body: string;
+  mine: boolean;
+  created_at: string;
+  answers: SheetAnswer[];
+}
+
+// Mirror of PlanToday in backend/models/plan.py.
+export interface PlanToday {
+  plan_id: string;
+  title: string;
+  domain: DomainKey;
+  unit: string;
+  exam_date: string;
+  days_left: number;
+  is_review: boolean;
+  done_count: number;
+  total_sheets: number;
+  sheets: PlanSheet[];
 }
 
 // Mirror of SheetHtml in backend/models/sheet.py.

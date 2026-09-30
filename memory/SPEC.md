@@ -359,3 +359,32 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
 - `frontend/src/pages/Planning.tsx` : formulaire (titre, domaine, UE, date), cartes de planning
   avec J-x, barre d'avancement, journées cliquables (`plan-day-{planId}-{date}`), pastilles de
   fiches cochables (`plan-sheet-toggle-…`) et bouton « Lire ». Lien d'en-tête `nav-planning-link`.
+
+
+## Surlignages personnels et entraide de promo
+
+`backend/models/community.py` + `backend/routers/community.py` (montés sur api_router).
+
+- **Surlignages** (`sheet_highlights` `{id, user_id, sheet_id, text}`) : propres à chaque
+  étudiant, la fiche partagée n'est jamais modifiée.
+  `GET|POST /api/sheets/{id}/highlights` (POST idempotent sur le même texte, 422 < 3 car.),
+  `DELETE /api/sheets/{id}/highlights/{hid}` (404 si pas à soi).
+  Front : dans `SheetPreviewDialog`, sélection de texte → bouton `sheet-highlight-button`,
+  marques `mark[data-highlight]` réappliquées à chaque ouverture, liste
+  `sheet-highlights-list` avec saut (`sheet-highlight-jump-…`) et suppression.
+  Le repaint applique les surlignages PUIS la recherche (les deux cohabitent).
+- **Entraide** (`sheet_questions`, `sheet_answers`) : `GET|POST /api/sheets/{id}/questions`,
+  `POST /api/questions/{qid}/answers`, `POST /api/answers/{aid}/best` (403 si on n'est pas
+  l'auteur de la question ; une seule meilleure réponse), `DELETE /api/questions/{qid}`
+  (403 hors auteur, supprime ses réponses), `GET /api/sheets/questions/counts` (compteurs
+  de toute la bibliothèque en un appel).
+  Front : `components/SheetQuestionsDialog.tsx`, ouvert par `sheet-questions-button-{id}`
+  sur chaque carte (badge de compteur).
+- Tout est purgé en cascade à la suppression d'une fiche.
+
+## Rappel du planning sur l'accueil
+
+`GET /api/plans/today` → `PlanToday | null` (épreuve la plus proche ayant une journée
+aujourd'hui). Carte `plan-today-card` sur `/` : compte à rebours `plan-today-countdown`,
+fiches du jour, avancement, bouton `plan-today-study-button` (session limitée à ces fiches)
+et lien `plan-today-open-link` vers `/planning`.

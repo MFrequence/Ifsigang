@@ -1,16 +1,19 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
   Download,
   FileText,
+  Highlighter,
   Loader2,
   Maximize2,
   Minimize2,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,10 +23,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { apiGet } from "@/lib/api";
+import { apiDelete, apiGet, apiPost } from "@/lib/api";
 import { DOMAIN_MAP } from "@/lib/domains";
 import { isDocx } from "@/lib/format";
-import type { Sheet, SheetHtml, SheetText } from "@/lib/types";
+import type { Sheet, SheetHighlight, SheetHtml, SheetText } from "@/lib/types";
 
 interface SheetPreviewDialogProps {
   sheet: Sheet | null;
@@ -32,6 +35,7 @@ interface SheetPreviewDialogProps {
 }
 
 const MIN_QUERY = 2;
+const MIN_SELECTION = 3;
 
 /** Styles appliqués au HTML injecté (mammoth) — titres, tableaux, images, listes. */
 const RENDER_CLASSES = `text-sm leading-relaxed text-foreground
@@ -50,17 +54,17 @@ const RENDER_CLASSES = `text-sm leading-relaxed text-foreground
   [&_th]:border [&_th]:border-border [&_th]:bg-card [&_th]:p-2.5 [&_th]:text-left`;
 
 function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/** Surligne chaque occurrence dans les nœuds texte et renvoie le nombre de trouvailles. */
-function highlight(container: HTMLElement, pristine: string, query: string): number {
-  container.innerHTML = pristine;
-  const needle = query.trim().toLowerCase();
-  if (needle.length < MIN_QUERY) return 0;
+/** Enveloppe chaque occurrence de `needle` dans un <mark> construit par `make`. */
+function markOccurrences(
+  container: HTMLElement,
+  needle: string,
+  make: (index: number) => HTMLElement,
+): number {
+  const lowerNeedle = needle.toLowerCase();
+  if (!lowerNeedle) return 0;
 
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   const nodes: Text[] = [];
@@ -70,56 +74,110 @@ function highlight(container: HTMLElement, pristine: string, query: string): num
   for (const node of nodes) {
     const text = node.nodeValue ?? "";
     const lower = text.toLowerCase();
-    if (!lower.includes(needle)) continue;
+    if (!lower.includes(lowerNeedle)) continue;
 
     const fragment = document.createDocumentFragment();
     let cursor = 0;
     for (;;) {
-      const at = lower.indexOf(needle, cursor);
+      const at = lower.indexOf(lowerNeedle, cursor);
       if (at === -1) {
         fragment.appendChild(document.createTextNode(text.slice(cursor)));
         break;
       }
       if (at > cursor) fragment.appendChild(document.createTextNode(text.slice(cursor, at)));
-      const mark = document.createElement("mark");
-      mark.dataset.hit = String(count);
-      mark.className = "rounded bg-amber-300/60 px-0.5 text-foreground";
-      mark.textContent = text.slice(at, at + needle.length);
+      const mark = make(count);
+      mark.textContent = text.slice(at, at + lowerNeedle.length);
       fragment.appendChild(mark);
       count += 1;
-      cursor = at + needle.length;
+      cursor = at + lowerNeedle.length;
     }
     node.parentNode?.replaceChild(fragment, node);
   }
   return count;
 }
 
-/** Zone de lecture : contenu (HTML ou texte échappé) + recherche interne avec navigation. */
-function Reader({ pristine, truncated }: { pristine: string; truncated?: boolean }) {
+/** Zone de lecture : contenu, recherche interne et surlignages personnels. */
+function Reader({
+  sheet,
+  pristine,
+  truncated,
+}: {
+  sheet: Sheet;
+  pristine: string;
+  truncated?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [query, setQuery] = useState("");
   const [count, setCount] = useState(0);
   const [index, setIndex] = useState(0);
+  const [selection, setSelection] = useState("");
+  const queryClient = useQueryClient();
 
-  // Le contenu est repeint depuis la version d'origine à chaque frappe (pas de surlignage cumulé).
+  const highlightsQuery = useQuery({
+    queryKey: ["sheet-highlights", sheet.id],
+    queryFn: () => apiGet<SheetHighlight[]>(`/sheets/${sheet.id}/highlights`),
+    refetchOnWindowFocus: false,
+  });
+  const highlights = highlightsQuery.data ?? [];
+
+  const addHighlight = useMutation({
+    mutationFn: (text: string) =>
+      apiPost<SheetHighlight>(`/sheets/${sheet.id}/highlights`, { text }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["sheet-highlights", sheet.id] });
+      setSelection("");
+      window.getSelection()?.removeAllRanges();
+      toast.success("Passage surligné — il sera là à ta prochaine lecture");
+    },
+    onError: () => toast.error("Surlignage impossible — réessaie"),
+  });
+
+  const removeHighlight = useMutation({
+    mutationFn: (id: string) => apiDelete<void>(`/sheets/${sheet.id}/highlights/${id}`),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: ["sheet-highlights", sheet.id] }),
+    onError: () => toast.error("Suppression impossible"),
+  });
+
+  // Repeint depuis la version d'origine : surlignages d'abord, résultats de recherche ensuite.
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const hits = highlight(container, pristine, query);
+    container.innerHTML = pristine;
+
+    for (const highlight of highlights) {
+      markOccurrences(container, highlight.text, () => {
+        const mark = document.createElement("mark");
+        mark.dataset.highlight = highlight.id;
+        mark.className = "rounded bg-emerald-300/40 px-0.5 text-foreground";
+        return mark;
+      });
+    }
+
+    const needle = query.trim();
+    const hits =
+      needle.length >= MIN_QUERY
+        ? markOccurrences(container, needle, (position) => {
+            const mark = document.createElement("mark");
+            mark.dataset.hit = String(position);
+            mark.className = "rounded bg-amber-300/60 px-0.5 text-foreground";
+            return mark;
+          })
+        : 0;
     setCount(hits);
     setIndex(0);
-  }, [pristine, query]);
+  }, [pristine, query, highlights]);
 
   // Saut au résultat courant.
   useEffect(() => {
     const container = containerRef.current;
     if (!container || count === 0) return;
     const marks = container.querySelectorAll<HTMLElement>("mark[data-hit]");
-    marks.forEach((mark, i) => {
-      mark.classList.toggle("bg-amber-300/60", i !== index);
-      mark.classList.toggle("bg-amber-400", i === index);
-      mark.classList.toggle("ring-2", i === index);
-      mark.classList.toggle("ring-amber-500", i === index);
+    marks.forEach((mark, position) => {
+      mark.classList.toggle("bg-amber-300/60", position !== index);
+      mark.classList.toggle("bg-amber-400", position === index);
+      mark.classList.toggle("ring-2", position === index);
+      mark.classList.toggle("ring-amber-500", position === index);
     });
     marks[index]?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [index, count, query]);
@@ -129,7 +187,23 @@ function Reader({ pristine, truncated }: { pristine: string; truncated?: boolean
     setIndex((current) => (current + delta + count) % count);
   };
 
+  const captureSelection = () => {
+    const active = window.getSelection();
+    const container = containerRef.current;
+    if (!active || active.rangeCount === 0 || !container) return setSelection("");
+    const text = active.toString().trim();
+    const inside = container.contains(active.anchorNode) && container.contains(active.focusNode);
+    setSelection(inside ? " ".repeat(0) + text : "");
+  };
+
+  const jumpToHighlight = (id: string) => {
+    containerRef.current
+      ?.querySelector<HTMLElement>(`mark[data-highlight="${id}"]`)
+      ?.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
+
   const searching = query.trim().length >= MIN_QUERY;
+  const canHighlight = selection.length >= MIN_SELECTION;
 
   return (
     <>
@@ -165,6 +239,7 @@ function Reader({ pristine, truncated }: { pristine: string; truncated?: boolean
             </button>
           ) : null}
         </div>
+
         {searching ? (
           <div className="flex items-center gap-1.5">
             <span
@@ -195,13 +270,60 @@ function Reader({ pristine, truncated }: { pristine: string; truncated?: boolean
             </Button>
           </div>
         ) : null}
+
+        <Button
+          variant={canHighlight ? "default" : "outline"}
+          size="sm"
+          data-testid="sheet-highlight-button"
+          disabled={!canHighlight || addHighlight.isPending}
+          title="Sélectionne un passage dans la fiche puis surligne-le"
+          onClick={() => addHighlight.mutate(selection)}
+          className="ml-auto"
+        >
+          <Highlighter className="h-4 w-4" /> Surligner
+        </Button>
       </div>
 
       <div
         ref={containerRef}
         data-testid="sheet-reader-content"
+        onMouseUp={captureSelection}
+        onKeyUp={captureSelection}
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border border-border bg-secondary p-5 ${RENDER_CLASSES}`}
       />
+
+      {highlights.length > 0 ? (
+        <div data-testid="sheet-highlights-list" className="shrink-0 space-y-1.5">
+          <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+            Mes surlignages ({highlights.length})
+          </p>
+          <ul className="max-h-24 space-y-1 overflow-y-auto pr-1">
+            {highlights.map((highlight) => (
+              <li key={highlight.id} className="flex items-start gap-2">
+                <button
+                  type="button"
+                  data-testid={`sheet-highlight-jump-${highlight.id}`}
+                  onClick={() => jumpToHighlight(highlight.id)}
+                  className="min-w-0 flex-1 truncate rounded bg-emerald-300/20 px-2 py-1 text-left text-xs text-foreground transition-colors duration-150 hover:bg-emerald-300/35"
+                >
+                  {highlight.text}
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  data-testid={`sheet-highlight-delete-${highlight.id}`}
+                  aria-label="Supprimer ce surlignage"
+                  onClick={() => removeHighlight.mutate(highlight.id)}
+                  className="text-muted-foreground/70 hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {truncated ? (
         <p className="shrink-0 text-xs italic text-muted-foreground">
           Aperçu tronqué — télécharge la fiche pour lire la suite.
@@ -235,7 +357,7 @@ function ReaderError() {
   );
 }
 
-/** TXT (et secours des DOCX illisibles) : texte brut échappé, recherche incluse. */
+/** TXT (et secours des DOCX illisibles) : texte brut échappé. */
 function TextReader({ sheet }: { sheet: Sheet }) {
   const textQuery = useQuery({
     queryKey: ["sheet-text", sheet.id],
@@ -254,7 +376,7 @@ function TextReader({ sheet }: { sheet: Sheet }) {
 
   if (textQuery.isPending) return <ReaderLoading />;
   if (textQuery.isError || !textQuery.data) return <ReaderError />;
-  return <Reader pristine={pristine} truncated={textQuery.data.truncated} />;
+  return <Reader sheet={sheet} pristine={pristine} truncated={textQuery.data.truncated} />;
 }
 
 /** DOCX : HTML produit par mammoth côté serveur (titres, tableaux, images conservés). */
@@ -269,7 +391,7 @@ function DocxReader({ sheet }: { sheet: Sheet }) {
   if (htmlQuery.isPending) return <ReaderLoading />;
   // Mise en forme illisible → on retombe sur le texte brut plutôt que sur une erreur.
   if (htmlQuery.isError || !htmlQuery.data?.html) return <TextReader sheet={sheet} />;
-  return <Reader pristine={htmlQuery.data.html} />;
+  return <Reader sheet={sheet} pristine={htmlQuery.data.html} />;
 }
 
 export default function SheetPreviewDialog({ sheet, open, onOpenChange }: SheetPreviewDialogProps) {
