@@ -7,7 +7,7 @@ from lib.db import db
 from lib.flashcards import NO_CARDS, NO_TEXT, build_deck_for_sheet
 from models.flashcard import FlashcardOut
 from routers.auth import current_user
-from routers.sheets import UPLOADS_DIR
+from routers.sheets import ensure_local_file
 
 router = APIRouter(tags=["flashcards"])
 
@@ -29,7 +29,10 @@ async def list_flashcards(sheet_id: str, _: dict = Depends(current_user)):
 @router.post("/sheets/{sheet_id}/flashcards/generate", response_model=list[FlashcardOut])
 async def generate_flashcards_for_sheet(sheet_id: str, _: dict = Depends(current_user)):
     doc = await _sheet_or_404(sheet_id)
-    outcome = await build_deck_for_sheet(sheet_id, UPLOADS_DIR / doc["stored_name"], doc["mime"])
+    path = await ensure_local_file(doc)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
+    outcome = await build_deck_for_sheet(sheet_id, path, doc["mime"])
     if outcome == NO_TEXT:
         raise HTTPException(
             status_code=422,

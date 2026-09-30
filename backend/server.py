@@ -32,6 +32,7 @@ from routers.pharmaco import router as pharmaco_router
 from routers.progress import router as progress_router
 from routers.reports import router as reports_router
 from routers.revision import router as revision_router
+from routers.sheets import migrate_local_files_to_storage
 from routers.sheets import router as sheets_router
 from routers.study import router as study_router
 
@@ -42,6 +43,8 @@ async def lifespan(app: FastAPI):
     app.state.index_task = asyncio.create_task(ensure_indexes())  # background: a big index build must not block boot
     # Lexique fourni avec la plateforme : seed idempotent, en tâche de fond.
     app.state.lexicon_task = asyncio.create_task(seed_lexicon())
+    # Fichiers de fiches : copie durable dans le stockage objet (le disque est éphémère).
+    app.state.storage_task = asyncio.create_task(migrate_local_files_to_storage())
     yield
     client.close()
 

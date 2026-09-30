@@ -4,6 +4,7 @@ Files live on disk in backend/uploads/ (uuid names, never user input in a path);
 metadata lives in Mongo. Toutes les routes exigent une session (compte étudiant).
 """
 
+import logging
 import uuid
 from pathlib import Path
 
@@ -22,6 +23,7 @@ from pymongo import DESCENDING
 
 from lib.db import db
 from lib.flashcards import build_deck_for_sheet
+from lib.storage import get_object, object_path, put_object
 from models.sheet import (
     DOMAINS,
     Sheet,
@@ -32,6 +34,8 @@ from models.sheet import (
     SheetReportRequest,
 )
 from routers.auth import COOKIE_NAME, current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["sheets"])
 
@@ -49,6 +53,53 @@ UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 CHUNK = 1024 * 1024
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+async def ensure_local_file(doc: dict) -> Path | None:
+    """Chemin local du fichier, restauré depuis le stockage objet si le disque l'a perdu.
+
+    Le disque du conteneur est éphémère (redéploiement = disque vide) : le stockage objet
+    est la copie durable, `uploads/` n'est qu'un cache.
+    """
+    path = UPLOADS_DIR / doc["stored_name"]
+    if path.is_file():
+        return path
+    remote = doc.get("storage_path") or object_path(doc["stored_name"])
+    try:
+        data = await get_object(remote)
+    except Exception:  # stockage indisponible → 404 propre, jamais un 500
+        return None
+    if data is None:
+        return None
+    path.write_bytes(data)
+    return path
+
+
+async def migrate_local_files_to_storage() -> int:
+    """Pousse dans le stockage objet les fiches encore seulement sur disque (une fois).
+
+    Best-effort et idempotent : au prochain démarrage il ne reste plus rien à migrer.
+    """
+    migrated = 0
+    docs = await db.sheets.find({"storage_path": {"$in": [None, ""]}}).to_list(2000)
+    for doc in docs:
+        path = UPLOADS_DIR / doc.get("stored_name", "")
+        if not doc.get("stored_name") or not path.is_file():
+            continue
+        try:
+            remote = await put_object(
+                object_path(doc["stored_name"]),
+                path.read_bytes(),
+                doc.get("mime") or "application/octet-stream",
+            )
+        except Exception as exc:
+            logger.warning("migration stockage %s: %s", doc.get("id"), exc)
+            continue
+        await db.sheets.update_one({"id": doc["id"]}, {"$set": {"storage_path": remote}})
+        migrated += 1
+    if migrated:
+        logger.info("migration stockage: %d fiche(s) copiée(s)", migrated)
+    return migrated
 
 
 async def _find_or_404(sheet_id: str) -> dict:
@@ -103,7 +154,17 @@ async def upload_sheet(
 
     stored_name = f"{uuid.uuid4().hex}.{ext}"
     path = UPLOADS_DIR / stored_name
-    path.write_bytes(b"".join(chunks))
+    data = b"".join(chunks)
+    path.write_bytes(data)  # cache local, pour l'extraction et les lectures suivantes
+
+    # Copie durable : sans elle, la fiche disparaîtrait au prochain redéploiement.
+    try:
+        storage_path = await put_object(object_path(stored_name), data, MIME_BY_EXT[ext])
+    except Exception as exc:
+        path.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=502, detail="Stockage indisponible — réessaie dans un instant"
+        ) from exc
 
     # L'auteur est le titulaire du compte — plus de saisie libre du nom.
     sheet = Sheet(
@@ -117,6 +178,7 @@ async def upload_sheet(
         stored_name=stored_name,
         mime=MIME_BY_EXT[ext],
         size=size,
+        storage_path=storage_path,
     )
     await db.sheets.insert_one(sheet.model_dump())
 
@@ -163,8 +225,8 @@ async def remove_favorite(sheet_id: str, user: dict = Depends(current_user)):
 async def sheet_file(sheet_id: str, _: dict = Depends(current_user)):
     """Inline preview — served to <iframe>/<img>, cookie rides same-origin."""
     doc = await _find_or_404(sheet_id)
-    path = UPLOADS_DIR / doc["stored_name"]
-    if not path.is_file():
+    path = await ensure_local_file(doc)
+    if path is None:
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
     return FileResponse(
         path,
@@ -177,8 +239,8 @@ async def sheet_file(sheet_id: str, _: dict = Depends(current_user)):
 @router.get("/sheets/{sheet_id}/download")
 async def sheet_download(sheet_id: str, _: dict = Depends(current_user)):
     doc = await _find_or_404(sheet_id)
-    path = UPLOADS_DIR / doc["stored_name"]
-    if not path.is_file():
+    path = await ensure_local_file(doc)
+    if path is None:
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
     await db.sheets.update_one({"id": sheet_id}, {"$inc": {"downloads": 1}})
     return FileResponse(path, media_type=doc["mime"], filename=doc["filename"])

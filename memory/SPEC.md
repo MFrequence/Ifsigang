@@ -300,3 +300,20 @@ mutation recrée l'intervalle à chaque render et le chrono reste figé.
 Résultat enregistré par `POST /api/calc/sprint` {score, total, seconds} (422 si score > total ou
 hors bornes) ; historique et meilleur score via `GET /api/calc/sprints`. Purge à la suppression
 d'un compte.
+
+
+## Stockage des fichiers de fiches (durable)
+
+Le disque du conteneur est **éphémère** : un redéploiement repart d'un disque vide. Les fichiers
+uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.py`, clé
+`EMERGENT_LLM_KEY`, hôte `INTEGRATION_PROXY_URL`, préfixe `fiches-ifsi/sheets/<stored_name>`).
+
+- `backend/uploads/` n'est qu'un **cache local** ; Mongo garde `storage_path` (source de vérité).
+- `routers/sheets.py::ensure_local_file(doc)` sert les octets : disque si présent, sinon
+  re-téléchargement depuis le stockage objet (utilisé par `/file`, `/download` et la
+  régénération de flashcards).
+- Upload : copie durable obligatoire (échec → 502, rien n'est enregistré en base).
+- `migrate_local_files_to_storage()` tourne au démarrage (lifespan) : pousse les fiches
+  sans `storage_path` encore présentes sur disque. Idempotent.
+- L'API de stockage n'a **ni suppression ni URL signée** : supprimer une fiche efface sa
+  référence en base (l'objet reste, inaccessible), et tout passe par le backend.

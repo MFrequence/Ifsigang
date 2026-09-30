@@ -31,6 +31,7 @@ class Sheet(BaseModel):
     description: str = ""
     filename: str
     stored_name: str
+    storage_path: str = ""  # chemin dans le stockage objet (copie durable)
     mime: str
     size: int
     downloads: int = 0
