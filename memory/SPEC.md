@@ -332,5 +332,12 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
   **DOCX en HTML** (`sheet-html-content`, styles Tailwind sur le HTML injecté),
   **TXT en texte** (`sheet-text-content`) ; un DOCX dont le HTML échoue retombe sur le texte.
   États partagés : `sheet-reader-loading`, `sheet-reader-error`.
+- **Plein écran** : `sheet-reader-fullscreen-toggle` (98vw × 96svh contre 4xl × 88svh) ;
+  la zone de lecture est en `flex-1 min-h-0` donc elle occupe toute la hauteur disponible.
+- **Recherche dans la fiche** (`sheet-reader-search-input`, 2 caractères minimum) : surlignage
+  de toutes les occurrences directement dans le DOM rendu (`<mark data-hit>`), compteur
+  `sheet-reader-search-count`, navigation `…-prev`/`…-next` (Entrée / Maj+Entrée) avec
+  `scrollIntoView`, et `…-clear`. Le contenu est repeint depuis la version d'origine à
+  chaque frappe (aucun surlignage cumulé). Marche aussi bien sur le HTML que sur le texte.
 - `lib/format.ts::isTextReadable` / `isPreviewable` : tous les formats acceptés sont
   maintenant lisibles en ligne → le bouton de la carte s'appelle « Lire ».
