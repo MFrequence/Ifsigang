@@ -63,7 +63,7 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="flex max-h-[92svh] max-w-2xl flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Ma progression</DialogTitle>
           <DialogDescription>

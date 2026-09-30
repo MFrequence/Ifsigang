@@ -51,7 +51,7 @@ export default function FlashcardsDialog({ sheet, open, onOpenChange }: Flashcar
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="flex max-h-[92svh] max-w-2xl flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="pr-8">Réviser — {sheet?.title}</DialogTitle>
           <DialogDescription>

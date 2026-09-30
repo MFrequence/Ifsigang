@@ -53,7 +53,7 @@ export default function StudySessionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="flex max-h-[92svh] max-w-2xl flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="pr-8">Session de révision — {scope}</DialogTitle>
           <DialogDescription>

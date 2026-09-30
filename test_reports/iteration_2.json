@@ -1,0 +1,146 @@
+{
+  "iteration": 2,
+  "mode": "retest",
+  "summary": "Retested the new 'landing screen first' UX (home -> today's revision, library, upload, progress tiles), the J-method spaced-repetition system (daily deck, stage badges, server-side level progression/reset, 7-day plan chart, per-user isolation), and card reporting. Extended the existing browser-check and backend-test suites in place (did not rewrite). 5 new backend test files (9 tests) + 7 new browser checks + 6 pre-existing browser checks updated to navigate through the new landing page before reaching the library (non-regression, since /cours is no longer the default landing route) + 1 extra run of the landing check against the public preview URL. All checks pass after fixes.",
+  "passed": 20,
+  "failed": 0,
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Nouvel écran d'arrivée avec 4 tuiles, pas la grille de fiches",
+      "name": "home-landing-shows-tiles",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Logged in as marc.dupont@ifsi.fr -> URL '/' shows h1 'Que veux-tu faire aujourd'hui ?' and the 4 tiles (action-revise-today, action-browse-library, action-upload-sheet, action-view-progress); sheet-search-input (library grid) has 0 count on this page."
+    },
+    {
+      "criterion": "Nouvel écran d'arrivée (rerun via preview ingress URL)",
+      "name": "home-landing-shows-tiles-preview",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Same flow run against https://learn-together-438.preview.emergentagent.com: heading and all 4 tiles visible."
+    },
+    {
+      "criterion": "Navigation accueil <-> bibliothèque dans les deux sens",
+      "name": "home-library-navigation",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "action-browse-library -> URL '/cours' with sheet-search-input visible; back-to-today-link -> '/' with tiles visible; re-entered '/cours', header-home-link -> '/' with tiles visible again."
+    },
+    {
+      "criterion": "Révision quotidienne (méthode des J) avec badge de palier",
+      "name": "daily-revision-stage-badge-advances",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "action-revise-today opened 'Ma révision du jour' dialog; study-question/study-progress visible; study-stage-badge text matched /Nouvelle|J1|J3|J7|J15|J30/; reveal + study-known-button advanced study-progress text."
+    },
+    {
+      "criterion": "Méthode des J côté serveur : progression puis réinitialisation, carte future exclue de /revision/today",
+      "name": "test_tscheck_j_method_progression",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /progress/answer correct=true x3 on a Domain E card -> due_date offsets vs 'today' = +1, +3, +7 (level 1->2->3); POST correct=false -> level=1, offset=+1; scheduled-forward card_id absent from GET /revision/today?limit=100; GET /revision/today?limit=0 -> 422. 2 tests passed."
+    },
+    {
+      "criterion": "Planning des J affiché sur l'accueil (revision-plan-chart, 7 barres)",
+      "name": "revision-plan-chart-appears",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "sarah.kaddour: answered one card in 'Ma révision du jour', closed dialog (Escape) -> Today page shows revision-plan-chart with exactly 7 child bars."
+    },
+    {
+      "criterion": "Planning des J : GET /api/revision/plan renvoie des compteurs cohérents (7 upcoming)",
+      "name": "test_tscheck_revision_plan_structure",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "After POST /progress/answer, GET /revision/plan returns today/due_today/new_available/scheduled/mastered/total_cards + exactly 7 upcoming entries, scheduled>=1, total_cards>=scheduled."
+    },
+    {
+      "criterion": "Signalement d'une carte erronée (UI)",
+      "name": "report-card-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "In the daily revision dialog, study-report-button opened the modal; filled report-reason-input, report-submit-button -> toast text 'Carte signalée...' visible and study-reported-badge appeared on the card."
+    },
+    {
+      "criterion": "Signalement d'une carte erronée (API: 201/404/401)",
+      "name": "test_tscheck_card_report",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /flashcards/{real_id}/report -> 201 with card_id+reason in body; POST /flashcards/tscheck-report-unknown-card-id/report -> 404; unauthenticated POST /flashcards/any-card-id/report -> 401. 3 tests passed."
+    },
+    {
+      "criterion": "Isolation par utilisateur de la progression des J",
+      "name": "test_tscheck_revision_isolation",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "sarah.kaddour's /revision/plan scheduled count unchanged before/after marc.dupont answered a Domain E card (marc's own /revision/plan scheduled >= 1 confirming his action had effect)."
+    },
+    {
+      "criterion": "Non-régression QCM mobile 375x667 : quiz-validate-button dans le viewport",
+      "name": "quiz-long-options-mobile-validate",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Updated to route through action-browse-library first (landing page changed navigation). Domain E sheet, validate button bounding box within 667px before and after picking an option; study-progress advanced Carte 1/2 -> Carte 2/2."
+    },
+    {
+      "criterion": "Non-régression QCM desktop 1280x800, flow complet 2 cartes",
+      "name": "quiz-long-options-desktop-full-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Updated navigation via action-browse-library; full 2-card quiz flow reached study-score. First rerun hit a transient 'element not attached to DOM' on scrollIntoViewIfNeeded during the card-2 exit animation (classified flaky); replaced with a toBeVisible wait instead of scrollIntoViewIfNeeded and it now passes consistently (2 consecutive passes)."
+    },
+    {
+      "criterion": "Non-régression flashcard mode, réponse longue : boutons atteignables",
+      "name": "flashcard-long-answer-buttons-reachable",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Updated navigation via action-browse-library; study-known-button/study-review-button bounding boxes within 667px viewport; clicking known-button advanced study-progress."
+    },
+    {
+      "criterion": "Non-régression : modales upload/progression sans overflow mobile",
+      "name": "modals-no-overflow-mobile",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Opens open-upload-modal-button and open-progress-button dialogs directly from AppHeader (unaffected by landing page change); action buttons fully within 375x667 viewport."
+    },
+    {
+      "criterion": "Non-régression login/logout",
+      "name": "login-logout-regression",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Updated to go through action-browse-library to reach domain-tab-a; login -> library -> user-menu -> logout-button -> back to login-email-input."
+    },
+    {
+      "criterion": "Non-régression progression/classement",
+      "name": "progress-leaderboard-updates",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Updated navigation via action-browse-library; answered a Domain E card, stat-answered increased, leaderboard-row-0 shows 'moi' for the logged-in user."
+    },
+    {
+      "criterion": "Non-régression progression (API)",
+      "name": "test_tscheck_progress_regression",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "Pre-existing file re-run unchanged: POST /progress/answer -> 201; /progress/me answered +1; /progress/leaderboard contains is_me=True entry. 1 test passed."
+    },
+    {
+      "criterion": "Non-régression filtres domaine/UE",
+      "name": "domain-unit-filter-session",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Updated navigation via action-browse-library; domain-tab-a -> unit-tab-A1 filtered grid; start-session-button opened an aggregated session with study-progress visible."
+    }
+  ],
+  "bugs": [],
+  "action_items": [
+    "None blocking. Note: quiz-long-options-desktop-full-flow's first rerun after the navigation update hit a one-off Playwright 'element not attached to DOM' error while scrolling into view during a card-exit animation; replaced scrollIntoViewIfNeeded with a toBeVisible wait and it now passes on two consecutive reruns — classified as test flakiness from the animation timing, not an app bug."
+  ],
+  "notes": [
+    "8 acceptance_matrix criteria all covered: 1,2,3,6 have UI browser checks (3,6 also have backend coverage since API-backed); 4,5,7 are pure/mostly API criteria covered by backend tests (5 also has a UI browser check for the chart); 8 (non-regression) is covered by rerunning/updating the 7 pre-existing browser checks plus the pre-existing backend regression test, since the new landing page changed the navigation path into the library that those checks depend on.",
+    "13 browser checks + 6 backend test files now in the suite (1 extra browser check run against the public preview URL as required).",
+    "No application code was modified — only /app/.emergent/scripts/checks/*.mjs (new + updated navigation), /app/backend/tests/test_tscheck_*.py (new), and this report.",
+    "Console errors observed across all checks were exclusively the expected 401 on /api/auth/me before login / after logout, matching the acceptance matrix's stated exception — no unexpected 4xx/5xx observed anywhere."
+  ]
+}

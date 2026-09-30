@@ -20,7 +20,7 @@ export default function SheetPreviewDialog({ sheet, open, onOpenChange }: SheetP
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {sheet && (
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="flex max-h-[92svh] max-w-4xl flex-col overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="pr-8">{sheet.title}</DialogTitle>
             <DialogDescription>

@@ -41,6 +41,15 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("user_id", ASCENDING), ("card_id", ASCENDING)], name="user_card"),
         IndexModel([("sheet_id", ASCENDING)], name="sheet"),
     ],
+    "card_schedules": [
+        IndexModel([("user_id", ASCENDING), ("card_id", ASCENDING)], name="user_card", unique=True),
+        IndexModel([("user_id", ASCENDING), ("due_date", ASCENDING)], name="user_due"),
+    ],
+    "card_reports": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("card_id", ASCENDING)], name="card"),
+        IndexModel([("sheet_id", ASCENDING)], name="sheet"),
+    ],
 }
 
 

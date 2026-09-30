@@ -33,6 +33,7 @@ export interface Flashcard {
   answer: string;
   distractors: string[];
   order: number;
+  reports: number;
 }
 
 // Mirror of StudyCard in backend/models/flashcard.py.
@@ -41,6 +42,41 @@ export interface StudyCard extends Flashcard {
   domain: string;
   unit: string;
   due: boolean;
+}
+
+// Mirror of RevisionCard in backend/models/revision.py.
+export interface RevisionCard extends StudyCard {
+  level: number;
+  stage: string;
+  next_stage: string;
+  is_new: boolean;
+  overdue_days: number;
+}
+
+// Mirror of DayLoad / RevisionPlan in backend/models/revision.py.
+export interface DayLoad {
+  date: string;
+  count: number;
+}
+
+export interface RevisionPlan {
+  today: string;
+  due_today: number;
+  new_available: number;
+  scheduled: number;
+  mastered: number;
+  total_cards: number;
+  upcoming: DayLoad[];
+}
+
+// Mirror of ReportOut in backend/models/revision.py.
+export interface CardReport {
+  id: string;
+  card_id: string;
+  sheet_id: string;
+  user_name: string;
+  reason: string;
+  created_at: string;
 }
 
 // Mirror of DomainProgress / ProgressStats in backend/models/progress.py.

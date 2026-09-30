@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from lib.db import db
+from lib.revision import apply_answer
 from models.progress import (
     AnswerRequest,
     CardResult,
@@ -36,7 +37,13 @@ async def record_answer(payload: AnswerRequest, user: dict = Depends(current_use
         mode=payload.mode if payload.mode in {"flash", "quiz"} else "flash",
     )
     await db.card_results.insert_one(result.model_dump())
-    return {"recorded": True}
+    # Chaque réponse fait avancer (ou reculer) la carte dans le cycle des J.
+    schedule = await apply_answer(user["id"], payload.card_id, card["sheet_id"], payload.correct)
+    return {
+        "recorded": True,
+        "level": schedule["level"],
+        "due_date": schedule["due_date"],
+    }
 
 
 @router.get("/me", response_model=ProgressStats)

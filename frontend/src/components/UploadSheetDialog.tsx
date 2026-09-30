@@ -120,7 +120,7 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="flex max-h-[92svh] max-w-lg flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Déposer une fiche</DialogTitle>
           <DialogDescription>

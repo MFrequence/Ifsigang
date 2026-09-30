@@ -142,6 +142,23 @@ DEMO: list[tuple[str, str, str, str, str, str, bytes]] = [
             "- Du propre au sale : on ne revient jamais en arrière.\n"
         ).encode("utf-8"),
     ),
+    (
+        "Posture professionnelle — analyse de situation",
+        "E",
+        "E1",
+        "sarah.kaddour@ifsi.fr",
+        "Démarche réflexive complète : les réponses détaillées servent aussi de cas limite d'affichage.",
+        "domaine-e-posture.txt",
+        (
+            "FICHE DE RÉVISION — DOMAINE E (UE E1, intégration des savoirs et posture professionnelle)\n\n"
+            "Analyse d'une situation de soin :\n"
+            "- Décrire les faits sans interprétation, en distinguant l'observé du ressenti.\n"
+            "- Identifier les acteurs, leurs rôles et le cadre légal qui s'applique au soin.\n"
+            "- Mobiliser les savoirs biologiques, relationnels et réglementaires pertinents.\n"
+            "- Formuler des hypothèses, décider, puis évaluer l'effet de la décision prise.\n"
+            "- Réinterroger sa pratique en équipe pour ancrer la démarche réflexive.\n"
+        ).encode("utf-8"),
+    ),
 ]
 
 # Flashcards prêtes à l'emploi, avec distracteurs pour le mode QCM (aucun appel LLM au seed).
@@ -207,6 +224,58 @@ SEED_FLASHCARDS: dict[str, list[tuple[str, str, list[str]]]] = {
                 "On nettoie d'abord les zones souillées pour éliminer le plus gros des germes.",
                 "On alterne les zones propres et sales pour économiser les compresses.",
                 "On recommence le geste dès qu'une zone propre a été touchée deux fois.",
+            ],
+        ),
+    ],
+    # Réponses volontairement très longues : cas limite d'affichage du QCM (la barre
+    # d'actions doit rester atteignable, la zone de réponses défile).
+    "domaine-e-posture.txt": [
+        (
+            "Quelles sont les étapes d'une analyse de situation en posture professionnelle infirmière ?",
+            "Il faut d'abord décrire les faits observés sans aucune interprétation, en distinguant "
+            "systématiquement ce qui a été réellement observé de ce qui relève du ressenti de "
+            "l'équipe ; puis identifier l'ensemble des acteurs concernés, leurs rôles respectifs et "
+            "le cadre légal applicable au soin envisagé ; ensuite mobiliser les savoirs biologiques, "
+            "relationnels et réglementaires pertinents pour la situation ; enfin formuler des "
+            "hypothèses, décider, évaluer l'effet de la décision prise et réinterroger sa pratique "
+            "en équipe afin d'ancrer durablement la démarche réflexive.",
+            [
+                "Il faut avant tout appliquer le protocole du service à la lettre et sans le "
+                "questionner, puis consigner le geste dans le dossier de soins informatisé, en "
+                "laissant au cadre de santé le soin d'analyser après coup la pertinence de la "
+                "décision prise, l'analyse réflexive relevant exclusivement de l'encadrement et "
+                "non de l'infirmier diplômé qui a réalisé le soin auprès du patient.",
+                "Il convient de recueillir d'emblée l'avis du médecin référent puis celui de la "
+                "famille du patient, de suivre systématiquement la décision majoritaire ainsi "
+                "obtenue, et de ne mobiliser les savoirs théoriques qu'en cas de désaccord "
+                "persistant entre les différents acteurs impliqués dans la prise en charge, "
+                "l'analyse écrite n'étant requise qu'en cas d'événement indésirable grave.",
+                "Il faut commencer par formuler des hypothèses diagnostiques à partir de son "
+                "intuition clinique et de son expérience personnelle des situations comparables, "
+                "puis rechercher a posteriori dans les faits observés les éléments qui viennent "
+                "confirmer ces hypothèses initiales, l'objectif étant de décider le plus "
+                "rapidement possible sans se laisser ralentir par le cadre réglementaire.",
+            ],
+        ),
+        (
+            "Pourquoi distinguer les faits observés du ressenti dans une analyse de situation ?",
+            "Parce que confondre les deux conduit à bâtir le raisonnement clinique sur une "
+            "interprétation subjective plutôt que sur des données vérifiables, ce qui fragilise "
+            "la décision de soin, rend l'analyse difficilement partageable en équipe et empêche "
+            "toute réévaluation objective de l'effet des actions entreprises auprès du patient.",
+            [
+                "Parce que le ressenti de l'équipe soignante n'a aucune valeur dans la démarche "
+                "de soin et doit être systématiquement écarté du dossier du patient comme de "
+                "toute transmission orale, seules les données chiffrées issues des appareils de "
+                "surveillance pouvant légitimement fonder une décision infirmière.",
+                "Parce que la réglementation impose de consigner uniquement les faits objectifs "
+                "dans le dossier de soins, le ressenti des professionnels devant faire l'objet "
+                "d'un document séparé conservé par l'encadrement et non accessible au patient "
+                "ni aux autres membres de l'équipe pluriprofessionnelle.",
+                "Parce que le ressenti doit toujours être recueilli en premier afin d'orienter "
+                "la recherche des faits pertinents, la subjectivité du soignant constituant le "
+                "point de départ méthodologique incontournable de toute analyse de situation "
+                "conduite dans le cadre de la formation infirmière.",
             ],
         ),
     ],

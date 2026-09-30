@@ -59,6 +59,7 @@ async def study_deck(
                 sheet_title=sheet.get("title", ""),
                 domain=sheet.get("domain", ""),
                 unit=sheet.get("unit") or "",
+                reports=card.get("reports", 0),
                 # Jamais vue ou ratée la dernière fois → à revoir en priorité.
                 due=last is None or not last.get("correct"),
             )

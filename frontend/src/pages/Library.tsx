@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Layers, Search } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Layers, Search } from "lucide-react";
 import { toast } from "sonner";
 import { apiDelete, apiGet } from "@/lib/api";
 import { DOMAIN_MAP } from "@/lib/domains";
@@ -18,11 +19,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-interface HomeProps {
+interface LibraryProps {
   user: User;
 }
 
-export default function Home({ user }: HomeProps) {
+export default function Library({ user }: LibraryProps) {
   const [domain, setDomain] = useState<DomainFilter>("ALL");
   const [unit, setUnit] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -111,6 +112,13 @@ export default function Home({ user }: HomeProps) {
 
       <main className="dot-grid mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="mb-8">
+          <Link
+            to="/"
+            data-testid="back-to-today-link"
+            className="mb-3 inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors duration-150 hover:text-sky-700"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Accueil
+          </Link>
           <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             Les fiches de révision de la promo
           </h1>

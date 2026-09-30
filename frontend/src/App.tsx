@@ -3,8 +3,9 @@ import { Link, Route, Routes } from "react-router-dom";
 import { ApiError, apiGet } from "@/lib/api";
 import type { User } from "@/lib/types";
 import { Toaster } from "@/components/ui/sonner";
-import Home from "@/pages/Home";
+import Library from "@/pages/Library";
 import Login from "@/pages/Login";
+import Today from "@/pages/Today";
 
 function BootSplash() {
   return (
@@ -20,7 +21,7 @@ function NotFound() {
       <p className="font-heading text-4xl font-extrabold tracking-tight text-slate-900">404</p>
       <p className="text-slate-500">Cette page n'existe pas.</p>
       <Link to="/" className="text-sky-700 underline-offset-4 hover:underline">
-        Retour aux fiches
+        Retour à l'accueil
       </Link>
     </div>
   );
@@ -48,7 +49,9 @@ export default function App() {
         <Login />
       ) : (
         <Routes>
-          <Route path="/" element={<Home user={user} />} />
+          {/* L'accueil demande ce qu'on veut faire ; la bibliothèque est une destination. */}
+          <Route path="/" element={<Today user={user} />} />
+          <Route path="/cours" element={<Library user={user} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}

@@ -63,6 +63,37 @@ personnel et **classement de la promo**.
   sans distracteurs retombe en mode flashcard avec un bandeau explicatif ; l'onglet QCM est
   désactivé si aucune carte du paquet n'en a.
 
+## Méthode des J (répétition espacée)
+- Paliers : **J0, J1, J3, J7, J15, J30** (`lib/revision.py`, `J_INTERVALS`), index = `level`.
+- Réponse juste → `level + 1` (borné à J30) ; réponse fausse → retour à **J1** (intervalle
+  resserré, conformément à la méthode). Échéance = date du jour + intervalle, **ancrée serveur**
+  via `lib/dates.py` (`today_iso`), jamais calculée dans le navigateur.
+- `card_schedules` : user_id + card_id (unique), level, due_date (YYYY-MM-DD), reviews, lapses.
+  Chaque `POST /progress/answer` met à jour l'échéance et renvoie `{level, due_date}`.
+- `GET /revision/today?limit=20` → paquet du jour : cartes **en retard d'abord** (tri par retard
+  décroissant), puis échues, puis de nouvelles cartes pour compléter. Chaque carte porte
+  `stage` (ex. "J7"), `next_stage`, `is_new`, `overdue_days`.
+- `GET /revision/plan` → `due_today`, `new_available`, `scheduled`, `mastered` (palier J30),
+  `total_cards`, `upcoming` (charge des 7 prochains jours).
+- **Orphelines** : les cartes dont la fiche a été supprimée sont exclues du paquet et du plan ;
+  `build_deck_for_sheet` vérifie que la fiche existe encore avant d'insérer (la tâche de fond
+  peut finir après une suppression).
+
+## Signalement de cartes erronées
+- `POST /flashcards/{card_id}/report` (motif facultatif, 300 car.) → 201, incrémente un compteur
+  `reports` porté par la carte (pas de jointure à l'affichage). 404 carte inconnue.
+- `GET /sheets/{sheet_id}/reports` → historique des signalements d'une fiche.
+- `DELETE /flashcards/{card_id}/report` → 204, remet le compteur à zéro (après correction).
+- UI : bouton drapeau dans le moteur de révision → `ReportCardDialog` ; badge « Signalée » dès
+  que `reports > 0`.
+
+## Navigation
+- `/` → **`pages/Today.tsx`** : « Que veux-tu faire aujourd'hui ? » — 4 tuiles (Réviser
+  aujourd'hui avec le compte de cartes dues, Voir les cours, Déposer une fiche, Ma progression)
+  + graphique « Mon planning des J » sur 7 jours. C'est l'écran d'arrivée après connexion.
+- `/cours` → **`pages/Library.tsx`** : la bibliothèque de fiches (ex-Home), avec un retour
+  « Accueil ». Le logo de l'en-tête ramène à `/`.
+
 ## Frontend
 - `pages/Login.tsx` : connexion / inscription (code d'invitation).
 - `pages/Home.tsx` : AppHeader (compteur, « Ma progression », « Déposer une fiche », menu compte
@@ -70,8 +101,12 @@ personnel et **classement de la promo**.
   bouton **« Réviser la sélection »** (domaine ou UE selon les filtres actifs), grille SheetCard.
   Le domaine est **obligatoire et sans présélection** à l'upload (évite les fiches mal classées).
 - `components/StudyRunner.tsx` : moteur partagé flashcards/QCM, auto-évaluation, mélange,
-  score final, enregistrement de chaque réponse (`/progress/answer`) + invalidation de
-  `["progress"]` et `["leaderboard"]`.
+  score final, **badge de palier J** (`showStage`), **bouton de signalement**, hauteur bornée
+  avec zone de réponses défilable et barre d'actions collée en bas (cas des réponses longues),
+  enregistrement de chaque réponse (`/progress/answer`) + invalidation de `["progress"]`,
+  `["leaderboard"]` et `["revision-plan"]`.
+- `components/DailyRevisionDialog.tsx` : paquet du jour (méthode des J), `staleTime: Infinity`
+  pour ne pas recharger le paquet en pleine session.
 - `components/FlashcardsDialog.tsx` (une fiche) et `components/StudySessionDialog.tsx`
   (domaine/UE agrégés, badge « À revoir » sur les cartes dues).
 - `components/ProgressDialog.tsx` : onglets « Mon suivi » (4 tuiles + barres par domaine) et

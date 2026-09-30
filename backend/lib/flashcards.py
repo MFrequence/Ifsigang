@@ -91,6 +91,11 @@ async def build_deck_for_sheet(sheet_id: str, path: Path, mime: str) -> str | in
         return NO_CARDS
     if not cards:
         return NO_CARDS
+    # La fiche peut avoir été supprimée pendant la génération (tâche de fond) : sans ce
+    # garde-fou, on insérerait des cartes orphelines rattachées à une fiche disparue.
+    if not await db.sheets.find_one({"id": sheet_id}, {"_id": 1}):
+        logger.info("build_deck_for_sheet(%s): fiche supprimée entre-temps, abandon", sheet_id)
+        return NO_CARDS
     await db.flashcards.delete_many({"sheet_id": sheet_id})
     await db.flashcards.insert_many(
         [

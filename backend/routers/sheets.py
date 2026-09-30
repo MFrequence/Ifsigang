@@ -143,5 +143,7 @@ async def delete_sheet(sheet_id: str, _: dict = Depends(current_user)):
     await db.sheets.delete_one({"id": sheet_id})
     await db.flashcards.delete_many({"sheet_id": sheet_id})  # pas de paquet orphelin
     await db.card_results.delete_many({"sheet_id": sheet_id})
+    await db.card_schedules.delete_many({"sheet_id": sheet_id})
+    await db.card_reports.delete_many({"sheet_id": sheet_id})
     (UPLOADS_DIR / doc["stored_name"]).unlink(missing_ok=True)
     return Response(status_code=204)

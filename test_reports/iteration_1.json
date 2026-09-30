@@ -1,0 +1,75 @@
+{
+  "iteration": 1,
+  "mode": "generate",
+  "summary": "Verified the QCM/flashcard/modal overflow fix for long-option content on the 'Posture professionnelle' sheet (Domain E) across mobile (375x667) and desktop (1280x800), plus non-regression on login/logout, progress/leaderboard, and domain/unit filters. 1 backend test file + 7 browser checks, all passing (one browser check needed a stabilizing explicit-visibility wait after a flaky first run, not an app bug).",
+  "passed": 8,
+  "failed": 0,
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "QCM long options mobile: validate button reachable, all 4 options reachable, validation advances to next card",
+      "name": "quiz-long-options-mobile-validate",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Mobile 375x667: quiz-validate-button bounding box fully within viewport (y+height<=667) before and after picking quiz-option-0; study-progress advanced from CARTE 1/2 to CARTE 2/2 after validation. Screenshots: quiz-before-pick, quiz-after-validate."
+    },
+    {
+      "criterion": "Same long QCM usable on mobile 375x667 AND desktop 1280x800, full 2-card flow to study-score",
+      "name": "quiz-long-options-desktop-full-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Desktop 1280x800: validate button stayed within viewport across both cards of Domain E sheet; completed the full flow (card1 -> card2 -> study-score visible). Screenshots: quiz-card2, quiz-score-desktop. Mobile coverage provided by quiz-long-options-mobile-validate."
+    },
+    {
+      "criterion": "Flashcard mode with long answer: known/review buttons reachable and advance the card",
+      "name": "flashcard-long-answer-buttons-reachable",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Mobile 375x667: study-reveal-button click showed study-answer-panel; study-known-button and study-review-button both had bounding boxes fully within viewport; clicking known-button advanced study-progress to CARTE 2/2. Screenshots: flashcard-long-answer, flashcard-advanced."
+    },
+    {
+      "criterion": "Non-regression: upload modal and progress modal do not overflow on mobile 375x667",
+      "name": "modals-no-overflow-mobile",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Mobile 375x667: opened open-upload-modal-button dialog and open-progress-button dialog; each had at least one visible action button fully within viewport (y+height<=667). Screenshots: upload-modal, progress-modal."
+    },
+    {
+      "criterion": "Non-regression login/logout",
+      "name": "login-logout-regression",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Logged in with lea.martin@ifsi.fr/Promo2026! -> library visible (domain-tab-a); opened user-menu-trigger without console error beyond expected pre-login 401; logout-button returned to login-email-input screen. Screenshots: logged-in-library, user-menu-open, logged-out."
+    },
+    {
+      "criterion": "Non-regression progress and leaderboard after answering cards",
+      "name": "progress-leaderboard-updates",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Recorded baseline answered count via GET /api/progress/me, answered one Domain E flashcard (known), reopened progress dialog: stat-answered increased (after > before); tab-leaderboard showed leaderboard-row-0 with 'moi' badge text present for the logged-in user. Screenshots: dialog-opened, progress-stats, leaderboard."
+    },
+    {
+      "criterion": "Non-regression progress fed via API (backend)",
+      "name": "test_tscheck_progress_regression",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /progress/answer -> 201 {recorded:true}; GET /progress/me answered incremented by 1 (assert stats.answered == answered_before+1); GET /progress/leaderboard includes my_id entry with is_me=True. Ran via `python -m pytest`: 1 passed."
+    },
+    {
+      "criterion": "Non-regression domain and unit filters",
+      "name": "domain-unit-filter-session",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Clicked domain-tab-a then unit-tab-A1 without console error, grid filtered; start-session-button opened an aggregated session showing study-progress. Screenshots: filtered-a1, session-started."
+    }
+  ],
+  "bugs": [],
+  "action_items": [
+    "Note: initial run of progress-leaderboard-updates hit a 30s timeout on stat-answered right after closing the study dialog with Escape (likely a timing/animation race, not reproduced after adding an explicit toBeVisible wait on open-progress-button before clicking). Classified as flaky, not a bug, since the rerun with the added wait passed cleanly and the underlying feature (answer -> progress -> leaderboard) works via both UI and backend test."
+  ],
+  "notes": [
+    "8 acceptance_matrix criteria covered by 7 browser checks + 1 backend test file (progress/leaderboard criterion has both UI and API coverage as it is API-backed and UI-facing).",
+    "Console errors observed across all checks were exclusively the expected 401 on /api/auth/me probe before login (per spec_deviations/acceptance matrix allowance) — no unexpected 4xx/5xx observed.",
+    "No application code was modified; only browser checks (/app/.emergent/scripts/checks/) and this report were added, plus reuse of the pre-existing backend test file."
+  ]
+}

@@ -1,15 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, Loader2, Shuffle, Sparkles, X } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  Loader2,
+  Shuffle,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { apiPost } from "@/lib/api";
-import type { Flashcard, StudyCard, StudyMode } from "@/lib/types";
+import type { Flashcard, RevisionCard, StudyCard, StudyMode } from "@/lib/types";
+import ReportCardDialog from "@/components/ReportCardDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-export function shuffled<T>(items: T[]): T[] {
+function shuffled<T>(items: T[]): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -18,7 +28,7 @@ export function shuffled<T>(items: T[]): T[] {
   return copy;
 }
 
-type AnyCard = Flashcard | StudyCard;
+type AnyCard = Flashcard | StudyCard | RevisionCard;
 
 function contextOf(card: AnyCard): string | null {
   return "sheet_title" in card ? card.sheet_title : null;
@@ -28,6 +38,12 @@ function isDue(card: AnyCard): boolean {
   return "due" in card ? card.due : false;
 }
 
+function stageOf(card: AnyCard): { stage: string; next: string; isNew: boolean; overdue: number } | null {
+  return "stage" in card
+    ? { stage: card.stage, next: card.next_stage, isNew: card.is_new, overdue: card.overdue_days }
+    : null;
+}
+
 interface StudyRunnerProps {
   cards: AnyCard[];
   mode: StudyMode;
@@ -35,6 +51,7 @@ interface StudyRunnerProps {
   onRegenerate?: () => void;
   regenerating?: boolean;
   showContext?: boolean;
+  showStage?: boolean;
 }
 
 // Moteur de révision partagé : mode flashcard (auto-évaluation) ou QCM (4 propositions).
@@ -46,6 +63,7 @@ export default function StudyRunner({
   onRegenerate,
   regenerating = false,
   showContext = false,
+  showStage = false,
 }: StudyRunnerProps) {
   const [deck, setDeck] = useState<AnyCard[]>(cards);
   const [index, setIndex] = useState(0);
@@ -53,6 +71,8 @@ export default function StudyRunner({
   const [picked, setPicked] = useState<string | null>(null);
   const [known, setKnown] = useState(0);
   const [missed, setMissed] = useState(0);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportedIds, setReportedIds] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -87,6 +107,7 @@ export default function StudyRunner({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["progress"] });
       void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      void queryClient.invalidateQueries({ queryKey: ["revision-plan"] });
     },
   });
 
@@ -138,19 +159,41 @@ export default function StudyRunner({
 
   if (!current) return null;
 
+  const stage = stageOf(current);
+  const isReported = current.reports > 0 || reportedIds.includes(current.id);
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <p
             className="font-mono text-xs uppercase tracking-wider text-slate-500"
             data-testid="study-progress"
           >
             Carte {index + 1} / {deck.length}
           </p>
-          {isDue(current) ? (
+          {showStage && stage ? (
+            <Badge
+              variant="outline"
+              data-testid="study-stage-badge"
+              className="border-sky-200 bg-sky-50 text-sky-800"
+            >
+              {stage.isNew ? "Nouvelle" : stage.stage}
+              {stage.overdue > 0 ? ` · +${stage.overdue}j de retard` : ""}
+            </Badge>
+          ) : null}
+          {!showStage && isDue(current) ? (
             <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-800">
               À revoir
+            </Badge>
+          ) : null}
+          {isReported ? (
+            <Badge
+              variant="outline"
+              data-testid="study-reported-badge"
+              className="border-amber-300 bg-amber-50 text-amber-900"
+            >
+              Signalée
             </Badge>
           ) : null}
         </div>
@@ -165,6 +208,15 @@ export default function StudyRunner({
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Signaler une carte erronée"
+            data-testid="study-report-button"
+            onClick={() => setReportOpen(true)}
+          >
+            <Flag className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -202,7 +254,9 @@ export default function StudyRunner({
         </p>
       ) : null}
 
-      <div className="min-h-[220px] rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+      {/* Zone défilable : avec 4 propositions longues, le contenu ne doit jamais pousser
+          la barre d'actions hors de l'écran. */}
+      <div className="max-h-[46svh] min-h-[200px] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id + (revealed ? "-r" : "") + effectiveMode}
@@ -270,7 +324,9 @@ export default function StudyRunner({
         </AnimatePresence>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* Barre d'actions collée en bas : toujours atteignable, quelle que soit la
+          longueur des réponses. */}
+      <div className="sticky bottom-0 z-10 -mx-1 flex flex-wrap items-center justify-between gap-2 bg-popover px-1 pb-1 pt-2">
         <Button
           variant="outline"
           size="sm"
@@ -332,6 +388,14 @@ export default function StudyRunner({
           Suivant <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      <ReportCardDialog
+        cardId={current.id}
+        question={current.question}
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        onReported={() => setReportedIds((ids) => [...ids, current.id])}
+      />
     </div>
   );
 }

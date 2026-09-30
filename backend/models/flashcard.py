@@ -12,6 +12,7 @@ class Flashcard(BaseModel):
     answer: str
     distractors: list[str] = Field(default_factory=list)
     order: int = 0
+    reports: int = 0
 
 
 class FlashcardOut(BaseModel):
@@ -21,12 +22,15 @@ class FlashcardOut(BaseModel):
     answer: str
     distractors: list[str] = Field(default_factory=list)
     order: int
+    reports: int = 0
 
     @classmethod
     def from_doc(cls, doc: dict) -> "FlashcardOut":
-        # Les cartes créées avant le mode QCM n'ont pas de distracteurs.
+        # Les cartes créées avant le mode QCM / le signalement n'ont pas ces champs.
         if doc.get("distractors") is None:
             doc = {**doc, "distractors": []}
+        if doc.get("reports") is None:
+            doc = {**doc, "reports": 0}
         return cls(**doc)
 
 
