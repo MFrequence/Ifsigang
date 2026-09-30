@@ -86,6 +86,22 @@ export interface Streak {
   days: StreakDay[];
 }
 
+// Mirror of AdminStatus / AdminUser in backend/models/admin.py.
+export interface AdminStatus {
+  is_admin: boolean;
+  configured: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  created_at: string | null;
+  sheets: number;
+  answers: number;
+  is_me: boolean;
+}
+
 // Mirror of ReportOut in backend/models/revision.py.
 export interface CardReport {
   id: string;

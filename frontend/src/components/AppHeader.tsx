@@ -1,8 +1,10 @@
-import { FolderOpen, GraduationCap, LogOut, TrendingUp, Upload } from "lucide-react";
+import { FolderOpen, GraduationCap, LogOut, ShieldCheck, TrendingUp, Upload } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { endSession } from "@/lib/session";
 import type { User } from "@/lib/types";
+import AdminDialog from "@/components/AdminDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +30,7 @@ export default function AppHeader({
   onUploadClick,
   onProgressClick,
 }: AppHeaderProps) {
+  const [adminOpen, setAdminOpen] = useState(false);
   const initials = user.name
     .split(/\s+/)
     .slice(0, 2)
@@ -106,6 +109,12 @@ export default function AppHeader({
                   <TrendingUp className="h-4 w-4" /> Ma progression
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  data-testid="menu-admin-item"
+                  onClick={() => setAdminOpen(true)}
+                >
+                  <ShieldCheck className="h-4 w-4" /> Espace admin
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   variant="destructive"
                   data-testid="logout-button"
                   onClick={() => {
@@ -119,6 +128,8 @@ export default function AppHeader({
           </DropdownMenu>
         </div>
       </div>
+
+      <AdminDialog open={adminOpen} onOpenChange={setAdminOpen} />
     </header>
   );
 }

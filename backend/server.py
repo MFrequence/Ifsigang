@@ -19,6 +19,7 @@ load_dotenv(ROOT_DIR / '.env')
 from lib.db import client, db, ensure_indexes
 
 # App routers — one APIRouter per resource, folded into api_router below
+from routers.admin import router as admin_router
 from routers.auth import router as auth_router
 from routers.flashcards import router as flashcards_router
 from routers.progress import router as progress_router
@@ -77,6 +78,7 @@ api_router.include_router(progress_router)
 api_router.include_router(study_router)
 api_router.include_router(revision_router)
 api_router.include_router(reports_router)
+api_router.include_router(admin_router)
 
 # Include the router in the main app
 app.include_router(api_router)

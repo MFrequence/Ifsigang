@@ -135,3 +135,14 @@ personnel et **classement de la promo**.
 - Today : hero typographique, carte streak sombre, tuiles bento en verre dépoli avec
   dégradés d'icônes, graphe des J en dégradé. Library : fond mesh + barre de filtres glass.
   Login : split layout (panneau visuel promo + image Unsplash à gauche, formulaire à droite).
+
+## Espace admin — suppression de comptes
+- `ADMIN_PASSWORD` (backend/.env) déverrouille l'espace : `POST /api/admin/unlock` pose
+  `is_admin: true` sur le document `sessions` de la session en cours (`POST /admin/lock` annule,
+  `GET /admin/status` renvoie {is_admin, configured}). Dépendance `admin_guard`.
+- `GET /api/admin/users` → AdminUser[] (nom, email, nb de fiches, nb de réponses, is_me).
+- `DELETE /api/admin/users/{id}` → suppression TOTALE : fichiers disque + sheets de l'uploader,
+  flashcards/card_results/card_schedules/card_reports liés, progression et revision_days du
+  compte, ses sessions, puis le user. 400 si c'est le compte connecté, 404 si inconnu.
+- Frontend : `components/AdminDialog.tsx` monté dans `AppHeader` (menu avatar → Espace admin),
+  confirmation en deux temps avant suppression.
