@@ -25,6 +25,7 @@ from lib.flashcards import build_deck_for_sheet
 from models.sheet import (
     DOMAINS,
     Sheet,
+    SheetFavorite,
     SheetOut,
     SheetReport,
     SheetReportOut,
@@ -128,6 +129,36 @@ async def upload_sheet(
     return SheetOut.from_doc(sheet.model_dump())
 
 
+@router.get("/sheets/favorites", response_model=list[str])
+async def list_favorites(user: dict = Depends(current_user)):
+    """Les identifiants des fiches épinglées par l'étudiant connecté (plus récentes d'abord)."""
+    docs = (
+        await db.sheet_favorites.find({"user_id": user["id"]})
+        .sort("created_at", DESCENDING)
+        .to_list(500)
+    )
+    return [doc["sheet_id"] for doc in docs]
+
+
+@router.post("/sheets/{sheet_id}/favorite", status_code=201)
+async def add_favorite(sheet_id: str, user: dict = Depends(current_user)):
+    """Épingle une fiche. Idempotent : re-épingler ne crée pas de doublon."""
+    await _find_or_404(sheet_id)
+    favorite = SheetFavorite(user_id=user["id"], sheet_id=sheet_id)
+    await db.sheet_favorites.update_one(
+        {"user_id": user["id"], "sheet_id": sheet_id},
+        {"$setOnInsert": favorite.model_dump()},
+        upsert=True,
+    )
+    return {"sheet_id": sheet_id, "favorite": True}
+
+
+@router.delete("/sheets/{sheet_id}/favorite", status_code=204)
+async def remove_favorite(sheet_id: str, user: dict = Depends(current_user)):
+    await db.sheet_favorites.delete_one({"user_id": user["id"], "sheet_id": sheet_id})
+    return Response(status_code=204)
+
+
 @router.get("/sheets/{sheet_id}/file")
 async def sheet_file(sheet_id: str, _: dict = Depends(current_user)):
     """Inline preview — served to <iframe>/<img>, cookie rides same-origin."""
@@ -186,5 +217,6 @@ async def delete_sheet(sheet_id: str, request: Request, user: dict = Depends(cur
     await db.card_schedules.delete_many({"sheet_id": sheet_id})
     await db.card_reports.delete_many({"sheet_id": sheet_id})
     await db.sheet_reports.delete_many({"sheet_id": sheet_id})
+    await db.sheet_favorites.delete_many({"sheet_id": sheet_id})  # plus d'épingle orpheline
     (UPLOADS_DIR / doc["stored_name"]).unlink(missing_ok=True)
     return Response(status_code=204)

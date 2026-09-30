@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Download, Eye, FileText, Flag, Image as ImageIcon, Layers, Trash2, User } from "lucide-react";
+import { Calendar, Download, Eye, FileText, Flag, Image as ImageIcon, Layers, Star, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -25,6 +25,8 @@ interface SheetCardProps {
   onRevise: (sheet: Sheet) => void;
   onDelete: (sheet: Sheet) => void;
   deleting: boolean;
+  favorite: boolean;
+  onToggleFavorite: (sheet: Sheet, next: boolean) => void;
 }
 
 export default function SheetCard({
@@ -34,6 +36,8 @@ export default function SheetCard({
   onRevise,
   onDelete,
   deleting,
+  favorite,
+  onToggleFavorite,
 }: SheetCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -55,6 +59,21 @@ export default function SheetCard({
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={favorite ? "Retirer des favoris" : "Épingler en favori"}
+            aria-pressed={favorite}
+            title={favorite ? "Retirer des favoris" : "Épingler en favori"}
+            data-testid={`sheet-favorite-button-${sheet.id}`}
+            onClick={() => onToggleFavorite(sheet, !favorite)}
+            className={cn(
+              "transition-transform duration-100 active:scale-90",
+              favorite ? "text-amber-400 hover:text-amber-300" : "text-muted-foreground/60 hover:text-amber-400",
+            )}
+          >
+            <Star className={cn("h-4 w-4", favorite && "fill-current")} />
+          </Button>
           {sheet.unit ? (
             <Badge variant="outline" className="border-border text-muted-foreground">
               {sheet.unit}

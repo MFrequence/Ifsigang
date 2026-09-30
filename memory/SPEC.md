@@ -102,6 +102,10 @@ personnel et **classement de la promo**.
   **Barre de tri** au-dessus de la grille (`sheet-sort-bar`, client-side) : « Plus récentes »
   (défaut), « Plus téléchargées », « Par auteur (A-Z) » — départage toujours par date récente ;
   affiche aussi le nombre de fiches filtrées (`sheet-result-count`).
+  **Favoris** : étoile sur chaque SheetCard (`sheet-favorite-button-{id}`) + filtre « Favoris (n) »
+  (`sheet-favorites-filter-button`) dans la barre de tri. Stockés par étudiant dans
+  `sheet_favorites` (`{user_id, sheet_id}`), API `GET /api/sheets/favorites` (liste d'ids),
+  `POST|DELETE /api/sheets/{id}/favorite` (POST idempotent) ; purgés avec la fiche.
   Le domaine est **obligatoire et sans présélection** à l'upload (évite les fiches mal classées).
 - `components/StudyRunner.tsx` : moteur partagé flashcards/QCM, auto-évaluation, mélange,
   score final, **badge de palier J** (`showStage`), **bouton de signalement**, hauteur bornée

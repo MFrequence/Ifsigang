@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowDownNarrowWide, ArrowLeft, Layers, Search } from "lucide-react";
+import { ArrowDownNarrowWide, ArrowLeft, Layers, Search, Star } from "lucide-react";
 import { toast } from "sonner";
-import { apiDelete, apiGet } from "@/lib/api";
+import { apiDelete, apiGet, apiPost } from "@/lib/api";
 import { DOMAIN_MAP } from "@/lib/domains";
 import type { DomainFilter, DomainKey, Sheet, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
@@ -36,6 +36,7 @@ export default function Library({ user }: LibraryProps) {
   const [unit, setUnit] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSheet, setPreviewSheet] = useState<Sheet | null>(null);
@@ -52,6 +53,29 @@ export default function Library({ user }: LibraryProps) {
     refetchOnWindowFocus: false,
   });
   const sheets = useMemo(() => sheetsQuery.data ?? [], [sheetsQuery.data]);
+
+  // Les fiches épinglées de l'étudiant connecté : une liste d'ids, servie à part de la biblio.
+  const favoritesQuery = useQuery({
+    queryKey: ["sheet-favorites"],
+    queryFn: () => apiGet<string[]>("/sheets/favorites"),
+    refetchOnWindowFocus: false,
+  });
+  const favorites = useMemo(
+    () => new Set(favoritesQuery.data ?? []),
+    [favoritesQuery.data],
+  );
+
+  const toggleFavorite = useMutation({
+    mutationFn: async ({ sheet, next }: { sheet: Sheet; next: boolean }) => {
+      if (next) await apiPost<{ sheet_id: string }>(`/sheets/${sheet.id}/favorite`, {});
+      else await apiDelete<void>(`/sheets/${sheet.id}/favorite`);
+    },
+    onSuccess: (_data, { next }) => {
+      void queryClient.invalidateQueries({ queryKey: ["sheet-favorites"] });
+      toast.success(next ? "Fiche épinglée en favori" : "Fiche retirée des favoris");
+    },
+    onError: () => toast.error("Impossible de modifier les favoris — réessaie"),
+  });
 
   const counts = useMemo(() => {
     const next: Record<DomainFilter, number> = { ALL: sheets.length, A: 0, B: 0, C: 0, D: 0, E: 0 };
@@ -73,6 +97,7 @@ export default function Library({ user }: LibraryProps) {
     const q = search.trim().toLowerCase();
     const list = sheets.filter(
       (sheet) =>
+        (!onlyFavorites || favorites.has(sheet.id)) &&
         (domain === "ALL" || sheet.domain === domain) &&
         (!unit || (sheet.unit || "").trim() === unit) &&
         (!q ||
@@ -89,7 +114,7 @@ export default function Library({ user }: LibraryProps) {
       }
       return byRecent(a, b);
     });
-  }, [sheets, domain, unit, search, sort]);
+  }, [sheets, domain, unit, search, sort, onlyFavorites, favorites]);
 
   const deleteSheet = useMutation({
     mutationFn: (sheet: Sheet) => apiDelete<void>(`/sheets/${sheet.id}`),
@@ -195,7 +220,21 @@ export default function Library({ user }: LibraryProps) {
               <span data-testid="sheet-result-count">{filtered.length}</span>{" "}
               {filtered.length > 1 ? "fiches" : "fiche"}
             </p>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                data-testid="sheet-favorites-filter-button"
+                aria-pressed={onlyFavorites}
+                onClick={() => setOnlyFavorites((v) => !v)}
+                className={`mr-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+                  onlyFavorites
+                    ? "border-amber-400/60 bg-amber-400/15 text-amber-300"
+                    : "border-border text-muted-foreground hover:border-amber-400/40 hover:text-foreground"
+                }`}
+              >
+                <Star className={`h-3.5 w-3.5 ${onlyFavorites ? "fill-current" : ""}`} aria-hidden />
+                Favoris {favorites.size > 0 ? `(${favorites.size})` : ""}
+              </button>
               <ArrowDownNarrowWide
                 className="h-3.5 w-3.5 text-muted-foreground/70"
                 aria-hidden
@@ -241,14 +280,18 @@ export default function Library({ user }: LibraryProps) {
         ) : filtered.length === 0 ? (
           <EmptyState
             title={
-              search.trim()
+              onlyFavorites
+                ? "Aucune fiche en favori"
+                : search.trim()
                 ? "Aucune fiche ne correspond à ta recherche"
                 : unit
                   ? "Aucune fiche dans cette UE"
                   : "Aucune fiche dans cette sélection"
             }
             hint={
-              search.trim()
+              onlyFavorites
+                ? "Clique sur l'étoile d'une fiche pour la retrouver ici avant un partiel."
+                : search.trim()
                 ? "Essaie un autre mot-clé, ou dépose la fiche qu'il te manque."
                 : "Sois le premier à partager tes révisions avec la promo."
             }
@@ -265,6 +308,8 @@ export default function Library({ user }: LibraryProps) {
                 onPreview={openPreview}
                 onRevise={openRevise}
                 onDelete={(s) => deleteSheet.mutate(s)}
+                favorite={favorites.has(sheet.id)}
+                onToggleFavorite={(s, next) => toggleFavorite.mutate({ sheet: s, next })}
                 deleting={deleteSheet.isPending && deleteSheet.variables?.id === sheet.id}
               />
             ))}

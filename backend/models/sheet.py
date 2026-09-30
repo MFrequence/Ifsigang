@@ -93,6 +93,15 @@ class SheetReportOut(BaseModel):
     created_at: datetime
 
 
+class SheetFavorite(BaseModel):
+    """Fiche épinglée par un étudiant — sa sélection « avant partiel »."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    sheet_id: str
+    created_at: datetime = Field(default_factory=utcnow)
+
+
 class UnlockRequest(BaseModel):
     code: str
 
