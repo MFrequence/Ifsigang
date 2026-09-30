@@ -1,4 +1,4 @@
-"""Shared Mongo handle — import `client`/`db` from here (server.py, routers, seed.py)."""
+"""Shared Mongo handle — import `client`/`db` from here (server.py, routers, lib)."""
 
 import logging
 import os
@@ -34,7 +34,9 @@ INDEXES: dict[str, list[IndexModel]] = {
     ],
     "sessions": [
         IndexModel([("token", ASCENDING)], name="token", unique=True),
-        IndexModel([("expires_at", ASCENDING)], name="ttl", expireAfterSeconds=0),
+        # Pas d'index TTL : une session expirée est supprimée à sa prochaine utilisation
+        # (routers/auth.py) — aucune suppression automatique au démarrage.
+        IndexModel([("expires_at", ASCENDING)], name="expires"),
     ],
     "card_results": [
         IndexModel([("id", ASCENDING)], name="id", unique=True),
@@ -54,6 +56,13 @@ INDEXES: dict[str, list[IndexModel]] = {
 
 
 async def ensure_indexes() -> None:
+    # Ancien index TTL sur les sessions : retiré (plus aucune suppression automatique de
+    # documents au démarrage ; une session expirée part à sa prochaine utilisation).
+    try:
+        await db.sessions.drop_index("ttl")
+    except Exception:
+        pass
+
     for collection, models in INDEXES.items():
         for model in models:  # one at a time so a bad spec skips only itself
             try:
