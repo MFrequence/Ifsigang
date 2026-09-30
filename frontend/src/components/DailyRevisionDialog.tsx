@@ -52,7 +52,7 @@ export default function DailyRevisionDialog({ open, onOpenChange }: DailyRevisio
       <DialogContent className="flex max-h-[92svh] max-w-2xl flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 pr-8">
-            <CalendarCheck className="h-5 w-5 text-sky-700" /> Ma révision du jour
+            <CalendarCheck className="h-5 w-5 text-primary" /> Ma révision du jour
           </DialogTitle>
           <DialogDescription>
             {cards.length > 0
@@ -64,12 +64,12 @@ export default function DailyRevisionDialog({ open, onOpenChange }: DailyRevisio
         </DialogHeader>
 
         {deckQuery.isLoading ? (
-          <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+          <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" /> Préparation de ton paquet…
           </div>
         ) : deckQuery.isError ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm text-slate-600">Impossible de préparer la révision du jour.</p>
+            <p className="text-sm text-muted-foreground">Impossible de préparer la révision du jour.</p>
             <Button variant="outline" onClick={() => void deckQuery.refetch()}>
               Réessayer
             </Button>
@@ -79,10 +79,10 @@ export default function DailyRevisionDialog({ open, onOpenChange }: DailyRevisio
             className="flex flex-col items-center gap-2 py-12 text-center"
             data-testid="daily-empty-state"
           >
-            <p className="font-heading text-lg font-semibold text-slate-900">
+            <p className="font-heading text-lg font-semibold text-foreground">
               Rien à réviser aujourd'hui
             </p>
-            <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               Tout est à jour dans ton cycle des J. Reviens demain, ou dépose une nouvelle fiche
               pour alimenter ton paquet.
             </p>

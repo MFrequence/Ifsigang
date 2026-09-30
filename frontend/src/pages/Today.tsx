@@ -66,22 +66,22 @@ function ActionTile({
         </div>
         <div className="flex items-center gap-2">
           {badge ? (
-            <span className="rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 font-mono text-[11px] font-semibold text-slate-600">
+            <span className="rounded-full border border-border bg-card/80 px-2.5 py-1 font-mono text-[11px] font-semibold text-muted-foreground">
               {badge}
             </span>
           ) : null}
-          <ArrowUpRight className="h-4 w-4 text-slate-300 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-500" />
+          <ArrowUpRight className="h-4 w-4 text-muted-foreground/60 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
         </div>
       </div>
       <div className="mt-6">
-        <p className="font-heading text-lg font-bold tracking-tight text-slate-900">{title}</p>
-        <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{description}</p>
+        <p className="font-heading text-lg font-bold tracking-tight text-foreground">{title}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
       </div>
     </>
   );
 
   const shell = cn(
-    "group glass-card flex h-full flex-col rounded-3xl border border-slate-200/80 p-5 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:p-6",
+    "group bg-card/70 backdrop-blur-md flex h-full flex-col rounded-2xl border border-border p-5 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-6",
     ring,
     wide && "sm:col-span-2",
   );
@@ -143,25 +143,25 @@ export default function Today({ user }: TodayProps) {
         onProgressClick={() => setProgressOpen(true)}
       />
 
-      <main className="mesh-bg mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="clinical-grid mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <section className="mb-8 max-w-2xl">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sky-700">
+          <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
             Bonjour {firstName}
           </p>
-          <h1 className="mt-3 font-heading text-4xl font-black leading-[1.05] tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="mt-4 font-heading text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
             Que veux-tu faire
-            <span className="text-sky-700"> aujourd'hui&nbsp;?</span>
+            <span className="italic text-primary"> aujourd'hui&nbsp;?</span>
           </h1>
           {planQuery.isLoading ? (
-            <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+            <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" /> Calcul de ton programme…
             </p>
           ) : (
-            <p className="mt-4 text-base leading-relaxed text-slate-600">
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
               {dueCount > 0 ? (
                 <>
                   Tu as{" "}
-                  <span className="font-semibold text-slate-900" data-testid="due-today-count">
+                  <span className="font-semibold text-foreground" data-testid="due-today-count">
                     {dueCount} carte{dueCount > 1 ? "s" : ""}
                   </span>{" "}
                   à revoir selon la méthode des J.
@@ -169,7 +169,7 @@ export default function Today({ user }: TodayProps) {
               ) : newCount > 0 ? (
                 <>
                   Ton cycle est à jour. Il reste{" "}
-                  <span className="font-semibold text-slate-900" data-testid="due-today-count">
+                  <span className="font-semibold text-foreground" data-testid="due-today-count">
                     {newCount} carte{newCount > 1 ? "s" : ""}
                   </span>{" "}
                   jamais révisée{newCount > 1 ? "s" : ""} à intégrer quand tu veux.
@@ -196,8 +196,8 @@ export default function Today({ user }: TodayProps) {
             description="Ton paquet du jour, calculé sur tes oublis : J0, J1, J3, J7, J15, J30."
             icon={<CalendarCheck className="h-5 w-5" />}
             badge={toDoNow > 0 ? `${toDoNow} carte${toDoNow > 1 ? "s" : ""}` : "à jour"}
-            accent="bg-gradient-to-br from-sky-500 to-sky-700 shadow-sky-600/30"
-            ring="hover:border-sky-400/60"
+            accent="bg-gradient-to-br from-emerald-500 to-teal-700 shadow-emerald-600/30"
+            ring="hover:border-primary/60/60"
             wide
             onClick={openDaily}
           />
@@ -240,15 +240,15 @@ export default function Today({ user }: TodayProps) {
         {plan && plan.scheduled > 0 ? (
           <section className="mt-10">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="font-heading text-xl font-bold tracking-tight text-slate-900">
+              <h2 className="font-heading text-xl font-bold tracking-tight text-foreground">
                 Mon planning des J
               </h2>
-              <span className="font-mono text-xs text-slate-500">
+              <span className="font-mono text-xs text-muted-foreground">
                 {plan.mastered} au palier J30 · {plan.scheduled} carte
                 {plan.scheduled > 1 ? "s" : ""} dans le cycle
               </span>
             </div>
-            <div className="glass-card flex flex-col gap-5 rounded-3xl border border-slate-200/80 p-5 shadow-sm sm:p-6">
+            <div className="bg-card/70 backdrop-blur-md flex flex-col gap-5 rounded-2xl border border-border p-5 shadow-sm sm:p-6">
               <div className="flex items-end gap-2 sm:gap-3" data-testid="revision-plan-chart">
                 {plan.upcoming.map((day) => (
                   <div key={day.date} className="flex flex-1 flex-col items-center gap-2">
@@ -257,8 +257,8 @@ export default function Today({ user }: TodayProps) {
                         className={cn(
                           "w-full rounded-t-lg transition-all duration-500",
                           day.count > 0
-                            ? "bg-gradient-to-t from-sky-700 to-sky-400 shadow-inner"
-                            : "bg-slate-200",
+                            ? "bg-gradient-to-t from-primary to-primary/50 shadow-inner"
+                            : "bg-muted",
                         )}
                         style={{
                           height: day.count > 0 ? `${(day.count / maxUpcoming) * 100}%` : "4px",
@@ -266,15 +266,15 @@ export default function Today({ user }: TodayProps) {
                         title={`${day.count} carte(s)`}
                       />
                     </div>
-                    <span className="text-[10px] text-slate-500">{dayLabel(day.date)}</span>
-                    <span className="font-mono text-xs font-semibold text-slate-800">
+                    <span className="text-[10px] text-muted-foreground">{dayLabel(day.date)}</span>
+                    <span className="font-mono text-xs font-semibold text-foreground">
                       {day.count}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="flex items-center gap-2 text-xs leading-relaxed text-slate-500">
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+              <p className="flex items-center gap-2 text-xs leading-relaxed text-muted-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                 Une carte réussie repart au palier suivant ; une carte ratée revient dès demain.
               </p>
             </div>
@@ -285,7 +285,7 @@ export default function Today({ user }: TodayProps) {
           <Link
             to="/cours"
             data-testid="secondary-library-link"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors duration-200 hover:border-sky-400 hover:text-sky-700"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors duration-200 hover:border-primary/60 hover:text-primary"
           >
             <BookOpen className="h-4 w-4" /> Aller à la bibliothèque de fiches
           </Link>

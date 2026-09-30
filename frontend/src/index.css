@@ -1,15 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/lora";
+@import "@fontsource-variable/instrument-sans";
 @import "@fontsource-variable/jetbrains-mono";
-@import "@fontsource-variable/plus-jakarta-sans";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: 'Plus Jakarta Sans Variable', sans-serif;
-    --font-sans: 'DM Sans Variable', sans-serif;
+    --font-heading: 'Lora Variable', Georgia, serif;
+    --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono Variable', monospace;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -42,82 +42,90 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
+    --radius-sm: calc(var(--radius) * 0.5);
+    --radius-md: calc(var(--radius) * 0.75);
     --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --radius-xl: calc(var(--radius) * 1.3);
+    --radius-2xl: calc(var(--radius) * 1.7);
+    --radius-3xl: calc(var(--radius) * 2.1);
+    --radius-4xl: calc(var(--radius) * 2.5);
 }
 
+/* Clinical Neo-Editorial — clair */
 :root {
-    --background: #F8FAFC;
+    --radius: 0.75rem;
+    --background: #F6F7F4;
     --foreground: #0F172A;
     --card: #FFFFFF;
     --card-foreground: #0F172A;
     --popover: #FFFFFF;
     --popover-foreground: #0F172A;
-    --primary: #0284C7;
+    --primary: #047857;
     --primary-foreground: #FFFFFF;
-    --secondary: #F1F5F9;
+    --secondary: #ECEFE9;
     --secondary-foreground: #0F172A;
-    --muted: #F1F5F9;
-    --muted-foreground: #475569;
-    --accent: #F1F5F9;
-    --accent-foreground: #0F172A;
-    --destructive: #BE123C;
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #0284C7;
-    --chart-1: #0284C7;
-    --chart-2: #059669;
+    --muted: #E7EAE3;
+    --muted-foreground: #4B5563;
+    --accent: #E6F4EA;
+    --accent-foreground: #065F46;
+    --destructive: #DC2626;
+    --border: #D9DED3;
+    --input: #D9DED3;
+    --ring: #047857;
+    --chart-1: #047857;
+    --chart-2: #2563EB;
     --chart-3: #D97706;
     --chart-4: #7C3AED;
-    --chart-5: #E11D48;
-    --radius: 0.625rem;
-    --sidebar: #F8FAFC;
+    --chart-5: #DB2777;
+    --sidebar: #FFFFFF;
     --sidebar-foreground: #0F172A;
-    --sidebar-primary: #0284C7;
+    --sidebar-primary: #047857;
     --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #F1F5F9;
+    --sidebar-accent: #ECEFE9;
     --sidebar-accent-foreground: #0F172A;
-    --sidebar-border: #E2E8F0;
-    --sidebar-ring: #0284C7;
+    --sidebar-border: #D9DED3;
+    --sidebar-ring: #047857;
+    --grid-line: rgb(15 23 42 / 0.07);
+    --flame-1: #EA580C;
+    --flame-2: #F59E0B;
 }
 
+/* Clinical Neo-Editorial — sombre (mode par défaut) */
 .dark {
-    --background: #0F172A;
-    --foreground: #F8FAFC;
-    --card: #1E293B;
+    --background: #0B1117;
+    --foreground: #F1F5F9;
+    --card: #121A24;
     --card-foreground: #F8FAFC;
-    --popover: #1E293B;
+    --popover: #121A24;
     --popover-foreground: #F8FAFC;
-    --primary: #0284C7;
-    --primary-foreground: #FFFFFF;
-    --secondary: #334155;
-    --secondary-foreground: #F8FAFC;
-    --muted: #1E293B;
+    --primary: #10B981;
+    --primary-foreground: #022C22;
+    --secondary: #1B2632;
+    --secondary-foreground: #F1F5F9;
+    --muted: #1B2632;
     --muted-foreground: #94A3B8;
-    --accent: #1E293B;
-    --accent-foreground: #F8FAFC;
-    --destructive: #FB7185;
-    --border: #334155;
-    --input: #334155;
-    --ring: #38BDF8;
-    --chart-1: #38BDF8;
-    --chart-2: #34D399;
-    --chart-3: #FBBF24;
+    --accent: #0C3B2E;
+    --accent-foreground: #6EE7B7;
+    --destructive: #F87171;
+    --border: #1F2C3A;
+    --input: #1F2C3A;
+    --ring: #10B981;
+    --chart-1: #10B981;
+    --chart-2: #38BDF8;
+    --chart-3: #F59E0B;
     --chart-4: #A78BFA;
-    --chart-5: #FB7185;
-    --sidebar: #1E293B;
+    --chart-5: #F472B6;
+    --sidebar: #121A24;
     --sidebar-foreground: #F8FAFC;
-    --sidebar-primary: #0284C7;
-    --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #334155;
-    --sidebar-accent-foreground: #F8FAFC;
-    --sidebar-border: #334155;
-    --sidebar-ring: #38BDF8;
+    --sidebar-primary: #10B981;
+    --sidebar-primary-foreground: #022C22;
+    --sidebar-accent: #1B2632;
+    --sidebar-accent-foreground: #F1F5F9;
+    --sidebar-border: #1F2C3A;
+    --sidebar-ring: #10B981;
+    --grid-line: rgb(148 197 180 / 0.08);
+    --flame-1: #F97316;
+    --flame-2: #FBBF24;
 }
 
 @layer base {
@@ -133,32 +141,34 @@
 }
 
 @layer utilities {
-  .dot-grid {
-    background-image: radial-gradient(circle, rgb(148 163 184 / 0.18) 1px, transparent 1px);
-    background-size: 22px 22px;
-  }
-  .dot-grid-dark {
-    background-image: radial-gradient(circle, rgb(148 163 184 / 0.10) 1px, transparent 1px);
-    background-size: 22px 22px;
-  }
-  .mesh-bg {
+  /* Quadrillage clinique : millimétré, très léger, indépendant du thème */
+  .clinical-grid {
     background-image:
-      radial-gradient(ellipse 60% 50% at 8% -10%, rgb(2 132 199 / 0.14), transparent 60%),
-      radial-gradient(ellipse 50% 45% at 95% 5%, rgb(13 148 136 / 0.12), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 50% 110%, rgb(245 158 11 / 0.08), transparent 65%);
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
-  .glass-card {
-    background-color: rgb(255 255 255 / 0.72);
-    backdrop-filter: blur(14px) saturate(140%);
+  .clinical-rule {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--grid-line) 0 1px,
+      transparent 1px 8px
+    );
   }
-  .animate-flame-pulse {
-    animation: flame-pulse 2.2s ease-in-out infinite;
+  .glow-primary {
+    box-shadow: 0 10px 40px -12px color-mix(in oklab, var(--primary) 45%, transparent);
   }
-  .animate-float {
-    animation: subtle-float 3.5s ease-in-out infinite;
+  .animate-flame {
+    animation: flame-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-ecg {
+    animation: ecg-scan 3.2s ease-in-out infinite;
   }
   .animate-rise {
     animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-float {
+    animation: subtle-float 3.5s ease-in-out infinite;
   }
   .scrollbar-none {
     scrollbar-width: none;
@@ -169,13 +179,14 @@
 }
 
 @keyframes flame-pulse {
-  0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 16px rgb(245 158 11 / 0.6)); }
-  50% { transform: scale(1.08) rotate(2deg); filter: drop-shadow(0 0 26px rgb(234 88 12 / 0.85)); }
+  0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 12px rgb(245 158 11 / 0.65)); }
+  50% { transform: scale(1.09) rotate(2deg); filter: drop-shadow(0 0 22px rgb(234 88 12 / 0.9)); }
 }
 
-@keyframes subtle-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+@keyframes ecg-scan {
+  0% { transform: translateX(-100%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(220%); opacity: 0; }
 }
 
 @keyframes rise-in {
@@ -183,10 +194,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes subtle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-flame-pulse,
-  .animate-float,
-  .animate-rise {
+  .animate-flame,
+  .animate-ecg,
+  .animate-rise,
+  .animate-float {
     animation: none !important;
   }
 }

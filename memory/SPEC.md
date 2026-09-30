@@ -155,3 +155,17 @@ personnel et **classement de la promo**.
 - Onglet **Fiches** : toutes les fiches de la promo + suppression via `DELETE /api/sheets/{id}`
   (cascade fichier disque, flashcards, résultats, échéances, signalements).
 - Base remise à zéro avant publication : seul compte = `brianpro1@outlook.fr`, 0 fiche.
+
+## Refonte design « Clinical Neo-Editorial » + thème Jour/Nuit
+- Thème : `frontend/src/lib/theme.ts` (localStorage `ifsi-theme-preference`, **sombre par défaut**,
+  `class="dark"` sur <html> dans index.html) + `components/ThemeToggle.tsx` (capsule segmentée
+  Jour/Nuit, `theme-toggle-button`, `theme-toggle-light`, `theme-toggle-dark`) dans AppHeader.
+- Tous les écrans utilisent désormais les tokens sémantiques (bg-background/card, text-foreground,
+  text-muted-foreground, border-border, primary émeraude) — plus de couleurs slate/sky en dur,
+  sauf la carte de série (encre chaude ambre volontairement sombre dans les deux thèmes).
+- Polices : Lora Variable (titres, serif éditorial), Instrument Sans Variable (texte),
+  JetBrains Mono Variable (métriques/labels). Paquets @fontsource-variable installés.
+- index.css : utilitaires `.clinical-grid`, `.clinical-rule`, `.glow-primary`, animations
+  `animate-flame`, `animate-ecg`, `animate-rise`, `animate-float` + prefers-reduced-motion.
+- Domaines A–E : classes badge/chip déclinées clair+sombre dans `lib/domains.ts`.
+- Base repartie à zéro après vérification (0 fiche, 0 flashcard, 1 compte : brianpro1@outlook.fr).

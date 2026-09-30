@@ -100,36 +100,36 @@ export default function Admin({ user }: AdminProps) {
     <div className="min-h-svh bg-background">
       <AppHeader user={user} totalSheets={sheets.length} />
 
-      <main className="mesh-bg mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="clinical-grid mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           to="/"
           data-testid="admin-back-link"
-          className="mb-3 inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors duration-150 hover:text-sky-700"
+          className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-150 hover:text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Accueil
         </Link>
-        <h1 className="flex items-center gap-2 font-heading text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-          <ShieldCheck className="h-7 w-7 text-sky-700" /> Espace admin
+        <h1 className="flex items-center gap-2 font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <ShieldCheck className="h-7 w-7 text-primary" /> Espace admin
         </h1>
-        <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-600">
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
           Gestion des comptes de la promo et de toutes les fiches déposées. La suppression d'un
           compte efface aussi ses fiches, leurs flashcards et sa progression.
         </p>
 
         {statusQuery.isPending ? (
-          <div className="mt-10 flex items-center gap-2 text-slate-500">
+          <div className="mt-10 flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" /> Vérification…
           </div>
         ) : !unlocked ? (
           <form
             data-testid="admin-unlock-form"
-            className="glass-card mt-8 flex max-w-md flex-col gap-4 rounded-3xl border border-slate-200/80 p-6 shadow-sm"
+            className="bg-card/70 backdrop-blur-md mt-8 flex max-w-md flex-col gap-4 rounded-2xl border border-border p-6 shadow-sm"
             onSubmit={(e) => {
               e.preventDefault();
               unlock.mutate();
             }}
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-primary">
               <Lock className="h-6 w-6" />
             </div>
             <div className="flex flex-col gap-2">
@@ -174,7 +174,7 @@ export default function Admin({ user }: AdminProps) {
 
             <TabsContent value="accounts">
               {usersQuery.isPending ? (
-                <div className="flex items-center gap-2 py-10 text-slate-500">
+                <div className="flex items-center gap-2 py-10 text-muted-foreground">
                   <Loader2 className="h-5 w-5 animate-spin" /> Chargement des comptes…
                 </div>
               ) : (
@@ -183,25 +183,25 @@ export default function Admin({ user }: AdminProps) {
                     <div
                       key={account.id}
                       data-testid={`admin-user-row-${account.id}`}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"
                     >
                       <div className="min-w-0">
-                        <p className="truncate font-heading text-sm font-bold text-slate-900">
+                        <p className="truncate font-heading text-sm font-bold text-foreground">
                           {account.name}
                           {account.is_me ? (
-                            <span className="ml-2 font-mono text-[10px] uppercase text-sky-700">
+                            <span className="ml-2 font-mono text-[10px] uppercase text-primary">
                               toi
                             </span>
                           ) : null}
                         </p>
-                        <p className="truncate text-xs text-slate-500">{account.email}</p>
-                        <p className="mt-0.5 font-mono text-[11px] text-slate-400">
+                        <p className="truncate text-xs text-muted-foreground">{account.email}</p>
+                        <p className="mt-0.5 font-mono text-[11px] text-muted-foreground/70">
                           {account.sheets} fiche{account.sheets > 1 ? "s" : ""} ·{" "}
                           {account.answers} réponse{account.answers > 1 ? "s" : ""}
                         </p>
                       </div>
                       {account.is_me ? (
-                        <span className="text-xs text-slate-400">Compte connecté</span>
+                        <span className="text-xs text-muted-foreground/70">Compte connecté</span>
                       ) : confirmUser === account.id ? (
                         <div className="flex items-center gap-2">
                           <Button
@@ -227,7 +227,7 @@ export default function Admin({ user }: AdminProps) {
                           size="sm"
                           data-testid={`admin-delete-user-${account.id}`}
                           onClick={() => setConfirmUser(account.id)}
-                          className="text-rose-700 hover:bg-rose-50"
+                          className="text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" /> Supprimer
                         </Button>
@@ -240,11 +240,11 @@ export default function Admin({ user }: AdminProps) {
 
             <TabsContent value="sheets">
               {sheetsQuery.isPending ? (
-                <div className="flex items-center gap-2 py-10 text-slate-500">
+                <div className="flex items-center gap-2 py-10 text-muted-foreground">
                   <Loader2 className="h-5 w-5 animate-spin" /> Chargement des fiches…
                 </div>
               ) : sheets.length === 0 ? (
-                <p className="py-10 text-sm text-slate-500" data-testid="admin-sheets-empty">
+                <p className="py-10 text-sm text-muted-foreground" data-testid="admin-sheets-empty">
                   Aucune fiche déposée pour le moment.
                 </p>
               ) : (
@@ -253,17 +253,17 @@ export default function Admin({ user }: AdminProps) {
                     <div
                       key={sheet.id}
                       data-testid={`admin-sheet-row-${sheet.id}`}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"
                     >
                       <div className="min-w-0">
-                        <p className="truncate font-heading text-sm font-bold text-slate-900">
+                        <p className="truncate font-heading text-sm font-bold text-foreground">
                           {sheet.title}
                         </p>
-                        <p className="truncate text-xs text-slate-500">
+                        <p className="truncate text-xs text-muted-foreground">
                           {DOMAIN_MAP[sheet.domain].label}
                           {sheet.unit ? ` · UE ${sheet.unit}` : ""} · {sheet.author}
                         </p>
-                        <p className="mt-0.5 truncate font-mono text-[11px] text-slate-400">
+                        <p className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground/70">
                           {sheet.filename}
                         </p>
                       </div>
@@ -292,7 +292,7 @@ export default function Admin({ user }: AdminProps) {
                           size="sm"
                           data-testid={`admin-delete-sheet-${sheet.id}`}
                           onClick={() => setConfirmSheet(sheet.id)}
-                          className="text-rose-700 hover:bg-rose-50"
+                          className="text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" /> Supprimer
                         </Button>
@@ -308,7 +308,7 @@ export default function Admin({ user }: AdminProps) {
               size="sm"
               data-testid="admin-lock-button"
               onClick={() => lock.mutate()}
-              className="mt-6 text-slate-500"
+              className="mt-6 text-muted-foreground"
             >
               <Lock className="h-4 w-4" /> Verrouiller l'espace admin
             </Button>

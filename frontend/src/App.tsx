@@ -11,7 +11,7 @@ import Today from "@/pages/Today";
 function BootSplash() {
   return (
     <div className="flex min-h-svh items-center justify-center bg-background">
-      <p className="animate-pulse font-heading text-lg font-semibold text-slate-400">Chargement…</p>
+      <p className="animate-pulse font-heading text-lg font-semibold text-muted-foreground/70">Chargement…</p>
     </div>
   );
 }
@@ -19,9 +19,9 @@ function BootSplash() {
 function NotFound() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
-      <p className="font-heading text-4xl font-extrabold tracking-tight text-slate-900">404</p>
-      <p className="text-slate-500">Cette page n'existe pas.</p>
-      <Link to="/" className="text-sky-700 underline-offset-4 hover:underline">
+      <p className="font-heading text-4xl font-extrabold tracking-tight text-foreground">404</p>
+      <p className="text-muted-foreground">Cette page n'existe pas.</p>
+      <Link to="/" className="text-primary underline-offset-4 hover:underline">
         Retour à l'accueil
       </Link>
     </div>

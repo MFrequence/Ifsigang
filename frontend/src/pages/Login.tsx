@@ -63,26 +63,34 @@ export default function Login() {
   return (
     <div className="dot-grid-dark flex min-h-svh flex-col bg-[#0F172A]">
       <header className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white">
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
           <GraduationCap className="h-5 w-5" />
+          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-primary" />
         </div>
         <div>
-          <p className="font-heading text-lg font-bold tracking-tight text-slate-50">Fiches IFSI</p>
-          <p className="text-xs text-slate-400">Bibliothèque de fiches de la promo</p>
+          <p className="font-heading text-lg font-bold tracking-tight text-foreground">
+            Fiches <span className="text-primary">IFSI</span>
+          </p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            Promo · révisions partagées
+          </p>
         </div>
       </header>
 
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 pb-16 sm:px-6 lg:grid-cols-[1.05fr_minmax(0,420px)] lg:gap-14 lg:px-8">
         <section className="hidden lg:block">
-          <h2 className="font-heading text-4xl font-black leading-[1.05] tracking-tight text-white xl:text-5xl">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+            Espace promo IFSI
+          </p>
+          <h2 className="mt-4 font-heading text-4xl font-bold leading-[1.08] tracking-tight text-foreground xl:text-5xl">
             Toutes les fiches de la promo,
-            <span className="text-sky-400"> révisées au bon moment.</span>
+            <span className="text-primary"> révisées au bon moment.</span>
           </h2>
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-slate-300">
+          <p className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground">
             Dépose tes fiches, récupère celles des autres, et laisse la méthode des J te dire
             exactement quoi réviser chaque jour.
           </p>
-          <div className="mt-8 overflow-hidden rounded-3xl border border-slate-800">
+          <div className="mt-8 overflow-hidden rounded-2xl border border-border">
             <img
               src="https://images.unsplash.com/photo-1741707040258-b772f0c2876d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxudXJzaW5nJTIwc3R1ZGVudCUyMG1lZGljYWwlMjBzdHVkeXxlbnwwfHx8fDE3OTA3OTE1NTZ8MA&ixlib=rb-4.1.0&q=85"
               alt="Étudiante infirmière en train de réviser ses fiches"
@@ -98,23 +106,25 @@ export default function Login() {
             ].map(([title, sub]) => (
               <li
                 key={title}
-                className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3"
+                className="rounded-xl border border-border bg-card px-4 py-3"
               >
-                <p className="font-heading font-bold text-white">{title}</p>
-                <p className="mt-0.5 text-xs text-slate-400">{sub}</p>
+                <p className="font-heading font-bold text-foreground">{title}</p>
+                <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {sub}
+                </p>
               </li>
             ))}
           </ul>
         </section>
 
-        <div className="w-full max-w-md justify-self-center rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+        <div className="w-full max-w-md justify-self-center rounded-2xl border border-border bg-card p-8 shadow-2xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
             <Lock className="h-6 w-6" />
           </div>
-          <h1 className="mt-4 font-heading text-2xl font-black tracking-tight text-slate-900">
+          <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight text-foreground">
             Espace promo
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Connecte-toi pour accéder aux fiches, réviser et suivre ta progression.
           </p>
 
@@ -160,7 +170,7 @@ export default function Login() {
                     autoComplete="current-password"
                   />
                 </div>
-                {error && <p className="text-sm text-rose-600">{error}</p>}
+                {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button
                   type="submit"
                   data-testid="login-submit-button"
@@ -233,7 +243,7 @@ export default function Login() {
                     autoComplete="off"
                   />
                 </div>
-                {error && <p className="text-sm text-rose-600">{error}</p>}
+                {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button
                   type="submit"
                   data-testid="signup-submit-button"

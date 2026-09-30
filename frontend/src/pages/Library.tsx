@@ -110,25 +110,25 @@ export default function Library({ user }: LibraryProps) {
         onProgressClick={() => setProgressOpen(true)}
       />
 
-      <main className="mesh-bg mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="clinical-grid mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="mb-8">
           <Link
             to="/"
             data-testid="back-to-today-link"
-            className="mb-3 inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors duration-150 hover:text-sky-700"
+            className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-150 hover:text-primary"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Accueil
           </Link>
-          <h1 className="font-heading text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-            Les fiches de révision <span className="text-sky-700">de la promo</span>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Les fiches de révision <span className="text-primary">de la promo</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate-600">
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
             Dépose tes fiches par domaine et UE, révise-les en flashcards ou en QCM, et suis ta
             progression — les cartes ratées reviennent en priorité.
           </p>
         </section>
 
-        <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-200/80 glass-card p-4 shadow-sm md:flex-row md:items-start md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-border bg-card/70 backdrop-blur-md p-4 shadow-sm md:flex-row md:items-start md:justify-between">
           <DomainFilterBar
             active={domain}
             counts={counts}
@@ -143,7 +143,7 @@ export default function Library({ user }: LibraryProps) {
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row md:items-start">
             <div className="relative md:w-64">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
                 aria-hidden
               />
               <Input
@@ -169,11 +169,11 @@ export default function Library({ user }: LibraryProps) {
         </div>
 
         {sheetsQuery.isError ? (
-          <Card className="flex flex-col items-center gap-3 border-slate-200 p-10 text-center">
-            <p className="font-heading text-lg font-semibold text-slate-900">
+          <Card className="flex flex-col items-center gap-3 border-border p-10 text-center">
+            <p className="font-heading text-lg font-semibold text-foreground">
               Impossible de charger les fiches
             </p>
-            <p className="max-w-md text-sm leading-relaxed text-slate-500">
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
               Vérifie ta connexion et réessaie — le reste de la page reste disponible.
             </p>
             <Button variant="outline" onClick={() => void sheetsQuery.refetch()}>
@@ -183,7 +183,7 @@ export default function Library({ user }: LibraryProps) {
         ) : sheetsQuery.isPending ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (
-              <Card key={i} className="h-48 animate-pulse border-slate-200 bg-white p-5" />
+              <Card key={i} className="h-48 animate-pulse border-border bg-card p-5" />
             ))}
           </div>
         ) : filtered.length === 0 ? (

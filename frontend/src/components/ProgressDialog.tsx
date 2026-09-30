@@ -31,13 +31,13 @@ function StatTile({
   testId: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <div className="flex items-center gap-2 text-slate-500">
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <p className="font-mono text-xs uppercase tracking-wider">{label}</p>
       </div>
       <p
-        className="mt-1 font-heading text-2xl font-bold tracking-tight text-slate-900"
+        className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground"
         data-testid={testId}
       >
         {value}
@@ -83,15 +83,15 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
 
           <TabsContent value="me" className="pt-4">
             {progress.isLoading ? (
-              <div className="flex items-center justify-center gap-2 py-12 text-slate-500">
+              <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin" /> Chargement…
               </div>
             ) : progress.isError || !stats ? (
-              <p className="py-12 text-center text-sm text-slate-500">
+              <p className="py-12 text-center text-sm text-muted-foreground">
                 Progression indisponible pour le moment.
               </p>
             ) : stats.answered === 0 ? (
-              <p className="py-12 text-center text-sm leading-relaxed text-slate-500">
+              <p className="py-12 text-center text-sm leading-relaxed text-muted-foreground">
                 Tu n'as pas encore révisé de carte. Lance une session depuis une fiche ou un domaine
                 — ton suivi se remplira automatiquement.
               </p>
@@ -126,7 +126,7 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
 
                 {stats.per_domain.length > 0 && (
                   <div className="flex flex-col gap-2">
-                    <p className="font-mono text-xs uppercase tracking-wider text-slate-500">
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                       Par domaine
                     </p>
                     {stats.per_domain.map((d) => {
@@ -137,16 +137,16 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
                           className="flex items-center gap-3"
                           data-testid={`domain-progress-${d.domain}`}
                         >
-                          <span className="w-24 shrink-0 text-sm text-slate-600">
+                          <span className="w-24 shrink-0 text-sm text-muted-foreground">
                             {info?.label ?? d.domain}
                           </span>
-                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
                             <div
-                              className={cn("h-full rounded-full", info?.dot ?? "bg-sky-600")}
+                              className={cn("h-full rounded-full", info?.dot ?? "bg-primary")}
                               style={{ width: `${d.accuracy}%` }}
                             />
                           </div>
-                          <span className="w-20 shrink-0 text-right text-xs text-slate-500">
+                          <span className="w-20 shrink-0 text-right text-xs text-muted-foreground">
                             {d.correct}/{d.answered} · {d.accuracy}%
                           </span>
                         </div>
@@ -155,7 +155,7 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
                   </div>
                 )}
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Révisé sur {stats.sessions_days} jour{stats.sessions_days > 1 ? "s" : ""}
                   différent{stats.sessions_days > 1 ? "s" : ""}.
                 </p>
@@ -165,11 +165,11 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
 
           <TabsContent value="board" className="pt-4">
             {board.isLoading ? (
-              <div className="flex items-center justify-center gap-2 py-12 text-slate-500">
+              <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin" /> Chargement…
               </div>
             ) : board.isError || !board.data ? (
-              <p className="py-12 text-center text-sm text-slate-500">
+              <p className="py-12 text-center text-sm text-muted-foreground">
                 Classement indisponible pour le moment.
               </p>
             ) : (
@@ -180,22 +180,22 @@ export default function ProgressDialog({ open, onOpenChange }: ProgressDialogPro
                     data-testid={`leaderboard-row-${i}`}
                     className={cn(
                       "flex items-center gap-3 rounded-xl border px-4 py-3",
-                      entry.is_me ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-white",
+                      entry.is_me ? "border-primary/50 bg-accent" : "border-border bg-card",
                     )}
                   >
-                    <span className="w-6 shrink-0 font-heading text-lg font-bold text-slate-400">
+                    <span className="w-6 shrink-0 font-heading text-lg font-bold text-muted-foreground/70">
                       {i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-slate-900">
+                      <p className="truncate text-sm font-medium text-foreground">
                         {entry.name}
                         {entry.is_me ? (
-                          <Badge variant="outline" className="ml-2 border-sky-300 text-sky-700">
+                          <Badge variant="outline" className="ml-2 border-primary/50 text-primary">
                             moi
                           </Badge>
                         ) : null}
                       </p>
-                      <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-slate-500">
+                      <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
                         <span>
                           {entry.correct} bonne{entry.correct > 1 ? "s" : ""} réponse
                           {entry.correct > 1 ? "s" : ""}

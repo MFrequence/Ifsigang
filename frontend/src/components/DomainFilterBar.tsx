@@ -12,7 +12,7 @@ interface DomainFilterBarProps {
 }
 
 const chipBase =
-  "inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500";
+  "inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export default function DomainFilterBar({
   active,
@@ -23,7 +23,7 @@ export default function DomainFilterBar({
   onUnitSelect,
 }: DomainFilterBarProps) {
   const items: { key: DomainFilter; label: string; dot: string; activeChip: string }[] = [
-    { key: "ALL", label: "Tous", dot: "bg-sky-600", activeChip: "bg-sky-700 text-white shadow-sm" },
+    { key: "ALL", label: "Tous", dot: "bg-primary", activeChip: "bg-primary text-white shadow-sm" },
     ...DOMAINS.map((d) => ({
       key: d.key as DomainFilter,
       label: d.label,
@@ -54,18 +54,18 @@ export default function DomainFilterBar({
                 "min-h-[44px] sm:min-h-[36px]",
                 isActive
                   ? cn(item.activeChip, "border-transparent")
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50",
+                  : "border-border bg-card text-muted-foreground hover:border-border hover:bg-secondary",
               )}
             >
               <span
-                className={cn("h-2 w-2 rounded-full", isActive ? "bg-white/80" : item.dot)}
+                className={cn("h-2 w-2 rounded-full", isActive ? "bg-card/80" : item.dot)}
                 aria-hidden
               />
               {item.label}
               <span
                 className={cn(
                   "rounded-full px-1.5 text-xs",
-                  isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500",
+                  isActive ? "bg-card/20 text-white" : "bg-secondary text-muted-foreground",
                 )}
               >
                 {counts[item.key] ?? 0}
@@ -85,8 +85,8 @@ export default function DomainFilterBar({
               chipBase,
               "min-h-[34px] px-3 text-xs",
               activeUnit === null
-                ? "border-transparent bg-slate-700 text-white shadow-sm"
-                : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50",
+                ? "border-transparent bg-primary text-white shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:bg-secondary",
             )}
           >
             Toutes les UE
@@ -101,8 +101,8 @@ export default function DomainFilterBar({
                 chipBase,
                 "min-h-[34px] px-3 text-xs",
                 activeUnit === u
-                  ? "border-transparent bg-slate-700 text-white shadow-sm"
-                  : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50",
+                  ? "border-transparent bg-primary text-white shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:bg-secondary",
               )}
             >
               {u}

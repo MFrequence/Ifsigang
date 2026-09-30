@@ -1,5 +1,6 @@
 import { FolderOpen, GraduationCap, LogOut, ShieldCheck, TrendingUp, Upload } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import ThemeToggle from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { endSession } from "@/lib/session";
 import type { User } from "@/lib/types";
@@ -36,31 +37,36 @@ export default function AppHeader({
     .join("");
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link
             to="/"
             data-testid="header-home-link"
-            className="flex items-center gap-3 rounded-lg transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            className="flex items-center gap-3 rounded-lg transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-800 text-white shadow-lg shadow-sky-600/25">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
               <GraduationCap className="h-5 w-5" />
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-primary" />
             </div>
             <div>
-              <p className="font-heading text-lg font-black tracking-tight text-slate-900">
-                Fiches IFSI
+              <p className="font-heading text-lg font-bold tracking-tight text-foreground">
+                Fiches <span className="text-primary">IFSI</span>
               </p>
-              <p className="text-xs text-slate-500">Bibliothèque de fiches de la promo</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Promo · révisions partagées
+              </p>
             </div>
           </Link>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
+
           <Badge
             variant="outline"
             data-testid="total-sheets-badge"
-            className="hidden gap-1.5 border-slate-200 text-slate-600 sm:inline-flex"
+            className="hidden gap-1.5 border-border text-muted-foreground sm:inline-flex"
           >
             <FolderOpen className="h-3.5 w-3.5" />
             {totalSheets} fiche{totalSheets === 1 ? "" : "s"}
@@ -93,7 +99,7 @@ export default function AppHeader({
             <DropdownMenuTrigger
               data-testid="user-menu-trigger"
               aria-label="Mon compte"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-800 font-heading text-sm font-semibold text-white transition-transform duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/15 font-heading text-sm font-bold text-primary transition-transform duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {initials || "?"}
             </DropdownMenuTrigger>
@@ -101,8 +107,8 @@ export default function AppHeader({
               {/* base-ui exige un Group autour de Label/Item — sans lui, MenuGroupContext manque. */}
               <DropdownMenuGroup>
                 <DropdownMenuLabel>
-                  <span className="block truncate font-medium text-slate-900">{user.name}</span>
-                  <span className="block truncate text-xs font-normal text-slate-500">
+                  <span className="block truncate font-medium text-foreground">{user.name}</span>
+                  <span className="block truncate text-xs font-normal text-muted-foreground">
                     {user.email}
                   </span>
                 </DropdownMenuLabel>

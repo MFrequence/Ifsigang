@@ -39,12 +39,12 @@ export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleti
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex items-center gap-1">
           {sheet.unit ? (
-            <Badge variant="outline" className="border-slate-200 text-slate-600">
+            <Badge variant="outline" className="border-border text-muted-foreground">
               {sheet.unit}
             </Badge>
           ) : null}
@@ -54,7 +54,7 @@ export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleti
           <Button
             variant="ghost"
             size="icon-sm"
-            className="text-slate-400 hover:text-destructive"
+            className="text-muted-foreground/70 hover:text-destructive"
             aria-label="Supprimer la fiche"
             data-testid={`sheet-delete-button-${sheet.id}`}
             onClick={() => setConfirmOpen(true)}
@@ -65,18 +65,18 @@ export default function SheetCard({ sheet, onPreview, onRevise, onDelete, deleti
       </div>
 
       <div>
-        <h3 className="font-heading text-lg font-semibold leading-snug text-slate-900">
+        <h3 className="font-heading text-lg font-semibold leading-snug text-foreground">
           {sheet.title}
         </h3>
         {sheet.description ? (
-          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-600">
+          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
             {sheet.description}
           </p>
         ) : null}
-        <p className="mt-1 truncate text-xs text-slate-400">{sheet.filename}</p>
+        <p className="mt-1 truncate text-xs text-muted-foreground/70">{sheet.filename}</p>
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-xs text-slate-500">
+      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <User className="h-3.5 w-3.5" />
           {sheet.author}

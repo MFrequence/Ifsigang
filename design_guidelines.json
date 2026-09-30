@@ -1,15 +1,81 @@
 {
-  "theme": {
-    "archetype": "Organic Clinical & Precision Gamified (IFSI French Nursing Promo)",
-    "description": "Palette inspirée du milieu infirmier moderne (sarcelle/cyan chirurgical profond, ambre chaleureux pour la flamme/streak, émeraude de réussite, lavande de mémoire) mélangé à un design tactile premium avec micro-textures, compteurs dynamiques et cartes bento asymétriques.",
-    "fonts": {
-      "heading": "Plus Jakarta Sans Variable",
-      "body": "DM Sans Variable",
-      "mono": "JetBrains Mono Variable"
+  "theme_strategy": {
+    "concept": "Clinical Neo-Editorial (La Gazette Clinique & Pulse Brutalism)",
+    "description": "Une identité visuelle radicalement singulière pour étudiants IFSI qui s'éloigne du 'bleu hôpital fade / glassmorphism générique'. Fusionne l'exigence clinique (grilles calibrées, badges type dossier médical d'urgence, typographie hybride serif chirurgicale + monospace de télémétrie) avec la haute énergie d'un dashboard de performance (accent 'Electric Caduceus' émeraude/menthe néon et flamme ambrée 'Vital Pulse').",
+    "default_mode": "dark",
+    "mode_toggle_style": "Segmented tactical capsule (pill double-segment avec icônes Sun/Moon micro-animées et transition de lueur d'activation)",
+    "storage_key": "ifsi-theme-preference"
+  },
+  "fonts": {
+    "heading": {
+      "family": "'Lora Variable', serif",
+      "package": "@fontsource-variable/lora",
+      "role": "Titres principaux (H1, H2, Hero numbers, Brand mark), apportant l'autorité éditoriale des traités médicaux et des encyclopédies cliniques.",
+      "import_statement": "@import \"@fontsource-variable/lora\";"
+    },
+    "sans": {
+      "family": "'Instrument Sans Variable', sans-serif",
+      "package": "@fontsource-variable/instrument-sans",
+      "role": "Corps de texte, navigation, fiches, filtres et dialogues. Clarté chirurgicale, géométrie moderne et lisibilité maximale à toutes les tailles.",
+      "import_statement": "@import \"@fontsource-variable/instrument-sans\";"
+    },
+    "mono": {
+      "family": "'JetBrains Mono Variable', monospace",
+      "package": "@fontsource-variable/jetbrains-mono",
+      "role": "Indicateurs de streak, compteurs J0-J30, codes promo, scores QCM, métriques de télémétrie et badges d'UE (ex: UE 2.2, UE 4.1).",
+      "import_statement": "@import \"@fontsource-variable/jetbrains-mono\";"
     }
   },
   "colors": {
     "surfaces": [
+      {
+        "name": "page_dark",
+        "kind": "solid",
+        "bg": "#0B1117",
+        "on_bg": "#F1F5F9",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "link": "#34D399",
+          "error": "#F87171",
+          "success": "#10B981",
+          "warning": "#FBBF24",
+          "accent_glow": "#059669"
+        }
+      },
+      {
+        "name": "panel_dark",
+        "kind": "solid",
+        "bg": "#121A24",
+        "on_bg": "#F8FAFC",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "border": "#1E293B",
+          "border_focus": "#10B981",
+          "tag_bg": "#1E293B"
+        }
+      },
+      {
+        "name": "card_elevated_dark",
+        "kind": "solid",
+        "bg": "#182230",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#A1B2C6",
+        "roles": {
+          "highlight": "#34D399"
+        }
+      },
+      {
+        "name": "streak_flame_card_dark",
+        "kind": "solid",
+        "bg": "#1C1917",
+        "on_bg": "#FEF3C7",
+        "on_bg_muted": "#FDE68A",
+        "roles": {
+          "flame_primary": "#F97316",
+          "flame_secondary": "#FBBF24",
+          "flame_glow": "#EA580C"
+        }
+      },
       {
         "name": "page_light",
         "kind": "solid",
@@ -17,203 +83,225 @@
         "on_bg": "#0F172A",
         "on_bg_muted": "#475569",
         "roles": {
-          "link": "#0284C7",
-          "error": "#BE123C",
+          "link": "#047857",
+          "error": "#DC2626",
           "success": "#059669",
-          "warning": "#D97706"
+          "warning": "#D97706",
+          "accent_glow": "#10B981"
         }
       },
       {
-        "name": "card_light",
+        "name": "panel_light",
         "kind": "solid",
         "bg": "#FFFFFF",
         "on_bg": "#0F172A",
-        "on_bg_muted": "#64748B",
+        "on_bg_muted": "#475569",
         "roles": {
           "border": "#E2E8F0",
-          "hover_border": "#CBD5E1",
-          "badge_bg": "#F1F5F9",
-          "badge_fg": "#334155"
+          "border_focus": "#059669",
+          "tag_bg": "#F1F5F9"
         }
       },
       {
-        "name": "streak_banner_hero",
+        "name": "card_elevated_light",
         "kind": "solid",
-        "bg": "#0B1528",
-        "on_bg": "#FFFFFF",
-        "on_bg_muted": "#94A3B8",
+        "bg": "#F1F5F9",
+        "on_bg": "#020617",
+        "on_bg_muted": "#334155",
         "roles": {
-          "flame_core": "#F59E0B",
-          "flame_glow": "#EA580C",
-          "flame_light": "#FEF08A",
-          "active_pill_bg": "#D97706",
-          "active_pill_fg": "#FFFFFF",
-          "done_pill_bg": "#10B981",
-          "done_pill_fg": "#FFFFFF",
-          "inactive_pill_bg": "#1E293B",
-          "inactive_pill_fg": "#64748B"
+          "highlight": "#047857"
         }
       },
       {
-        "name": "page_dark",
+        "name": "streak_flame_card_light",
         "kind": "solid",
-        "bg": "#0B1120",
-        "on_bg": "#F8FAFC",
-        "on_bg_muted": "#94A3B8",
+        "bg": "#FFFBEB",
+        "on_bg": "#78350F",
+        "on_bg_muted": "#92400E",
         "roles": {
-          "link": "#38BDF8",
-          "error": "#FB7185",
-          "success": "#34D399",
-          "warning": "#FBBF24"
+          "flame_primary": "#EA580C",
+          "flame_secondary": "#D97706",
+          "flame_glow": "#FB923C"
         }
       },
       {
-        "name": "login_brand_panel",
+        "name": "domain_badge_a",
         "kind": "solid",
-        "bg": "#091428",
-        "on_bg": "#FFFFFF",
-        "on_bg_muted": "#94A3B8",
-        "roles": {
-          "pill_border": "#1E293B",
-          "accent_chip": "#0284C7"
-        }
+        "bg": "#064E3B",
+        "on_bg": "#A7F3D0",
+        "on_bg_muted": "#6EE7B7"
+      },
+      {
+        "name": "domain_badge_b",
+        "kind": "solid",
+        "bg": "#1E3A8A",
+        "on_bg": "#BFDBFE",
+        "on_bg_muted": "#93C5FD"
+      },
+      {
+        "name": "domain_badge_c",
+        "kind": "solid",
+        "bg": "#581C87",
+        "on_bg": "#E9D5FF",
+        "on_bg_muted": "#D8B4FE"
+      },
+      {
+        "name": "domain_badge_d",
+        "kind": "solid",
+        "bg": "#7C2D12",
+        "on_bg": "#FED7AA",
+        "on_bg_muted": "#FDBA74"
+      },
+      {
+        "name": "domain_badge_e",
+        "kind": "solid",
+        "bg": "#134E4A",
+        "on_bg": "#99F6E4",
+        "on_bg_muted": "#5EEAD4"
       }
     ],
-    "accent": "#0284C7",
-    "on_accent": "#FFFFFF",
-    "flame_accent": "#F59E0B",
-    "on_flame": "#451A03"
+    "accent": "#10B981",
+    "on_accent": "#022C22",
+    "streak_accent": "#F59E0B",
+    "on_streak_accent": "#451A03"
   },
   "typography": {
     "scale_px": {
       "display": 56,
-      "h1": 40,
-      "h2": 28,
-      "h3": 20,
+      "h1": 44,
+      "h2": 32,
+      "h3": 22,
       "h4": 18,
       "body": 16,
       "caption": 14
     },
-    "font_family_tokens": {
-      "heading": "var(--font-heading)",
-      "sans": "var(--font-sans)",
-      "mono": "var(--font-mono)"
-    },
     "tracking": {
-      "tight": "-0.025em",
-      "tighter": "-0.04em",
-      "label": "0.15em"
+      "display": "-0.03em",
+      "h1": "-0.025em",
+      "h2": "-0.02em",
+      "labels": "0.15em",
+      "mono_metrics": "0.05em"
     }
+  },
+  "css_theme_tokens": {
+    "target_file": "/app/frontend/src/index.css",
+    "code_snippet": "@import \"@fontsource-variable/lora\";\n@import \"@fontsource-variable/instrument-sans\";\n@import \"@fontsource-variable/jetbrains-mono\";\n@import \"tailwindcss\";\n@import \"tw-animate-css\";\n\n@custom-variant dark (&:is(.dark *));\n\n@theme inline {\n  --font-heading: 'Lora Variable', Georgia, serif;\n  --font-sans: 'Instrument Sans Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n  --font-mono: 'JetBrains Mono Variable', monospace;\n\n  --color-background: var(--background);\n  --color-foreground: var(--foreground);\n  --color-card: var(--card);\n  --color-card-foreground: var(--card-foreground);\n  --color-popover: var(--popover);\n  --color-popover-foreground: var(--popover-foreground);\n  --color-primary: var(--primary);\n  --color-primary-foreground: var(--primary-foreground);\n  --color-secondary: var(--secondary);\n  --color-secondary-foreground: var(--secondary-foreground);\n  --color-muted: var(--muted);\n  --color-muted-foreground: var(--muted-foreground);\n  --color-accent: var(--accent);\n  --color-accent-foreground: var(--accent-foreground);\n  --color-destructive: var(--destructive);\n  --color-destructive-foreground: var(--destructive-foreground);\n  --color-border: var(--border);\n  --color-input: var(--input);\n  --color-ring: var(--ring);\n  --color-chart-1: var(--chart-1);\n  --color-chart-2: var(--chart-2);\n  --color-chart-3: var(--chart-3);\n  --color-chart-4: var(--chart-4);\n  --color-chart-5: var(--chart-5);\n  --radius-sm: calc(var(--radius) - 4px);\n  --radius-md: calc(var(--radius) - 2px);\n  --radius-lg: var(--radius);\n  --radius-xl: calc(var(--radius) + 4px);\n}\n\n:root {\n  --radius: 0.75rem;\n  --background: #F8FAFC;\n  --foreground: #0F172A;\n  --card: #FFFFFF;\n  --card-foreground: #0F172A;\n  --popover: #FFFFFF;\n  --popover-foreground: #0F172A;\n  --primary: #059669;\n  --primary-foreground: #FFFFFF;\n  --secondary: #F1F5F9;\n  --secondary-foreground: #0F172A;\n  --muted: #E2E8F0;\n  --muted-foreground: #475569;\n  --accent: #E6F4EA;\n  --accent-foreground: #065F46;\n  --destructive: #DC2626;\n  --destructive-foreground: #FFFFFF;\n  --border: #E2E8F0;\n  --input: #E2E8F0;\n  --ring: #059669;\n  --chart-1: #059669;\n  --chart-2: #2563EB;\n  --chart-3: #D97706;\n  --chart-4: #7C3AED;\n  --chart-5: #DB2777;\n}\n\n.dark {\n  --background: #0B1117;\n  --foreground: #F1F5F9;\n  --card: #121A24;\n  --card-foreground: #F8FAFC;\n  --popover: #121A24;\n  --popover-foreground: #F8FAFC;\n  --primary: #10B981;\n  --primary-foreground: #022C22;\n  --secondary: #1E293B;\n  --secondary-foreground: #F1F5F9;\n  --muted: #1E293B;\n  --muted-foreground: #94A3B8;\n  --accent: #064E3B;\n  --accent-foreground: #6EE7B7;\n  --destructive: #EF4444;\n  --destructive-foreground: #FFFFFF;\n  --border: #1E293B;\n  --input: #1E293B;\n  --ring: #10B981;\n  --chart-1: #10B981;\n  --chart-2: #3B82F6;\n  --chart-3: #F59E0B;\n  --chart-4: #8B5CF6;\n  --chart-5: #EC4899;\n}"
+  },
+  "bespoke_css_keyframes_and_utilities": {
+    "description": "Utilisateurs et animations CSS pures pour donner vie au streak, au monitoring médical et aux textures cliniques sans dépendance d'image lourde.",
+    "css_rules": "/* Texture quadrillée clinique ultra légère */\n.bg-clinical-grid-dark {\n  background-image: radial-gradient(#1E293B 1px, transparent 1px), linear-gradient(to right, #121A24 1px, transparent 1px), linear-gradient(to bottom, #121A24 1px, transparent 1px);\n  background-size: 24px 24px;\n}\n.bg-clinical-grid-light {\n  background-image: radial-gradient(#CBD5E1 1px, transparent 1px), linear-gradient(to right, #F1F5F9 1px, transparent 1px), linear-gradient(to bottom, #F1F5F9 1px, transparent 1px);\n  background-size: 24px 24px;\n}\n\n/* Animation Flamme de Série (Streak Pulse) */\n@keyframes flame-pulse {\n  0%, 100% {\n    transform: scale(1) rotate(-1deg);\n    filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.65));\n  }\n  50% {\n    transform: scale(1.09) rotate(2deg);\n    filter: drop-shadow(0 0 20px rgba(234, 88, 12, 0.9));\n  }\n}\n.animate-flame {\n  animation: flame-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n\n/* Animation Ligne ECG / Battement Cardiaque */\n@keyframes pulse-scan {\n  0% { transform: translateX(-100%); }\n  100% { transform: translateX(200%); }\n}\n.animate-ecg-scan {\n  animation: pulse-scan 3s ease-in-out infinite;\n}\n\n/* Effet de bordure néon clinique */\n.clinical-border-glow {\n  box-shadow: 0 0 0 1px var(--color-border), 0 8px 24px -4px rgba(16, 185, 129, 0.08);\n}\n.clinical-border-glow-dark {\n  box-shadow: 0 0 0 1px #1E293B, 0 8px 30px -4px rgba(16, 185, 129, 0.12);\n}"
   },
   "entry_surfaces": {
-    "/": "editorial split today view — animated streak flame banner top, 4 asymmetric action cards, spacing J visualizer",
-    "/cours": "categorized medical library — domain pills A-E with UE badges, search bar, preview cards with flashcard counts",
-    "/login": "split branded login — promo positioning & value props left, auth tabs and code promo form right"
+    "/": "split dashboard hero — streak telemetry & quick pulse actions top-left, interactive revision timeline & study stats right",
+    "/login": "branded split auth — surgical caduceus insignia & promo motto left, promo-code gated login/register form right",
+    "/library": "clinical card catalogue — domain pill selector A-E top, asymmetrical high-density revision sheet bento grid below",
+    "/admin": "restricted ward cockpit — promo-code generator & sheet moderation desk with tabular patient-file aesthetics"
   },
-  "streak_card_blueprint": {
-    "placement": "Sur la page Aujourd'hui, tout en haut de <main>, au-dessus ou sous le titre de bienvenue",
-    "visual_hierarchy": {
-      "container": "relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-[#0B1528] via-[#101F3C] to-[#0A1120] p-6 sm:p-8 text-white shadow-xl shadow-amber-950/20",
-      "flame_section": {
-        "badge": "inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-amber-300",
-        "flame_animation": "animate-flame-pulse relative flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-300 shadow-[0_0_30px_rgba(245,158,11,0.4)]",
-        "counter": "font-heading text-4xl sm:text-5xl font-black tracking-tight text-white flex items-baseline gap-2",
-        "label": "text-sm text-slate-300 font-medium"
-      },
-      "pills_7_days": {
-        "container": "mt-6 grid grid-cols-7 gap-2 sm:gap-3 border-t border-slate-700/60 pt-5",
-        "day_pill": {
-          "completed": "flex flex-col items-center justify-center rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-2 sm:p-2.5 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]",
-          "today_pending": "flex flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-amber-950/50 p-2 sm:p-2.5 text-amber-300 animate-pulse",
-          "today_done": "flex flex-col items-center justify-center rounded-xl border-2 border-amber-400 bg-gradient-to-b from-amber-500 to-orange-600 p-2 sm:p-2.5 text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]",
-          "missed_past": "flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-900/60 p-2 sm:p-2.5 text-slate-500"
-        }
+  "screens_design_specs": {
+    "header_and_navigation": {
+      "structure": "Barre flottante ancrée avec fond semi-solide translucide et bordure inférieure fine. Logo stylisé 'IFSI PULSE' (Lora serif bold + point émeraude animé).",
+      "nav_links": [
+        {"label": "Aujourd'hui", "path": "/", "icon": "Flame", "test_id": "nav-today-link"},
+        {"label": "Bibliothèque", "path": "/library", "icon": "BookOpen", "test_id": "nav-library-link"},
+        {"label": "Classement", "path": "/leaderboard", "icon": "Trophy", "test_id": "nav-leaderboard-link"},
+        {"label": "Espace Promo (Admin)", "path": "/admin", "icon": "ShieldCheck", "test_id": "nav-admin-link"}
+      ],
+      "theme_toggle_spec": {
+        "type": "Segmented Pill Switcher",
+        "dark_label": "Nuit",
+        "light_label": "Jour",
+        "container_classes": "inline-flex items-center p-1 rounded-full bg-secondary/80 border border-border shadow-inner text-xs font-mono font-medium",
+        "active_classes": "bg-primary text-primary-foreground shadow-sm px-2.5 py-1 rounded-full transition-all duration-200",
+        "inactive_classes": "text-muted-foreground hover:text-foreground px-2 py-1 rounded-full transition-all duration-200",
+        "test_id": "theme-toggle-button"
       }
-    }
-  },
-  "action_tiles_redesign": {
-    "grid": "grid gap-5 sm:grid-cols-2 lg:grid-cols-4",
-    "cards": [
-      {
-        "id": "action-revise-today",
-        "title": "Réviser aujourd'hui",
-        "gradient": "from-sky-500/10 to-transparent",
-        "border": "hover:border-sky-500/40",
-        "icon_bg": "bg-sky-600 text-white shadow-sky-600/30",
-        "badge_variant": "sky"
-      },
-      {
-        "id": "action-browse-library",
-        "title": "Voir les cours",
-        "gradient": "from-emerald-500/10 to-transparent",
-        "border": "hover:border-emerald-500/40",
-        "icon_bg": "bg-emerald-600 text-white shadow-emerald-600/30",
-        "badge_variant": "emerald"
-      },
-      {
-        "id": "action-upload-sheet",
-        "title": "Déposer une fiche",
-        "gradient": "from-amber-500/10 to-transparent",
-        "border": "hover:border-amber-500/40",
-        "icon_bg": "bg-amber-600 text-white shadow-amber-600/30",
-        "badge_variant": "amber"
-      },
-      {
-        "id": "action-view-progress",
-        "title": "Ma progression",
-        "gradient": "from-purple-500/10 to-transparent",
-        "border": "hover:border-purple-500/40",
-        "icon_bg": "bg-purple-600 text-white shadow-purple-600/30",
-        "badge_variant": "purple"
-      }
-    ]
-  },
-  "css_tokens_index_css": {
-    "keyframes": "@keyframes flame-pulse {\n  0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 16px rgba(245,158,11,0.6)); }\n  50% { transform: scale(1.08) rotate(2deg); filter: drop-shadow(0 0 26px rgba(234,88,12,0.85)); }\n}\n@keyframes subtle-float {\n  0%, 100% { transform: translateY(0px); }\n  50% { transform: translateY(-4px); }\n}",
-    "utility_classes": ".animate-flame-pulse {\n  animation: flame-pulse 2.2s ease-in-out infinite;\n}\n.animate-float {\n  animation: subtle-float 3.5s ease-in-out infinite;\n}"
-  },
-  "image_urls": [
-    {
-      "category": "auth_login_visual",
-      "url": "https://images.unsplash.com/photo-1741707040258-b772f0c2876d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxudXJzaW5nJTIwc3R1ZGVudCUyMG1lZGljYWwlMjBzdHVkeXxlbnwwfHx8fDE3OTA3OTE1NTZ8MA&ixlib=rb-4.1.0&q=85",
-      "description": "Étudiante infirmière travaillant sur ordinateur et dossiers cliniques pour le volet gauche de la page de connexion",
-      "placement": "Page de connexion (Login.tsx) - panel visuel promo à gauche"
     },
-    {
-      "category": "promo_study_library",
-      "url": "https://images.unsplash.com/photo-1770235623162-2cb204c57bb5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxudXJzaW5nJTIwc3R1ZGVudCUyMG1lZGljYWwlMjBzdHVkeXxlbnwwfHx8fDE3OTA3OTE1NTZ8MA&ixlib=rb-4.1.0&q=85",
-      "description": "Étudiante en bibliothèque avec classeurs et fiches de révision",
-      "placement": "Bannière ou modal explicative de la bibliothèque de fiches"
+    "page_today": {
+      "hero_section": {
+        "layout": "Bento Grid 12 colonnes asymétrique",
+        "streak_card": {
+          "grid_span": "col-span-12 lg:col-span-5",
+          "visual": "Carte ambrée sombre bordée d'or chaud avec icône Flamme pulsante multi-couches, compteur de jours en grand format JetBrains Mono, et 7 pastilles des jours de la semaine (état 'Validé / À réviser / Futur').",
+          "subtext": "Série active : 14 jours consécutifs — Promo dans le top 5 national !",
+          "test_id": "streak-telemetry-card"
+        },
+        "quick_actions_grid": {
+          "grid_span": "col-span-12 lg:col-span-7",
+          "tiles": [
+            {"title": "Lancer session du Jour", "desc": "3 fiches J3 + 2 fiches J7", "badge": "Urgent", "accent": "emerald", "test_id": "action-start-daily"},
+            {"title": "Défi Flashcards QCM", "desc": "10 questions chrono IA", "badge": "Express", "accent": "blue", "test_id": "action-start-quiz"},
+            {"title": "Ajouter une fiche", "desc": "PDF / Résumé pour la promo", "badge": "+20 pts", "accent": "purple", "test_id": "action-upload-sheet"},
+            {"title": "Voir le classement", "desc": "Tu es 4ème de ta promo", "badge": "Top 10%", "accent": "amber", "test_id": "action-view-ranking"}
+          ]
+        }
+      },
+      "spaced_repetition_timeline": {
+        "title": "Planning de Révision Espacée (Méthode des J)",
+        "bars": [
+          {"level": "J0 (Immersion)", "count": 2, "color": "bg-emerald-500", "desc": "Apprises aujourd'hui"},
+          {"level": "J1 (+24h)", "count": 3, "color": "bg-teal-500", "desc": "Ancrage immédiat"},
+          {"level": "J3 (+3j)", "count": 1, "color": "bg-cyan-500", "desc": "Consolidation synaptique"},
+          {"level": "J7 (+7j)", "count": 4, "color": "bg-blue-500", "desc": "Mémoire moyenne"},
+          {"level": "J15 (+15j)", "count": 2, "color": "bg-indigo-500", "desc": "Rappel espacé"},
+          {"level": "J30 (+30j)", "count": 5, "color": "bg-purple-500", "desc": "Mémoire longue durée"}
+        ]
+      }
+    },
+    "page_library": {
+      "filters_bar": {
+        "domain_pills": [
+          {"id": "all", "label": "Tous les Domaines", "code": "ALL"},
+          {"id": "A", "label": "Domaine A : Sciences humaines, sociales et droit", "code": "DOM-A", "color": "emerald"},
+          {"id": "B", "label": "Domaine B : Sciences biologiques et médicales", "code": "DOM-B", "color": "blue"},
+          {"id": "C", "label": "Domaine C : Sciences et techniques infirmières : fondements", "code": "DOM-C", "color": "purple"},
+          {"id": "D", "label": "Domaine D : Sciences et techniques infirmières : interventions", "code": "DOM-D", "color": "orange"},
+          {"id": "E", "label": "Domaine E : Intégration des savoirs et posture professionnelle", "code": "DOM-E", "color": "teal"}
+        ],
+        "search_input": "Recherche par UE (ex: 2.1, 4.4, Pharmacologie, Calculs de doses...)",
+        "test_id": "library-search-input"
+      },
+      "sheet_card_design": {
+        "structure": "Carte rectangulaire nette à 1px de bordure rythmée avec code UE en JetBrains Mono (ex: 'UE 2.2 S1'), Titre en Lora serif demi-gras, auteur de la promo, compteur de révisions, tags et 3 boutons d'action d'impact (Aperçu, Télécharger, Lancer QCM).",
+        "test_id_pattern": "sheet-card-${sheet_id}"
+      }
+    },
+    "dialogs_study_runner": {
+      "flashcard_runner": {
+        "style": "Carte 3D Flip épurée avec animation douce de retournement. Face recto = question clinique / calcul de dose ; face verso = justification anatomique & pièges à éviter.",
+        "controls": ["À revoir (Rouge)", "Hésitant (Orange)", "Maîtrisé (Vert)"]
+      },
+      "quiz_qcm_runner": {
+        "style": "Interface chrono avec jauge de score en direct, propositions avec sélection instantanée et rétroaction couleur immédiate.",
+        "test_id": "qcm-study-dialog"
+      }
+    },
+    "page_admin": {
+      "tabs": [
+        {"id": "promo_code", "label": "Codes Promo & Accès", "icon": "Key"},
+        {"id": "sheets_moderation", "label": "Modération des Fiches", "icon": "FileCheck"},
+        {"id": "leaderboard_manager", "label": "Gestion des Scores", "icon": "Award"}
+      ],
+      "aesthetic": "Console médicale de précision avec tableau haute densité, badges de statut stricts (Approuvé / En attente / Signalé)."
+    },
+    "page_auth": {
+      "aesthetic": "Split screen immersif. Côté gauche : blason clinique stylisé, manifest de promo d'entraide, citations inspirantes de grands soignants. Côté droit : formulaire propre et direct avec champ dédié au code promo universitaire.",
+      "test_ids": {
+        "promo_code_input": "auth-promo-code-input",
+        "submit_button": "auth-submit-button"
+      }
     }
-  ],
-  "accessibility": {
-    "contrast_ratio": "4.5:1 minimum pour le texte normal et muted",
-    "data_testids": [
-      "streak-card",
-      "streak-counter-value",
-      "streak-flame-icon",
-      "streak-day-pill-0",
-      "streak-day-pill-1",
-      "streak-day-pill-2",
-      "streak-day-pill-3",
-      "streak-day-pill-4",
-      "streak-day-pill-5",
-      "streak-day-pill-6",
-      "action-revise-today",
-      "action-browse-library",
-      "action-upload-sheet",
-      "action-view-progress",
-      "revision-plan-chart",
-      "due-today-count"
-    ],
-    "reduced_motion": "@media (prefers-reduced-motion: reduce) { .animate-flame-pulse, .animate-float { animation: none !important; } }"
+  },
+  "interactive_components_contract": {
+    "buttons": "Style 'Tactical Pill' ou 'Crisp Rectangle' avec radius-md, micro-translation au hover (-translate-y-0.5), transition spécifique de couleur et ring d'accessibilité APCA.",
+    "filter_pills": "Pastilles denses avec indicateur de couleur de domaine et code abrégé pour un repérage instantané lors des révisions d'urgence.",
+    "toasts": "Sonner configuré en bottom-right avec style sobre accordé au thème dark/light."
   },
   "instructions_to_main_agent": [
-    "1. Mettre à jour `frontend/src/index.css` pour inclure les keyframes flame-pulse et utility classes d'animation.",
-    "2. Dans `frontend/src/pages/Today.tsx`, ajouter en haut de la page la carte 'Série de jours' (Streak) avec l'icône de flamme animée (Lucide `Flame`), le compteur de jours consécutifs calculé ou simulé (ex: 5 jours d'affilée), un badge de statut 'Série en cours', et la rangée des pastilles des 7 derniers jours (L M M J V S D) avec états validé (vert), aujourd'hui actif (ambre vibrant), et manqué/futur (sombre).",
-    "3. Réorganiser la grille des 4 tuiles d'action en layout bento moderne responsive (2 colonnes sur tablette, 4 colonnes ou grille 2x2 valorisée sur desktop) avec des effets de survol lissés et des micro-bordures lumineuses.",
-    "4. Améliorer la carte 'Mon planning des J' avec des barres de progression stylisées, gradients subtils et indicateurs de palier J0/J1/J3/J7/J15/J30.",
-    "5. Sublimer la page `Login.tsx` en exploitant l'image Unsplash sélectionnée dans un panneau de présentation gauche (split layout) valorisant l'ambiance étudiante IFSI.",
-    "6. Conserver scrupuleusement tous les `data-testid` existants et ajouter les nouveaux pour la carte de streak."
+    "1. Mettre à jour index.css avec les tokens complets fournis dans 'css_theme_tokens', incluant les imports de polices @fontsource-variable/{lora,instrument-sans,jetbrains-mono}.",
+    "2. Définir le dark mode par défaut dans frontend/index.html (ajouter class='dark' sur la balise <html>) et initialiser le ThemeProvider avec prise en compte du localStorage.",
+    "3. Intégrer dans l'en-tête le composant de bascule de thème Jour/Nuit (Segmented Pill) visible sur toutes les résolutions avec data-testid='theme-toggle-button'.",
+    "4. Remplacer l'ancien style bleu ciel/glassmorphism générique par la direction 'Clinical Neo-Editorial' : titres en Lora, métriques en JetBrains Mono, fonds sombres profonds (#0B1117 / #121A24) ou clairs soignés (#F8FAFC / #FFFFFF), et accents néon émeraude/ambre.",
+    "5. Implémenter l'animation de la flamme de streak (@keyframes flame-pulse) dans le composant Hero de la page Aujourd'hui.",
+    "6. Assurer que tous les éléments interactifs et filtres possèdent leurs data-testid descriptifs pour valider la robustesse des tests automatisés."
   ]
 }

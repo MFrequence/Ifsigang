@@ -60,25 +60,25 @@ export default function FlashcardsDialog({ sheet, open, onOpenChange }: Flashcar
         </DialogHeader>
 
         {cardsQuery.isLoading ? (
-          <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+          <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" /> Chargement des cartes…
           </div>
         ) : cardsQuery.isError ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm text-slate-600">Impossible de charger les cartes.</p>
+            <p className="text-sm text-muted-foreground">Impossible de charger les cartes.</p>
             <Button variant="outline" onClick={() => void cardsQuery.refetch()}>
               Réessayer
             </Button>
           </div>
         ) : cards.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
               <Sparkles className="h-6 w-6" />
             </div>
-            <p className="font-heading text-lg font-semibold text-slate-900">
+            <p className="font-heading text-lg font-semibold text-foreground">
               Pas encore de cartes
             </p>
-            <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               Génère un paquet de questions/réponses (et leurs propositions QCM) à partir du contenu
               de cette fiche — quelques secondes suffisent.
             </p>

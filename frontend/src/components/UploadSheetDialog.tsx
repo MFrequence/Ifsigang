@@ -139,8 +139,8 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
             className={cn(
               "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors duration-200",
               dragging
-                ? "border-sky-500 bg-sky-50"
-                : "border-slate-300 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/50",
+                ? "border-primary bg-accent"
+                : "border-border bg-secondary/60 hover:border-primary/60 hover:bg-accent/50",
             )}
             onDragOver={(e) => {
               e.preventDefault();
@@ -163,19 +163,19 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
             />
             {file ? (
               <>
-                <FileUp className="h-8 w-8 text-sky-600" />
-                <p className="text-sm font-medium text-slate-800">{file.name}</p>
-                <p className="text-xs text-slate-500">
+                <FileUp className="h-8 w-8 text-primary" />
+                <p className="text-sm font-medium text-foreground">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
                   {formatBytes(file.size)} — cliquer pour changer
                 </p>
               </>
             ) : (
               <>
-                <Upload className="h-8 w-8 text-slate-400" />
-                <p className="text-sm font-medium text-slate-700">
+                <Upload className="h-8 w-8 text-muted-foreground/70" />
+                <p className="text-sm font-medium text-foreground">
                   Glisse ton fichier ici ou clique pour parcourir
                 </p>
-                <p className="text-xs text-slate-500">pdf, png, jpg, docx, txt — 10 Mo max</p>
+                <p className="text-xs text-muted-foreground">pdf, png, jpg, docx, txt — 10 Mo max</p>
               </>
             )}
           </label>

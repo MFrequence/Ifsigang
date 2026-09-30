@@ -137,12 +137,12 @@ export default function StudyRunner({
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
         <p
-          className="font-heading text-3xl font-extrabold tracking-tight text-slate-900"
+          className="font-heading text-3xl font-extrabold tracking-tight text-foreground"
           data-testid="study-score"
         >
           {known} / {total}
         </p>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted-foreground">
           {missed === 0
             ? "Parfait, toutes les cartes sont sues !"
             : `${missed} carte${missed > 1 ? "s" : ""} à revoir — elles reviendront en priorité.`}
@@ -168,7 +168,7 @@ export default function StudyRunner({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <p
-            className="font-mono text-xs uppercase tracking-wider text-slate-500"
+            className="font-mono text-xs uppercase tracking-wider text-muted-foreground"
             data-testid="study-progress"
           >
             Carte {index + 1} / {deck.length}
@@ -177,7 +177,7 @@ export default function StudyRunner({
             <Badge
               variant="outline"
               data-testid="study-stage-badge"
-              className="border-sky-200 bg-sky-50 text-sky-800"
+              className="border-primary/40 bg-accent text-accent-foreground"
             >
               {stage.isNew ? "Nouvelle" : stage.stage}
               {stage.overdue > 0 ? ` · +${stage.overdue}j de retard` : ""}
@@ -257,7 +257,7 @@ export default function StudyRunner({
 
       {/* Zone défilable : avec 4 propositions longues, le contenu ne doit jamais pousser
           la barre d'actions hors de l'écran. */}
-      <div className="max-h-[46svh] min-h-[200px] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+      <div className="max-h-[46svh] min-h-[200px] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-6 shadow-xs">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id + (revealed ? "-r" : "") + effectiveMode}
@@ -267,11 +267,11 @@ export default function StudyRunner({
             transition={{ duration: 0.15 }}
           >
             {showContext && contextOf(current) ? (
-              <p className="mb-2 truncate text-xs text-slate-400">{contextOf(current)}</p>
+              <p className="mb-2 truncate text-xs text-muted-foreground/70">{contextOf(current)}</p>
             ) : null}
-            <p className="font-mono text-xs uppercase tracking-wider text-slate-400">Question</p>
+            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground/70">Question</p>
             <p
-              className="mt-2 font-heading text-xl font-semibold leading-snug text-slate-900"
+              className="mt-2 font-heading text-xl font-semibold leading-snug text-foreground"
               data-testid="study-question"
             >
               {current.question}
@@ -292,21 +292,21 @@ export default function StudyRunner({
                       onClick={() => setPicked(option)}
                       className={cn(
                         "flex items-start gap-2 rounded-xl border px-4 py-3 text-left text-sm leading-relaxed transition-colors duration-150",
-                        !showState && "border-slate-200 bg-white hover:border-sky-400 hover:bg-sky-50/60",
+                        !showState && "border-border bg-card hover:border-primary/60 hover:bg-accent/60",
                         showState && isCorrect && "border-emerald-300 bg-emerald-50 text-emerald-900",
                         showState &&
                           isPicked &&
                           !isCorrect &&
                           "border-rose-300 bg-rose-50 text-rose-900",
-                        showState && !isPicked && !isCorrect && "border-slate-200 text-slate-400",
+                        showState && !isPicked && !isCorrect && "border-border text-muted-foreground/70",
                       )}
                     >
                       {showState && isCorrect ? (
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       ) : showState && isPicked ? (
-                        <X className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+                        <X className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                       ) : (
-                        <span className="mt-0.5 font-mono text-xs text-slate-400">
+                        <span className="mt-0.5 font-mono text-xs text-muted-foreground/70">
                           {String.fromCharCode(65 + i)}
                         </span>
                       )}
@@ -316,9 +316,9 @@ export default function StudyRunner({
                 })}
               </div>
             ) : revealed ? (
-              <div className="mt-4 rounded-xl bg-sky-50 p-4" data-testid="study-answer-panel">
-                <p className="font-mono text-xs uppercase tracking-wider text-sky-700">Réponse</p>
-                <p className="mt-1 text-base leading-relaxed text-slate-800">{current.answer}</p>
+              <div className="mt-4 rounded-xl bg-accent p-4" data-testid="study-answer-panel">
+                <p className="font-mono text-xs uppercase tracking-wider text-primary">Réponse</p>
+                <p className="mt-1 text-base leading-relaxed text-foreground">{current.answer}</p>
               </div>
             ) : null}
           </motion.div>
@@ -366,7 +366,7 @@ export default function StudyRunner({
             </Button>
             <Button
               variant="outline"
-              className="border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+              className="border-rose-200 text-destructive hover:bg-destructive/10 hover:text-rose-800"
               data-testid="study-review-button"
               onClick={() => advance(false)}
             >

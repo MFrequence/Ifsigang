@@ -31,10 +31,10 @@ export default function SheetPreviewDialog({ sheet, open, onOpenChange }: SheetP
             <iframe
               title={`Aperçu de ${sheet.title}`}
               src={`/api/sheets/${sheet.id}/file`}
-              className="h-[70vh] w-full rounded-lg border border-slate-200 bg-slate-100"
+              className="h-[70vh] w-full rounded-lg border border-border bg-secondary"
             />
           ) : (
-            <div className="flex max-h-[70vh] items-center justify-center overflow-auto rounded-lg border border-slate-200 bg-slate-100 p-4">
+            <div className="flex max-h-[70vh] items-center justify-center overflow-auto rounded-lg border border-border bg-secondary p-4">
               <img
                 src={`/api/sheets/${sheet.id}/file`}
                 alt={`Aperçu de ${sheet.title}`}

@@ -66,22 +66,22 @@ export default function StudySessionDialog({
         </DialogHeader>
 
         {deckQuery.isLoading ? (
-          <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+          <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" /> Préparation de la session…
           </div>
         ) : deckQuery.isError ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm text-slate-600">Impossible de préparer la session.</p>
+            <p className="text-sm text-muted-foreground">Impossible de préparer la session.</p>
             <Button variant="outline" onClick={() => void deckQuery.refetch()}>
               Réessayer
             </Button>
           </div>
         ) : cards.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <p className="font-heading text-lg font-semibold text-slate-900">
+            <p className="font-heading text-lg font-semibold text-foreground">
               Aucune carte dans cette sélection
             </p>
-            <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               Ouvre une fiche de cette sélection et génère ses cartes — elles rejoindront
               automatiquement les sessions du domaine et de l'UE.
             </p>

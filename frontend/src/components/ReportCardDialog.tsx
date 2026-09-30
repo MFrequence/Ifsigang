@@ -58,7 +58,7 @@ export default function ReportCardDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <p className="rounded-lg bg-slate-50 p-3 text-sm leading-relaxed text-slate-700">
+        <p className="rounded-lg bg-secondary p-3 text-sm leading-relaxed text-foreground">
           {question}
         </p>
 
