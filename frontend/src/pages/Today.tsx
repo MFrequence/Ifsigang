@@ -16,9 +16,9 @@ import {
 import { apiGet } from "@/lib/api";
 import type { RevisionPlan, Sheet, Streak, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
+import StreakCard from "@/components/StreakCard";
 import DailyRevisionDialog from "@/components/DailyRevisionDialog";
 import ProgressDialog from "@/components/ProgressDialog";
-import StreakCard from "@/components/StreakCard";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
 import { cn } from "@/lib/utils";
 
@@ -147,7 +147,8 @@ export default function Today({ user }: TodayProps) {
       />
 
       <main className="clinical-grid mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="mb-8 max-w-2xl">
+        <section className="mb-8 grid items-center gap-6 lg:grid-cols-[1.15fr_minmax(0,380px)] lg:gap-10">
+          <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
             Bonjour {firstName}
           </p>
@@ -184,15 +185,16 @@ export default function Today({ user }: TodayProps) {
               )}
             </p>
           )}
+          </div>
+
+          <StreakCard
+            streak={streakQuery.data}
+            loading={streakQuery.isLoading}
+            onRevise={openDaily}
+          />
         </section>
 
-        <StreakCard
-          streak={streakQuery.data}
-          loading={streakQuery.isLoading}
-          onRevise={openDaily}
-        />
-
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
+        <section className="grid gap-4 sm:grid-cols-2 sm:gap-5">
           <ActionTile
             testId="action-revise-today"
             title="Réviser aujourd'hui"

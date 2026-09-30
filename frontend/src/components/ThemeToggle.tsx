@@ -1,22 +1,20 @@
-import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { applyTheme, storedTheme, type Theme } from "@/lib/theme";
+import type { Theme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-// Bascule Jour / Nuit en capsule segmentée. Le choix est mémorisé (localStorage).
-export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(() => storedTheme());
+interface ThemeToggleProps {
+  theme: Theme;
+  onChange: (theme: Theme) => void;
+}
 
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
-
+// Bascule Jour / Nuit en capsule segmentée. L'état vit dans AppHeader (voir lib/theme.ts).
+export default function ThemeToggle({ theme, onChange }: ThemeToggleProps) {
   const segment = (value: Theme, label: string, icon: React.ReactNode) => (
     <button
       type="button"
       data-testid={`theme-toggle-${value}`}
       aria-pressed={theme === value}
-      onClick={() => setTheme(value)}
+      onClick={() => onChange(value)}
       className={cn(
         "flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider transition-colors duration-200",
         theme === value
@@ -25,7 +23,7 @@ export default function ThemeToggle() {
       )}
     >
       {icon}
-      <span className="hidden sm:inline">{label}</span>
+      <span className="hidden 2xl:inline">{label}</span>
     </button>
   );
 

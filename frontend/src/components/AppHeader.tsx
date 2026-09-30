@@ -1,9 +1,20 @@
-import { FolderOpen, GraduationCap, KeyRound, LogOut, ShieldCheck, TrendingUp, Upload } from "lucide-react";
-import { useState } from "react";
+import {
+  FolderOpen,
+  GraduationCap,
+  KeyRound,
+  LogOut,
+  Moon,
+  ShieldCheck,
+  Sun,
+  TrendingUp,
+  Upload,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog";
 import ProgressDialog from "@/components/ProgressDialog";
 import ThemeToggle from "@/components/ThemeToggle";
+import { applyTheme, storedTheme, type Theme } from "@/lib/theme";
 import { toast } from "sonner";
 import { endSession } from "@/lib/session";
 import type { User } from "@/lib/types";
@@ -37,6 +48,11 @@ export default function AppHeader({
   // Les pages secondaires ne passent pas de handler : l'en-tête ouvre alors son propre dialogue.
   const [progressOpen, setProgressOpen] = useState(false);
   const openProgress = onProgressClick ?? (() => setProgressOpen(true));
+  // Thème : état unique pour la capsule (desktop) et l'entrée de menu (mobile).
+  const [theme, setTheme] = useState<Theme>(() => storedTheme());
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
   const initials = user.name
     .split(/\s+/)
     .slice(0, 2)
@@ -45,8 +61,8 @@ export default function AppHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6 lg:gap-4 lg:px-8">
+        <div className="flex shrink-0 items-center gap-3">
           <Link
             to="/"
             data-testid="header-home-link"
@@ -56,11 +72,11 @@ export default function AppHeader({
               <GraduationCap className="h-5 w-5" />
               <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-primary" />
             </div>
-            <div>
-              <p className="font-heading text-lg font-bold tracking-tight text-foreground">
+            <div className="min-w-0">
+              <p className="whitespace-nowrap font-heading text-lg font-bold leading-tight tracking-tight text-foreground">
                 Fiches <span className="text-primary">IFSI</span>
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="hidden whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground xl:block">
                 Promo · révisions partagées
               </p>
             </div>
@@ -99,12 +115,14 @@ export default function AppHeader({
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
+          <div className="hidden md:block">
+            <ThemeToggle theme={theme} onChange={setTheme} />
+          </div>
 
           <Badge
             variant="outline"
             data-testid="total-sheets-badge"
-            className="hidden gap-1.5 border-border text-muted-foreground sm:inline-flex"
+            className="hidden gap-1.5 border-border text-muted-foreground 2xl:inline-flex"
           >
             <FolderOpen className="h-3.5 w-3.5" />
             {totalSheets} fiche{totalSheets === 1 ? "" : "s"}
@@ -113,12 +131,15 @@ export default function AppHeader({
           {onProgressClick ? (
             <Button
               variant="outline"
+              size="icon"
+              // masqué au téléphone : l'entrée reste dans le menu avatar
+              aria-label="Ma progression"
+              title="Ma progression"
               data-testid="open-progress-button"
               onClick={openProgress}
-              className="transition-transform duration-75 active:scale-[0.98]"
+              className="hidden transition-transform duration-75 active:scale-[0.98] md:inline-flex"
             >
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Ma progression</span>
             </Button>
           ) : null}
 
@@ -129,7 +150,7 @@ export default function AppHeader({
               className="transition-transform duration-75 active:scale-[0.98]"
             >
               <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Déposer une fiche</span>
+              <span className="hidden xl:inline">Déposer une fiche</span>
             </Button>
           ) : null}
 
@@ -151,6 +172,21 @@ export default function AppHeader({
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  data-testid="menu-theme-item"
+                  className="md:hidden"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setTheme(theme === "dark" ? "light" : "dark");
+                  }}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                  {theme === "dark" ? "Thème clair" : "Thème sombre"}
+                </DropdownMenuItem>
                 <DropdownMenuItem data-testid="menu-progress-item" onClick={openProgress}>
                   <TrendingUp className="h-4 w-4" /> Ma progression
                 </DropdownMenuItem>

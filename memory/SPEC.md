@@ -124,9 +124,17 @@ personnel et **classement de la promo**.
   (la réponse renvoie `day_completed`). Non recalculable a posteriori (les échéances bougent).
 - `GET /api/revision/streak` → `Streak` : current, best, completed_today, remaining_today,
   total_days, days[7] ({date, completed, is_today}) — dates ancrées serveur (lib/dates.py).
-- Frontend : `components/StreakCard.tsx` (flamme animée `animate-flame-pulse`, compteur,
-  pastilles des 7 derniers jours) en haut de `pages/Today.tsx`, query `["revision-streak"]`
-  invalidée par `StudyRunner` après chaque réponse.
+- Frontend : `components/StreakCard.tsx` — carte « encre chaude » (flamme animée `animate-flame`,
+  compteur, 7 pastilles de jours, record, bouton « Entretenir ma série ») placée **à droite du
+  titre « Que veux-tu faire aujourd'hui ? »** dans le hero de `pages/Today.tsx`
+  (grid lg:[1.15fr_minmax(0,380px)], empilée en mobile). Query `["revision-streak"]`, invalidée
+  par `StudyRunner` après chaque réponse. (Une variante compacte en barre du haut a été essayée
+  puis retirée à la demande de l'utilisateur.)
+- En-tête compacté pour tenir sans débordement de 360 px à 1440 px : sous-titre de marque et
+  libellés Jour/Nuit visibles seulement en très large, compteur de fiches en 2xl, bouton
+  progression réduit à une icône (masqué sous md), libellé du bouton d'upload dès xl.
+  L'état du thème vit dans `AppHeader` (ThemeToggle est contrôlé) et une entrée de menu
+  `menu-theme-item` bascule le thème au téléphone.
 
 ## Refonte design (dernière itération)
 - `index.css` : keyframes `flame-pulse`, `subtle-float`, `rise-in` + utilitaires
