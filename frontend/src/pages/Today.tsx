@@ -5,8 +5,10 @@ import {
   ArrowUpRight,
   BookMarked,
   BookOpen,
+  Calculator,
   Pill,
   ShapesIcon,
+  Timer,
   CalendarCheck,
   CheckCircle2,
   Loader2,
@@ -242,6 +244,24 @@ export default function Today({ user }: TodayProps) {
             accent="bg-gradient-to-br from-rose-500 to-red-700 shadow-rose-600/30"
             ring="hover:border-rose-400/60"
             to="/pharmacologie"
+          />
+          <ActionTile
+            testId="action-calc"
+            title="Calculs de doses"
+            description="mg/kg, ml/h, gouttes/min, dilutions : exercices corrigés pas à pas."
+            icon={<Calculator className="h-5 w-5" />}
+            accent="bg-gradient-to-br from-cyan-500 to-blue-700 shadow-cyan-600/30"
+            ring="hover:border-cyan-400/60"
+            to="/calculs"
+          />
+          <ActionTile
+            testId="action-exam"
+            title="Examen blanc"
+            description="20 QCM chronométrés dans une UE, note sur 20 et correction."
+            icon={<Timer className="h-5 w-5" />}
+            accent="bg-gradient-to-br from-orange-500 to-rose-700 shadow-orange-600/30"
+            ring="hover:border-orange-400/60"
+            to="/examen"
           />
           <ActionTile
             testId="action-anatomy"

@@ -160,6 +160,10 @@ async def delete_user(user_id: str, session: dict = Depends(admin_guard)):
     await db.sheet_reports.delete_many({"user_id": user_id})
     await db.drug_favorites.delete_many({"user_id": user_id})
     await db.anatomy_attempts.delete_many({"user_id": user_id})
+    await db.calc_exercises.delete_many({"user_id": user_id})
+    await db.calc_attempts.delete_many({"user_id": user_id})
+    await db.exams.delete_many({"user_id": user_id})
+    await db.exam_results.delete_many({"user_id": user_id})
 
     await db.card_results.delete_many({"user_id": user_id})
     await db.card_schedules.delete_many({"user_id": user_id})

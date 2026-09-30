@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { apiPost } from "@/lib/api";
-import type { Flashcard, RevisionCard, StudyCard, StudyMode } from "@/lib/types";
+import type { CardQuality, Flashcard, RevisionCard, StudyCard, StudyMode } from "@/lib/types";
 import ReportCardDialog from "@/components/ReportCardDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,10 +98,11 @@ export default function StudyRunner({
   }, [current, effectiveMode]);
 
   const record = useMutation({
-    mutationFn: (vars: { cardId: string; correct: boolean }) =>
+    mutationFn: (vars: { cardId: string; correct: boolean; quality?: CardQuality }) =>
       apiPost<unknown>("/progress/answer", {
         card_id: vars.cardId,
         correct: vars.correct,
+        quality: vars.quality ?? null,
         mode: effectiveMode,
       }),
     onSuccess: () => {
@@ -112,11 +113,12 @@ export default function StudyRunner({
     },
   });
 
-  const advance = (correct: boolean) => {
+  // Auto-évaluation : facile → palier suivant, moyen → J3, à revoir → J1.
+  const advance = (correct: boolean, quality?: CardQuality) => {
     if (!current) return;
     if (correct) setKnown((k) => k + 1);
     else setMissed((m) => m + 1);
-    record.mutate({ cardId: current.id, correct });
+    record.mutate({ cardId: current.id, correct, quality });
     setIndex((i) => i + 1);
     setRevealed(false);
     setPicked(null);
@@ -355,20 +357,31 @@ export default function StudyRunner({
             Voir la réponse
           </Button>
         ) : (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+              className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
               data-testid="study-known-button"
-              onClick={() => advance(true)}
+              title="Palier suivant (J7, J15, J30…)"
+              onClick={() => advance(true, "easy")}
             >
-              Je savais
+              Facile
             </Button>
             <Button
               variant="outline"
-              className="border-rose-200 text-destructive hover:bg-destructive/10 hover:text-rose-800"
+              className="border-amber-500/40 text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
+              data-testid="study-medium-button"
+              title="Notion fragile : retour à J3"
+              onClick={() => advance(true, "medium")}
+            >
+              Moyen
+            </Button>
+            <Button
+              variant="outline"
+              className="border-rose-500/40 text-destructive hover:bg-destructive/10"
               data-testid="study-review-button"
-              onClick={() => advance(false)}
+              title="Retour à J1 : revue dès demain"
+              onClick={() => advance(false, "hard")}
             >
               À revoir
             </Button>

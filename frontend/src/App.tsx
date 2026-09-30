@@ -5,6 +5,8 @@ import type { User } from "@/lib/types";
 import { Toaster } from "@/components/ui/sonner";
 import Admin from "@/pages/Admin";
 import Anatomie from "@/pages/Anatomie";
+import Calculs from "@/pages/Calculs";
+import Examen from "@/pages/Examen";
 import Lexique from "@/pages/Lexique";
 import Library from "@/pages/Library";
 import Login from "@/pages/Login";
@@ -56,6 +58,8 @@ export default function App() {
           {/* L'accueil demande ce qu'on veut faire ; la bibliothèque est une destination. */}
           <Route path="/" element={<Today user={user} />} />
           <Route path="/cours" element={<Library user={user} />} />
+          <Route path="/calculs" element={<Calculs user={user} />} />
+          <Route path="/examen" element={<Examen user={user} />} />
           <Route path="/schemas" element={<Anatomie user={user} />} />
           <Route path="/lexique" element={<Lexique user={user} />} />
           <Route path="/pharmacologie" element={<Pharmaco user={user} />} />

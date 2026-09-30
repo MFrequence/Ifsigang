@@ -23,8 +23,11 @@ from lib.lexicon_seed import seed_lexicon
 from routers.admin import router as admin_router
 from routers.anatomy import router as anatomy_router
 from routers.auth import router as auth_router
+from routers.calc import router as calc_router
+from routers.exam import router as exam_router
 from routers.flashcards import router as flashcards_router
 from routers.lexicon import router as lexicon_router
+from routers.search import router as search_router
 from routers.pharmaco import router as pharmaco_router
 from routers.progress import router as progress_router
 from routers.reports import router as reports_router
@@ -88,6 +91,9 @@ api_router.include_router(admin_router)
 api_router.include_router(lexicon_router)
 api_router.include_router(pharmaco_router)
 api_router.include_router(anatomy_router)
+api_router.include_router(search_router)
+api_router.include_router(calc_router)
+api_router.include_router(exam_router)
 
 # Include the router in the main app
 app.include_router(api_router)

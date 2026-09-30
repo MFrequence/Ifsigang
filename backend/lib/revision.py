@@ -21,8 +21,16 @@ def stage_label(level: int) -> str:
     return f"J{J_INTERVALS[min(max(level, 0), MAX_LEVEL)]}"
 
 
-def next_level(level: int, correct: bool) -> int:
-    if not correct:
+# Auto-évaluation : "easy" monte d'un palier, "medium" ramène à J3, "hard" à J1.
+QUALITIES = ("easy", "medium", "hard")
+MEDIUM_LEVEL = 2  # J3
+
+
+def next_level(level: int, correct: bool, quality: str | None = None) -> int:
+    if quality == "medium":
+        # notion fragile : la carte revient à J3, qu'elle vienne d'un palier plus haut ou plus bas
+        return MEDIUM_LEVEL
+    if quality == "hard" or not correct:
         return 1  # retour à J1 : revue dès le lendemain
     return min(level + 1, MAX_LEVEL)
 
@@ -33,13 +41,15 @@ def due_date_for(level: int, from_date: str) -> str:
     return (base + timedelta(days=J_INTERVALS[min(max(level, 0), MAX_LEVEL)])).isoformat()
 
 
-async def apply_answer(user_id: str, card_id: str, sheet_id: str, correct: bool) -> dict:
+async def apply_answer(
+    user_id: str, card_id: str, sheet_id: str, correct: bool, quality: str | None = None
+) -> dict:
     """Met à jour (ou crée) l'échéance d'une carte après une réponse. Renvoie le nouvel état."""
     today = today_iso()
     existing = await db.card_schedules.find_one({"user_id": user_id, "card_id": card_id})
     current_level = existing.get("level", 0) if existing else 0
 
-    level = next_level(current_level, correct)
+    level = next_level(current_level, correct, quality)
     schedule = CardSchedule(
         user_id=user_id,
         card_id=card_id,

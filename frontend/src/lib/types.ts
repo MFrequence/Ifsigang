@@ -238,3 +238,90 @@ export interface DiagramAttemptResult {
   solution: Record<string, string>;
   best_score: number;
 }
+
+// Mirror of SearchHit / GlobalSearchResults in backend/models/search.py.
+export interface SearchHit {
+  id: string;
+  title: string;
+  subtitle: string;
+  kind: "sheet" | "lexicon" | "drug";
+  category: string;
+}
+
+export interface GlobalSearchResults {
+  query: string;
+  sheets: SearchHit[];
+  lexicon: SearchHit[];
+  drugs: SearchHit[];
+}
+
+// Mirror of CalcExercise / CalcAnswerResult / CalcStats in backend/models/calc.py.
+export interface CalcExercise {
+  id: string;
+  type: string;
+  label: string;
+  statement: string;
+  unit: string;
+}
+
+export interface CalcAnswerResult {
+  correct: boolean;
+  expected: number;
+  unit: string;
+  steps: string[];
+  streak: number;
+}
+
+export interface CalcStats {
+  answered: number;
+  correct: number;
+  accuracy: number;
+  per_type: Record<string, number>;
+}
+
+// Mirror of ExamQuestion / ExamOut / ExamResultOut / ExamHistoryEntry in backend/models/exam.py.
+export interface ExamQuestion {
+  card_id: string;
+  question: string;
+  choices: string[];
+  sheet_title: string;
+  unit: string;
+}
+
+export interface ExamOut {
+  id: string;
+  scope: string;
+  total: number;
+  questions: ExamQuestion[];
+}
+
+export interface ExamCorrection {
+  card_id: string;
+  question: string;
+  given: string;
+  expected: string;
+  correct: boolean;
+  sheet_title: string;
+}
+
+export interface ExamResultOut {
+  id: string;
+  scope: string;
+  score: number;
+  total: number;
+  mark: number;
+  seconds: number;
+  corrections: ExamCorrection[];
+}
+
+export interface ExamHistoryEntry {
+  scope: string;
+  score: number;
+  total: number;
+  mark: number;
+  seconds: number;
+  created_at: string;
+}
+
+// Mirror of AnswerRequest.quality in backend/models/progress.py.
+export type CardQuality = "easy" | "medium" | "hard";

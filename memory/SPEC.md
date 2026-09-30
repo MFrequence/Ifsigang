@@ -242,3 +242,37 @@ personnel et **classement de la promo**.
   donc visible même sans carte révisée). Tentatives purgées à la suppression d'un compte.
 - `AppHeader` : `onProgressClick` optionnel — sans handler, l'en-tête monte son propre
   ProgressDialog, donc « Ma progression » est accessible depuis toutes les pages.
+
+## Efficacité de révision — 4 ajouts
+
+### Auto-évaluation en 3 niveaux (méthode des J)
+`AnswerRequest.quality` = "easy" | "medium" | "hard" (optionnel, 422 si autre valeur).
+`lib/revision.next_level(level, correct, quality)` : easy → palier suivant, **medium → J3
+systématiquement** (niveau 2), hard/faux → J1. Les QCM restent en juste/faux (quality absent).
+`POST /api/progress/answer` renvoie aussi `stage` ("J7"…). Frontend : 3 boutons
+Facile / Moyen / À revoir dans `StudyRunner` (`study-known-button`, `study-medium-button`,
+`study-review-button`).
+
+### Recherche globale (Ctrl/Cmd + K)
+`GET /api/search?q=` (min 2 car., 422 sinon) → {sheets, lexicon, drugs} (8 max par section,
+regex insensible à la casse sur titre/description/UE/auteur, terme/définition, label/DCI/classe).
+Frontend : `components/GlobalSearchDialog.tsx` monté dans `AppHeader` (bouton loupe
+`open-global-search-button` + raccourci clavier), navigation vers /cours, /lexique, /pharmacologie.
+
+### Calculs de doses (/calculs)
+`backend/lib/calc.py` : 5 familles générées sans IA (mg_kg, ml_h, gouttes, dilution, comprimes),
+chacune avec réponse, tolérance et étapes de correction. `GET /api/calc/types`,
+`GET /api/calc/exercise?type=` (l'exercice est stocké dans `calc_exercises` — la réponse ne part
+jamais avant la validation), `POST /api/calc/answer` (404 si exercice inconnu) → correct, réponse
+attendue, étapes, série en cours ; `GET /api/calc/stats`. Frontend `pages/Calculs.tsx`.
+
+### Examen blanc (/examen)
+`POST /api/exam/start?domain=&unit=` → jusqu'à 20 QCM tirés au hasard (flashcards ayant au moins
+un distracteur), choix mélangés, solutions stockées dans `exams` côté serveur ; 404 si aucun QCM
+dans le périmètre, 422 sur domaine invalide. `POST /api/exam/{id}/submit` → score, **note sur 20**,
+durée et correction question par question ; `GET /api/exam/history`. Chronomètre côté client.
+Frontend `pages/Examen.tsx`. Données purgées à la suppression d'un compte (routers/admin.py).
+
+Navigation : liens Cours / Lexique / Schémas / Calculs / Examen / Pharmaco dans l'en-tête +
+tuiles « Calculs de doses » et « Examen blanc » sur la page Aujourd'hui.
+Base remise à zéro après vérification (0 fiche, 1 compte, lexique de 108 entrées conservé).

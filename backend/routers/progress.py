@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from lib.db import db
-from lib.revision import apply_answer
+from lib.revision import apply_answer, stage_label
 from lib.streak import mark_day_if_cleared
 from models.progress import (
     AnswerRequest,
@@ -35,17 +35,21 @@ async def record_answer(payload: AnswerRequest, user: dict = Depends(current_use
         domain=(sheet or {}).get("domain", ""),
         unit=(sheet or {}).get("unit") or "",
         correct=payload.correct,
+        quality=payload.quality or "",
         mode=payload.mode if payload.mode in {"flash", "quiz"} else "flash",
     )
     await db.card_results.insert_one(result.model_dump())
     # Chaque réponse fait avancer (ou reculer) la carte dans le cycle des J.
-    schedule = await apply_answer(user["id"], payload.card_id, card["sheet_id"], payload.correct)
+    schedule = await apply_answer(
+        user["id"], payload.card_id, card["sheet_id"], payload.correct, payload.quality
+    )
     # Série de jours : le jour est validé dès qu'il ne reste plus rien à réviser.
     day_completed = await mark_day_if_cleared(user["id"])
     return {
         "recorded": True,
         "level": schedule["level"],
         "due_date": schedule["due_date"],
+        "stage": stage_label(schedule["level"]),
         "day_completed": day_completed,
     }
 

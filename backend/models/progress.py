@@ -3,6 +3,8 @@
 import uuid
 from datetime import datetime, timezone
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -18,6 +20,7 @@ class CardResult(BaseModel):
     domain: str = ""
     unit: str = ""
     correct: bool
+    quality: str = ""  # "easy" | "medium" | "hard" (auto-évaluation), vide en QCM
     mode: str = "flash"  # "flash" (auto-évaluation) ou "quiz" (QCM)
     answered_at: datetime = Field(default_factory=utcnow)
 
@@ -25,6 +28,8 @@ class CardResult(BaseModel):
 class AnswerRequest(BaseModel):
     card_id: str
     correct: bool
+    # Auto-évaluation en 3 niveaux : facile (palier suivant), moyen (J3), à revoir (J1).
+    quality: Literal["easy", "medium", "hard"] | None = None
     mode: str = "flash"
 
 

@@ -4,6 +4,7 @@ import {
   KeyRound,
   LogOut,
   Moon,
+  Search,
   ShieldCheck,
   Sun,
   TrendingUp,
@@ -12,6 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog";
+import GlobalSearchDialog from "@/components/GlobalSearchDialog";
 import ProgressDialog from "@/components/ProgressDialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import { applyTheme, storedTheme, type Theme } from "@/lib/theme";
@@ -47,12 +49,25 @@ export default function AppHeader({
   const [passwordOpen, setPasswordOpen] = useState(false);
   // Les pages secondaires ne passent pas de handler : l'en-tête ouvre alors son propre dialogue.
   const [progressOpen, setProgressOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const openProgress = onProgressClick ?? (() => setProgressOpen(true));
   // Thème : état unique pour la capsule (desktop) et l'entrée de menu (mobile).
   const [theme, setTheme] = useState<Theme>(() => storedTheme());
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  // Recherche globale : Ctrl/Cmd + K
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const initials = user.name
     .split(/\s+/)
     .slice(0, 2)
@@ -106,6 +121,20 @@ export default function AppHeader({
             Schémas
           </Link>
           <Link
+            to="/calculs"
+            data-testid="nav-calc-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Calculs
+          </Link>
+          <Link
+            to="/examen"
+            data-testid="nav-exam-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Examen
+          </Link>
+          <Link
             to="/pharmacologie"
             data-testid="nav-pharmaco-link"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
@@ -115,6 +144,17 @@ export default function AppHeader({
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Rechercher partout"
+            title="Rechercher partout (Ctrl+K)"
+            data-testid="open-global-search-button"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+
           <div className="hidden md:block">
             <ThemeToggle theme={theme} onChange={setTheme} />
           </div>
@@ -216,6 +256,8 @@ export default function AppHeader({
           </DropdownMenu>
         </div>
       </div>
+
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
       <ProgressDialog open={progressOpen} onOpenChange={setProgressOpen} />
 
