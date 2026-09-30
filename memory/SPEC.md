@@ -341,3 +341,21 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
   chaque frappe (aucun surlignage cumulé). Marche aussi bien sur le HTML que sur le texte.
 - `lib/format.ts::isTextReadable` / `isPreviewable` : tous les formats acceptés sont
   maintenant lisibles en ligne → le bouton de la carte s'appelle « Lire ».
+
+
+## Planning de révisions avant partiel (`/planning`)
+
+- `backend/lib/plan.py` : répartition des fiches sur les jours restants (aujourd'hui → date
+  d'épreuve incluse, 60 jours max), libellés FR (« Aujourd'hui », « Demain », « mardi 6 oct. »),
+  **dernière journée = révision générale** (reprend toutes les fiches) dès qu'il y a ≥ 3 jours.
+- `backend/routers/plan.py` (`/api/plans`) : `GET` (liste, épreuve la plus proche d'abord),
+  `POST` (422 domaine inconnu / date passée / date invalide), `POST /{id}/sheets/{sheet_id}/toggle`
+  (avancement personnel), `DELETE /{id}` (404 hors propriétaire). Collection `revision_plans`
+  `{id, user_id, title, domain, unit, exam_date, done_sheet_ids[]}`.
+- Le programme est **recalculé à chaque lecture** depuis les fiches du domaine/UE : une fiche
+  déposée après la création du planning y entre automatiquement.
+- `GET /api/study/deck?sheet_ids=a,b,c` : session limitée à ces fiches (bouton « Réviser ce
+  jour »). `StudySessionDialog` accepte la prop `sheetIds`.
+- `frontend/src/pages/Planning.tsx` : formulaire (titre, domaine, UE, date), cartes de planning
+  avec J-x, barre d'avancement, journées cliquables (`plan-day-{planId}-{date}`), pastilles de
+  fiches cochables (`plan-sheet-toggle-…`) et bouton « Lire ». Lien d'en-tête `nav-planning-link`.

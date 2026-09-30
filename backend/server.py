@@ -29,6 +29,7 @@ from routers.flashcards import router as flashcards_router
 from routers.lexicon import router as lexicon_router
 from routers.search import router as search_router
 from routers.pharmaco import router as pharmaco_router
+from routers.plan import router as plan_router
 from routers.progress import router as progress_router
 from routers.reports import router as reports_router
 from routers.revision import router as revision_router
@@ -97,6 +98,7 @@ api_router.include_router(anatomy_router)
 api_router.include_router(search_router)
 api_router.include_router(calc_router)
 api_router.include_router(exam_router)
+api_router.include_router(plan_router)
 
 # Include the router in the main app
 app.include_router(api_router)

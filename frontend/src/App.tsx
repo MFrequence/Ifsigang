@@ -9,6 +9,7 @@ import Calculs from "@/pages/Calculs";
 import Examen from "@/pages/Examen";
 import Lexique from "@/pages/Lexique";
 import Library from "@/pages/Library";
+import Planning from "@/pages/Planning";
 import Login from "@/pages/Login";
 import Pharmaco from "@/pages/Pharmaco";
 import Today from "@/pages/Today";
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/" element={<Today user={user} />} />
           <Route path="/cours" element={<Library user={user} />} />
           <Route path="/calculs" element={<Calculs user={user} />} />
+          <Route path="/planning" element={<Planning user={user} />} />
           <Route path="/examen" element={<Examen user={user} />} />
           <Route path="/schemas" element={<Anatomie user={user} />} />
           <Route path="/lexique" element={<Lexique user={user} />} />

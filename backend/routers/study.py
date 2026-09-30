@@ -17,9 +17,16 @@ router = APIRouter(prefix="/study", tags=["study"])
 async def study_deck(
     domain: str | None = None,
     unit: str | None = None,
+    sheet_ids: str | None = None,
     user: dict = Depends(current_user),
 ):
+    """`sheet_ids` (ids séparés par des virgules) limite la session à ces fiches."""
     query: dict = {}
+    if sheet_ids:
+        wanted = [s for s in sheet_ids.split(",") if s]
+        if not wanted:
+            return []
+        query["id"] = {"$in": wanted}
     if domain is not None:
         if domain not in DOMAINS:
             raise HTTPException(status_code=422, detail="Domaine inconnu")

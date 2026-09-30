@@ -39,6 +39,37 @@ export interface SheetText {
   truncated: boolean;
 }
 
+// Mirrors of backend/models/plan.py (PlanSheet, PlanDay, PlanOut).
+export interface PlanSheet {
+  id: string;
+  title: string;
+  unit: string;
+  mime: string;
+  done: boolean;
+}
+
+export interface PlanDay {
+  date: string;
+  label: string;
+  is_today: boolean;
+  is_past: boolean;
+  is_review: boolean;
+  sheets: PlanSheet[];
+}
+
+export interface RevisionPlan {
+  id: string;
+  title: string;
+  domain: DomainKey;
+  unit: string;
+  exam_date: string;
+  days_left: number;
+  total_sheets: number;
+  done_count: number;
+  cards_total: number;
+  days: PlanDay[];
+}
+
 // Mirror of SheetHtml in backend/models/sheet.py.
 export interface SheetHtml {
   html: string;

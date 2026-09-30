@@ -121,6 +121,13 @@ export default function AppHeader({
             Schémas
           </Link>
           <Link
+            to="/planning"
+            data-testid="nav-planning-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Planning
+          </Link>
+          <Link
             to="/calculs"
             data-testid="nav-calc-link"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"

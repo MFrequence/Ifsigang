@@ -17,6 +17,8 @@ import {
 interface StudySessionDialogProps {
   domain: DomainKey | null;
   unit: string | null;
+  /** Session limitée à ces fiches (journée de planning) — prioritaire sur domaine/UE. */
+  sheetIds?: string[] | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -26,15 +28,17 @@ interface StudySessionDialogProps {
 export default function StudySessionDialog({
   domain,
   unit,
+  sheetIds = null,
   open,
   onOpenChange,
 }: StudySessionDialogProps) {
   const [mode, setMode] = useState<StudyMode>("flash");
 
   const deckQuery = useQuery({
-    queryKey: ["study-deck", domain, unit],
+    queryKey: ["study-deck", domain, unit, sheetIds?.join(",") ?? null],
     queryFn: () => {
       const params = new URLSearchParams();
+      if (sheetIds && sheetIds.length > 0) params.set("sheet_ids", sheetIds.join(","));
       if (domain) params.set("domain", domain);
       if (unit) params.set("unit", unit);
       const qs = params.toString();
@@ -44,7 +48,9 @@ export default function StudySessionDialog({
   });
 
   const cards = deckQuery.data ?? [];
-  const scope = domain
+  const scope = sheetIds && sheetIds.length > 0
+    ? `${sheetIds.length} fiche${sheetIds.length > 1 ? "s" : ""} du planning`
+    : domain
     ? unit
       ? `${DOMAIN_MAP[domain].label} · UE ${unit}`
       : DOMAIN_MAP[domain].label
