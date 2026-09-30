@@ -11,10 +11,11 @@ from pathlib import Path
 
 from pypdf import PdfReader
 
-MAX_CHARS = 12000
+MAX_CHARS = 12000  # cap pour la génération de flashcards
+READ_CHARS = 200000  # cap pour la lecture sur le site
 
 
-def extract_text(path: Path, mime: str) -> str:
+def extract_text(path: Path, mime: str, limit: int = MAX_CHARS) -> str:
     try:
         if path.suffix.lower() == ".txt" or mime == "text/plain":
             text = path.read_text(encoding="utf-8", errors="replace")
@@ -25,7 +26,7 @@ def extract_text(path: Path, mime: str) -> str:
             text = _docx_text(path.read_bytes())
         else:
             return ""
-        return text.strip()[:MAX_CHARS]
+        return text.strip()[:limit]
     except Exception:  # fichier corrompu / illisible → pas de flashcards, jamais un 500
         return ""
 

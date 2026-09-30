@@ -317,3 +317,15 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
   sans `storage_path` encore présentes sur disque. Idempotent.
 - L'API de stockage n'a **ni suppression ni URL signée** : supprimer une fiche efface sa
   référence en base (l'objet reste, inaccessible), et tout passe par le backend.
+
+
+## Lecture des fiches sur le site (sans téléchargement)
+
+- `GET /api/sheets/{id}/text` → `SheetText {text, truncated}` : texte extrait par
+  `lib/extract.py::extract_text(..., limit=READ_CHARS=200000)` (TXT, DOCX, PDF).
+  422 sur une image ou un document scanné/illisible, 404 si le fichier est introuvable.
+- `components/SheetPreviewDialog.tsx` : PDF en `<iframe>`, images en `<img>`,
+  **TXT/DOCX en lecture texte** (`sheet-text-content`, `sheet-text-loading`,
+  `sheet-text-error`), zone défilable + mention si tronqué.
+- `lib/format.ts::isTextReadable` / `isPreviewable` : tous les formats acceptés sont
+  maintenant lisibles en ligne → le bouton de la carte s'appelle « Lire ».

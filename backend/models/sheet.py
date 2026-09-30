@@ -69,6 +69,13 @@ class SheetOut(BaseModel):
         return cls(**doc)
 
 
+class SheetText(BaseModel):
+    """Contenu texte d'une fiche, pour la lecture directe sur le site (TXT, DOCX, PDF)."""
+
+    text: str
+    truncated: bool = False
+
+
 class SheetReportRequest(BaseModel):
     reason: str = Field(default="", max_length=300)
 

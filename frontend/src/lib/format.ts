@@ -13,6 +13,16 @@ export function formatDate(iso: string): string {
   return format(date, "d MMM yyyy", { locale: fr });
 }
 
+const TEXT_MIMES = [
+  "text/plain",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+/** TXT et DOCX : lus en texte via /sheets/{id}/text, sans téléchargement. */
+export function isTextReadable(mime: string): boolean {
+  return TEXT_MIMES.includes(mime);
+}
+
 export function isPreviewable(mime: string): boolean {
-  return mime === "application/pdf" || mime.startsWith("image/");
+  return mime === "application/pdf" || mime.startsWith("image/") || isTextReadable(mime);
 }

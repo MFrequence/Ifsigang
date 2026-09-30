@@ -153,7 +153,7 @@ export default function SheetCard({
             data-testid={`sheet-preview-button-${sheet.id}`}
             onClick={() => onPreview(sheet)}
           >
-            <Eye className="h-4 w-4" /> Aperçu
+            <Eye className="h-4 w-4" /> Lire
           </Button>
         )}
         <a

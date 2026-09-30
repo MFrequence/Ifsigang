@@ -33,6 +33,12 @@ export interface TemporaryPassword {
   temporary_password: string;
 }
 
+// Mirror of SheetText in backend/models/sheet.py.
+export interface SheetText {
+  text: string;
+  truncated: boolean;
+}
+
 // Mirror of SheetReportOut in backend/models/sheet.py.
 export interface SheetReport {
   id: string;

@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, Response
 from pymongo import DESCENDING
 
 from lib.db import db
+from lib.extract import READ_CHARS, extract_text
 from lib.flashcards import build_deck_for_sheet
 from lib.storage import get_object, object_path, put_object
 from models.sheet import (
@@ -32,6 +33,7 @@ from models.sheet import (
     SheetReport,
     SheetReportOut,
     SheetReportRequest,
+    SheetText,
 )
 from routers.auth import COOKIE_NAME, current_user
 
@@ -234,6 +236,24 @@ async def sheet_file(sheet_id: str, _: dict = Depends(current_user)):
         filename=doc["filename"],
         content_disposition_type="inline",
     )
+
+
+@router.get("/sheets/{sheet_id}/text", response_model=SheetText)
+async def sheet_text(sheet_id: str, _: dict = Depends(current_user)):
+    """Contenu lisible d'une fiche TXT/DOCX/PDF — lecture sur le site, sans téléchargement."""
+    doc = await _find_or_404(sheet_id)
+    if doc["mime"].startswith("image/"):
+        raise HTTPException(status_code=422, detail="Une image n'a pas de texte à afficher")
+    path = await ensure_local_file(doc)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
+    text = extract_text(path, doc["mime"], limit=READ_CHARS)
+    if not text:
+        raise HTTPException(
+            status_code=422,
+            detail="Impossible d'extraire le texte de cette fiche (document scanné ou illisible)",
+        )
+    return SheetText(text=text, truncated=len(text) >= READ_CHARS)
 
 
 @router.get("/sheets/{sheet_id}/download")
