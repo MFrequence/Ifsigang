@@ -184,3 +184,29 @@ personnel et **classement de la promo**.
   (`uploader_id == user.id`) **ou** une session admin déverrouillée → 403 sinon. Dans la
   bibliothèque, la corbeille n'apparaît que sur ses propres fiches ; sur celles des autres, c'est
   un bouton « signaler ».
+
+## Lexique infirmier (/lexique)
+- Collection `lexicon`. Base fournie avec la plateforme : `backend/lib/lexicon_seed.py`
+  (~108 entrées, seed **idempotent** lancé en tâche de fond au démarrage de server.py, clé
+  term+category, ne touche jamais aux ajouts de la promo).
+- Catégories de lieu de stage : general, medecine, chirurgie, urgences, psychiatrie, ehpad,
+  pediatrie (`LEXICON_CATEGORIES` dans models/reference.py ↔ `frontend/src/lib/lexicon.ts`).
+- API : `GET /api/lexicon?category=`, `POST /api/lexicon` (409 si doublon), `DELETE /api/lexicon/{id}`
+  (auteur ou admin). Les entrées de la base IFSI ne sont pas supprimables par les étudiants
+  (`editable: false`).
+- Frontend : `pages/Lexique.tsx` (pastilles de catégorie avec compteurs, recherche, ajout en dialogue).
+
+## Pharmacologie (/pharmacologie)
+- Source officielle : **API Médicaments FR / BDPM (ANSM)**, `https://medicaments-api.giygas.dev/v1`,
+  publique et sans clé (`backend/lib/bdpm.py`, httpx) : recherche + RCP (on ne garde que les
+  rubriques 4.1/4.2/4.3/4.4/4.8, HTML nettoyé, tronqué à 9000 caractères).
+- `backend/lib/pharmaco.py` : le RCP est synthétisé en fiche IDE (dci, classe, indications,
+  posologie, effets indésirables, contre-indications, surveillance IDE) par le LLM
+  (emergentintegrations, openai/gpt-5.4, EMERGENT_LLM_KEY) puis **mis en cache dans
+  `drug_cards`** → 1 seul appel LLM par médicament (13 s la 1re fois, ~0,2 s ensuite).
+- API : `GET /api/pharmaco/search?q=` (min 3 car., 422 sinon), `GET /api/pharmaco/cards`
+  (fiches déjà générées), `GET /api/pharmaco/cards/{cis}` (404 si pas de RCP exploitable,
+  502 si synthèse indisponible).
+- Disclaimer obligatoire affiché sur la page (`pharmaco-disclaimer`) : synthèse pédagogique,
+  ne remplace ni le RCP, ni la prescription, ni le protocole du service.
+- Navigation : liens Cours / Lexique / Pharmaco dans AppHeader + tuiles sur la page Aujourd'hui.

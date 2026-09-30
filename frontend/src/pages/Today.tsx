@@ -3,7 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
+  BookMarked,
   BookOpen,
+  Pill,
   CalendarCheck,
   CheckCircle2,
   Loader2,
@@ -221,6 +223,24 @@ export default function Today({ user }: TodayProps) {
             onClick={() => setUploadOpen(true)}
           />
           <ActionTile
+            testId="action-lexicon"
+            title="Lexique infirmier"
+            description="Les abréviations et le vocabulaire de stage, par service."
+            icon={<BookMarked className="h-5 w-5" />}
+            accent="bg-gradient-to-br from-teal-500 to-cyan-700 shadow-teal-600/30"
+            ring="hover:border-teal-400/60"
+            to="/lexique"
+          />
+          <ActionTile
+            testId="action-pharmaco"
+            title="Pharmacologie"
+            description="Fiches médicaments issues du RCP ANSM : effets, posologie, surveillance."
+            icon={<Pill className="h-5 w-5" />}
+            accent="bg-gradient-to-br from-rose-500 to-red-700 shadow-rose-600/30"
+            ring="hover:border-rose-400/60"
+            to="/pharmacologie"
+          />
+          <ActionTile
             testId="action-view-progress"
             title="Ma progression"
             description="Ton suivi, tes cartes maîtrisées et le classement de la promo."
@@ -232,7 +252,6 @@ export default function Today({ user }: TodayProps) {
             }
             accent="bg-gradient-to-br from-violet-500 to-purple-700 shadow-violet-600/30"
             ring="hover:border-violet-400/60"
-            wide
             onClick={() => setProgressOpen(true)}
           />
         </section>

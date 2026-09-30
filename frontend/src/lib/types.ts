@@ -160,3 +160,40 @@ export interface LeaderboardEntry {
 }
 
 export type StudyMode = "flash" | "quiz";
+
+// Mirror of LexiconEntryOut in backend/models/reference.py.
+export interface LexiconEntry {
+  id: string;
+  term: string;
+  definition: string;
+  category: string;
+  author_name: string;
+  is_mine: boolean;
+  editable: boolean;
+}
+
+// Mirror of DrugSearchResult in backend/models/reference.py.
+export interface DrugSearchResult {
+  cis: string;
+  label: string;
+  form: string;
+  routes: string[];
+  holder: string;
+  marketed: boolean;
+  substances: string[];
+  cached: boolean;
+}
+
+// Mirror of DrugCard in backend/models/reference.py.
+export interface DrugCard {
+  cis: string;
+  label: string;
+  dci: string;
+  drug_class: string;
+  indications: string[];
+  dosage: string[];
+  side_effects: string[];
+  contraindications: string[];
+  nursing_watch: string[];
+  source: string;
+}

@@ -63,6 +63,30 @@ export default function AppHeader({
           </Link>
         </div>
 
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigation principale">
+          <Link
+            to="/cours"
+            data-testid="nav-library-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Cours
+          </Link>
+          <Link
+            to="/lexique"
+            data-testid="nav-lexicon-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Lexique
+          </Link>
+          <Link
+            to="/pharmacologie"
+            data-testid="nav-pharmaco-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Pharmaco
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
 
