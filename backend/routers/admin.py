@@ -158,6 +158,7 @@ async def delete_user(user_id: str, session: dict = Depends(admin_guard)):
         await db.sheet_reports.delete_many({"sheet_id": {"$in": sheet_ids}})
 
     await db.sheet_reports.delete_many({"user_id": user_id})
+    await db.drug_favorites.delete_many({"user_id": user_id})
 
     await db.card_results.delete_many({"user_id": user_id})
     await db.card_schedules.delete_many({"user_id": user_id})

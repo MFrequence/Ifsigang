@@ -210,3 +210,11 @@ personnel et **classement de la promo**.
 - Disclaimer obligatoire affiché sur la page (`pharmaco-disclaimer`) : synthèse pédagogique,
   ne remplace ni le RCP, ni la prescription, ni le protocole du service.
 - Navigation : liens Cours / Lexique / Pharmaco dans AppHeader + tuiles sur la page Aujourd'hui.
+
+### Favoris pharmaco
+- Collection `drug_favorites` ({id, user_id, cis, label, dci, drug_class, created_at}), propre à
+  chaque étudiant. `GET /api/pharmaco/favorites`, `POST /api/pharmaco/favorites/{cis}`
+  (idempotent via `$setOnInsert`, génère la fiche si besoin, 404 si pas de RCP exploitable),
+  `DELETE /api/pharmaco/favorites/{cis}`. Purgés à la suppression du compte (routers/admin.py).
+- Frontend : bouton « Épingler à mon stage » dans l'en-tête de fiche + section
+  « Les médicaments de mon stage » en haut de /pharmacologie (query `["drug-favorites"]`).

@@ -9,12 +9,13 @@ import {
   Loader2,
   Pill,
   Search,
+  Star,
   Stethoscope,
   Syringe,
 } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet } from "@/lib/api";
-import type { DrugCard, DrugSearchResult, Sheet, User } from "@/lib/types";
+import { apiDelete, apiGet, apiPost } from "@/lib/api";
+import type { DrugCard, DrugFavorite, DrugSearchResult, Sheet, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +73,25 @@ export default function Pharmaco({ user }: PharmacoProps) {
     queryFn: () => apiGet<DrugCard[]>("/pharmaco/cards"),
     refetchOnWindowFocus: false,
   });
+  const favoritesQuery = useQuery({
+    queryKey: ["drug-favorites"],
+    queryFn: () => apiGet<DrugFavorite[]>("/pharmaco/favorites"),
+    refetchOnWindowFocus: false,
+  });
+
+  const toggleFavorite = useMutation({
+    mutationFn: async ({ cis, pinned }: { cis: string; pinned: boolean }) =>
+      pinned
+        ? apiDelete<void>(`/pharmaco/favorites/${cis}`)
+        : apiPost<DrugFavorite>(`/pharmaco/favorites/${cis}`, {}),
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ["drug-favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["drug-cards"] });
+      toast.success(variables.pinned ? "Retiré de mes médicaments" : "Épinglé à mon stage");
+    },
+    onError: () => toast.error("Action impossible — réessaie"),
+  });
+
   const searchQuery = useQuery({
     queryKey: ["pharmaco-search", submitted],
     queryFn: () => apiGet<DrugSearchResult[]>(`/pharmaco/search?q=${encodeURIComponent(submitted)}`),
@@ -108,6 +128,8 @@ export default function Pharmaco({ user }: PharmacoProps) {
 
   const card = cardQuery.data;
   const saved = savedQuery.data ?? [];
+  const favorites = favoritesQuery.data ?? [];
+  const pinnedCis = new Set(favorites.map((f) => f.cis));
 
   return (
     <div className="min-h-svh bg-background">
@@ -217,16 +239,33 @@ export default function Pharmaco({ user }: PharmacoProps) {
               </p>
             ) : card ? (
               <div className="flex flex-col gap-4">
-                <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
-                    {card.drug_class || "Classe non précisée"}
-                  </p>
-                  <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">
-                    {card.label}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    DCI : {card.dci || "non précisée"} · CIS {card.cis}
-                  </p>
+                <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                      {card.drug_class || "Classe non précisée"}
+                    </p>
+                    <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">
+                      {card.label}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      DCI : {card.dci || "non précisée"} · CIS {card.cis}
+                    </p>
+                  </div>
+                  <Button
+                    variant={pinnedCis.has(card.cis) ? "default" : "outline"}
+                    size="sm"
+                    data-testid="pharmaco-pin-button"
+                    disabled={toggleFavorite.isPending}
+                    onClick={() =>
+                      toggleFavorite.mutate({ cis: card.cis, pinned: pinnedCis.has(card.cis) })
+                    }
+                    className="shrink-0"
+                  >
+                    <Star
+                      className={`h-4 w-4 ${pinnedCis.has(card.cis) ? "fill-current" : ""}`}
+                    />
+                    {pinnedCis.has(card.cis) ? "Épinglé" : "Épingler à mon stage"}
+                  </Button>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <CardBlock
@@ -270,6 +309,48 @@ export default function Pharmaco({ user }: PharmacoProps) {
                 </p>
               </div>
             ) : null}
+          </section>
+        ) : null}
+
+        {favorites.length > 0 && !openCis ? (
+          <section className="mt-10">
+            <h2 className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight text-foreground">
+              <Star className="h-5 w-5 fill-current text-amber-500" /> Les médicaments de mon stage
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2" data-testid="pharmaco-favorites-grid">
+              {favorites.map((item) => (
+                <div
+                  key={item.cis}
+                  data-testid={`pharmaco-favorite-${item.cis}`}
+                  className="flex items-center justify-between gap-2 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4"
+                >
+                  <button
+                    type="button"
+                    data-testid={`pharmaco-favorite-open-${item.cis}`}
+                    onClick={() => setOpenCis(item.cis)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p className="truncate font-heading text-sm font-bold text-foreground">
+                      {item.label}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {item.dci || "—"} · {item.drug_class || "classe non précisée"}
+                    </p>
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Retirer de mes médicaments"
+                    data-testid={`pharmaco-unpin-${item.cis}`}
+                    disabled={toggleFavorite.isPending}
+                    onClick={() => toggleFavorite.mutate({ cis: item.cis, pinned: true })}
+                    className="text-amber-600 dark:text-amber-400"
+                  >
+                    <Star className="h-4 w-4 fill-current" />
+                  </Button>
+                </div>
+              ))}
+            </div>
           </section>
         ) : null}
 

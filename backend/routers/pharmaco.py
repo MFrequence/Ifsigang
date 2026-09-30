@@ -1,11 +1,11 @@
 """Pharmacologie : recherche dans la base publique des médicaments (ANSM) + fiche IDE."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from lib.bdpm import search_medicaments
 from lib.db import db
 from lib.pharmaco import NO_LLM, NO_RCP, build_card, cached_card
-from models.reference import DrugCard, DrugSearchResult
+from models.reference import DrugCard, DrugFavorite, DrugFavoriteOut, DrugSearchResult
 from routers.auth import current_user
 
 router = APIRouter(prefix="/pharmaco", tags=["pharmaco"])
@@ -30,6 +30,43 @@ async def recent_cards(_: dict = Depends(current_user)):
     """Fiches déjà générées : la page n'est jamais vide et aucune attente pour la promo."""
     docs = await db.drug_cards.find({}, {"_id": 0}).sort("generated_at", -1).to_list(60)
     return [DrugCard(**d) for d in docs]
+
+
+@router.get("/favorites", response_model=list[DrugFavoriteOut])
+async def list_favorites(user: dict = Depends(current_user)):
+    docs = await db.drug_favorites.find({"user_id": user["id"]}).sort("created_at", -1).to_list(200)
+    return [DrugFavoriteOut(**d) for d in docs]
+
+
+@router.post("/favorites/{cis}", response_model=DrugFavoriteOut, status_code=201)
+async def add_favorite(cis: str, user: dict = Depends(current_user)):
+    """Épingle un médicament. Idempotent : re-épingler ne crée pas de doublon."""
+    card = await cached_card(cis)
+    if not card:
+        result = await build_card(cis)
+        if isinstance(result, str):
+            raise HTTPException(status_code=404, detail="Fiche indisponible pour ce médicament")
+        card = result
+
+    favorite = DrugFavorite(
+        user_id=user["id"],
+        cis=cis,
+        label=card.get("label", ""),
+        dci=card.get("dci", ""),
+        drug_class=card.get("drug_class", ""),
+    )
+    await db.drug_favorites.update_one(
+        {"user_id": user["id"], "cis": cis},
+        {"$setOnInsert": favorite.model_dump()},
+        upsert=True,
+    )
+    return DrugFavoriteOut(**favorite.model_dump())
+
+
+@router.delete("/favorites/{cis}", status_code=204)
+async def remove_favorite(cis: str, user: dict = Depends(current_user)):
+    await db.drug_favorites.delete_one({"user_id": user["id"], "cis": cis})
+    return Response(status_code=204)
 
 
 @router.get("/cards/{cis}", response_model=DrugCard)

@@ -184,6 +184,14 @@ export interface DrugSearchResult {
   cached: boolean;
 }
 
+// Mirror of DrugFavoriteOut in backend/models/reference.py.
+export interface DrugFavorite {
+  cis: string;
+  label: string;
+  dci: string;
+  drug_class: string;
+}
+
 // Mirror of DrugCard in backend/models/reference.py.
 export interface DrugCard {
   cis: string;

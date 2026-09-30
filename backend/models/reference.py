@@ -58,6 +58,25 @@ class DrugSearchResult(BaseModel):
     cached: bool = False  # une fiche est déjà disponible sans attente
 
 
+class DrugFavorite(BaseModel):
+    """Médicament épinglé par un étudiant (typiquement ceux de son stage en cours)."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    cis: str
+    label: str = ""
+    dci: str = ""
+    drug_class: str = ""
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class DrugFavoriteOut(BaseModel):
+    cis: str
+    label: str = ""
+    dci: str = ""
+    drug_class: str = ""
+
+
 class DrugCard(BaseModel):
     cis: str
     label: str
