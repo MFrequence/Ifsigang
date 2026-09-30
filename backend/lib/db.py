@@ -28,6 +28,19 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("id", ASCENDING)], name="id", unique=True),
         IndexModel([("sheet_id", ASCENDING), ("order", ASCENDING)], name="sheet_order"),
     ],
+    "users": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("email", ASCENDING)], name="email", unique=True),
+    ],
+    "sessions": [
+        IndexModel([("token", ASCENDING)], name="token", unique=True),
+        IndexModel([("expires_at", ASCENDING)], name="ttl", expireAfterSeconds=0),
+    ],
+    "card_results": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("user_id", ASCENDING), ("card_id", ASCENDING)], name="user_card"),
+        IndexModel([("sheet_id", ASCENDING)], name="sheet"),
+    ],
 }
 
 

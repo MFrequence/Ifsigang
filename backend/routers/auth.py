@@ -1,54 +1,116 @@
-"""Promo-code gate: unlock (httpOnly cookie), status, lock. No accounts, one shared code."""
+"""Auth par comptes : inscription (code d'invitation de la promo), connexion, session, moi.
+
+La session est un cookie httpOnly opaque adossé à la collection `sessions` — aucun token
+n'est renvoyé en JSON, aucun token n'est manipulé côté frontend.
+"""
 
 import os
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request, Response
 
-from models.sheet import UnlockRequest, UnlockStatus
+from lib.db import db
+from lib.security import hash_password, verify_password
+from models.user import (
+    SESSION_DAYS,
+    LoginRequest,
+    Session,
+    SignupRequest,
+    User,
+    UserOut,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-COOKIE_NAME = "promo_access"
-COOKIE_MAX_AGE = 60 * 60 * 24 * 30  # 30 days
+COOKIE_NAME = "session"
+COOKIE_MAX_AGE = 60 * 60 * 24 * SESSION_DAYS
 
 
-def expected_code() -> str:
+def invite_code() -> str:
     return os.environ.get("ACCESS_CODE", "").strip()
 
 
-def code_matches(candidate: str | None) -> bool:
-    expected = expected_code()
-    # Fail closed: no code configured means nobody gets in.
-    return bool(expected) and bool(candidate) and candidate.strip().casefold() == expected.casefold()
-
-
-async def require_access(request: Request) -> None:
-    """Shared dependency: every protected route rides the promo-code cookie."""
-    if not code_matches(request.cookies.get(COOKIE_NAME)):
-        raise HTTPException(status_code=401, detail="Accès réservé à la promo — entre le code")
-
-
-@router.post("/unlock", response_model=UnlockStatus)
-async def unlock(payload: UnlockRequest, response: Response):
-    if not code_matches(payload.code):
-        raise HTTPException(status_code=401, detail="Code promo incorrect")
+def _set_session_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         COOKIE_NAME,
-        expected_code(),
+        token,
         max_age=COOKIE_MAX_AGE,
         httponly=True,
         samesite="lax",
         path="/",
     )
-    return UnlockStatus(unlocked=True)
 
 
-@router.get("/status", response_model=UnlockStatus)
-async def status(request: Request):
-    return UnlockStatus(unlocked=code_matches(request.cookies.get(COOKIE_NAME)))
+async def _open_session(response: Response, user_id: str) -> None:
+    session = Session(user_id=user_id)
+    await db.sessions.insert_one(session.model_dump())
+    _set_session_cookie(response, session.token)
 
 
-@router.post("/lock", response_model=UnlockStatus)
-async def lock(response: Response):
+async def current_user(request: Request) -> dict:
+    """Dépendance partagée : résout le cookie de session en utilisateur, sinon 401."""
+    token = request.cookies.get(COOKIE_NAME)
+    if not token:
+        raise HTTPException(status_code=401, detail="Connexion requise")
+    session = await db.sessions.find_one({"token": token})
+    if not session:
+        raise HTTPException(status_code=401, detail="Session expirée — reconnecte-toi")
+    expires = session.get("expires_at")
+    if isinstance(expires, datetime):
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if expires < datetime.now(timezone.utc):
+            await db.sessions.delete_one({"token": token})
+            raise HTTPException(status_code=401, detail="Session expirée — reconnecte-toi")
+    user = await db.users.find_one({"id": session["user_id"]})
+    if not user:
+        raise HTTPException(status_code=401, detail="Compte introuvable")
+    return user
+
+
+@router.post("/signup", response_model=UserOut, status_code=201)
+async def signup(payload: SignupRequest, response: Response):
+    expected = invite_code()
+    if not expected or payload.invite_code.strip().casefold() != expected.casefold():
+        raise HTTPException(status_code=403, detail="Code d'invitation de la promo incorrect")
+
+    email = payload.email.strip().lower()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(status_code=409, detail="Un compte existe déjà avec cet email")
+
+    user = User(
+        email=email,
+        name=payload.name.strip()[:80],
+        password_hash=hash_password(payload.password),
+    )
+    await db.users.insert_one(user.model_dump())
+    await _open_session(response, user.id)
+    return UserOut(id=user.id, email=user.email, name=user.name)
+
+
+@router.post("/login", response_model=UserOut)
+async def login(payload: LoginRequest, response: Response):
+    email = payload.email.strip().lower()
+    user = await db.users.find_one({"email": email})
+    if not user or not verify_password(payload.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    await _open_session(response, user["id"])
+    return UserOut(id=user["id"], email=user["email"], name=user["name"])
+
+
+@router.get("/me", response_model=UserOut)
+async def me(request: Request):
+    user = await current_user(request)
+    return UserOut(id=user["id"], email=user["email"], name=user["name"])
+
+
+@router.post("/logout", status_code=204)
+async def logout(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    if token:
+        await db.sessions.delete_one({"token": token})
+    # Le cookie doit être effacé sur la réponse RENVOYÉE : renvoyer un nouveau Response
+    # après avoir écrit sur un `response: Response` injecté jetterait l'en-tête Set-Cookie.
+    response = Response(status_code=204)
     response.delete_cookie(COOKIE_NAME, path="/")
-    return UnlockStatus(unlocked=False)
+    return response

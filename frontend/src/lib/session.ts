@@ -1,19 +1,22 @@
-// Session boundary: auth is an httpOnly cookie the backend owns; the frontend's one
-// duty is wiping the react-query cache so one account's data never renders for the next.
-import { queryClient } from "./queryClient";
-import { apiPost } from "./api";
+import { queryClient } from "@/lib/queryClient";
+import { apiPost } from "@/lib/api";
 
-// Call after every successful login/signup.
-export function beginSession(): void {
-  queryClient.clear();
+// La session vit dans un cookie httpOnly posé par le backend : le frontend ne manipule
+// jamais de token. Ces helpers n'existent que pour tenir le cache react-query propre —
+// sans eux, le cache du compte précédent resterait affiché après un changement de compte.
+
+export async function beginSession(): Promise<void> {
+  await queryClient.invalidateQueries();
 }
 
-// Call from every sign-out control; the hard redirect resets all in-memory state.
-export async function endSession(redirectTo: string = "/login"): Promise<void> {
+export async function endSession(): Promise<void> {
   try {
-    await apiPost("/auth/logout");
+    await apiPost<void>("/auth/logout");
   } finally {
-    queryClient.clear();
-    window.location.assign(redirectTo);
+    // Ordre important : on réinterroge d'abord ["me"] — l'app bascule sur l'écran de
+    // connexion et Home se démonte, donc aucune requête de données ne repart avec une
+    // session morte (un 401 parasite sur /sheets). On purge le reste ensuite.
+    await queryClient.resetQueries({ queryKey: ["me"] });
+    queryClient.removeQueries();
   }
 }

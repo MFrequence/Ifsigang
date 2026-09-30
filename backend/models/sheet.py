@@ -27,6 +27,7 @@ class Sheet(BaseModel):
     domain: str
     unit: str = ""
     author: str
+    uploader_id: str = ""
     description: str = ""
     filename: str
     stored_name: str
@@ -44,6 +45,7 @@ class SheetOut(BaseModel):
     domain: str
     unit: str = ""
     author: str
+    uploader_id: str = ""
     description: str = ""
     filename: str
     mime: str
@@ -61,6 +63,8 @@ class SheetOut(BaseModel):
         # Documents written before `unit` existed carry None — coerce so the str field validates.
         if doc.get("unit") is None:
             doc = {**doc, "unit": ""}
+        if doc.get("uploader_id") is None:
+            doc = {**doc, "uploader_id": ""}
         return cls(**doc)
 
 

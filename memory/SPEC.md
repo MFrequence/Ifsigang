@@ -1,63 +1,83 @@
 # Fiches IFSI — SPEC
 
-Plateforme de partage de fiches de révision pour une promo IFSI (école d'infirmiers).
-Dépôt de fiches (PDF, images, DOCX, TXT — 10 Mo max), classement par domaine **et UE**,
-consultation/téléchargement par la promo, et **révision par flashcards générées par IA**.
+Plateforme de partage de fiches de révision pour une promo IFSI, avec **comptes étudiants**,
+classement par domaine/UE, **révision flashcards + QCM générés par IA**, suivi de progression
+personnel et **classement de la promo**.
 
-## Accès
-- **Code promo partagé** (pas de comptes) : `IFSI2026` — `backend/.env` (`ACCESS_CODE`).
-- `POST /api/auth/unlock {"code": ...}` pose un cookie httpOnly `promo_access` (30 jours).
-  `require_access` (dépendance FastAPI dans `routers/auth.py`) protège toutes les routes
-  fiches + flashcards, en fail-closed. `GET /api/auth/status` → `{unlocked: bool}`.
-- Frontend : `App.tsx` gate sur `["auth-status"]` ; si le fetch échoue (preview statique sans
-  backend) → fail-open vers le shell, jamais d'écran de panne.
+## Auth (comptes réels)
+- `POST /api/auth/signup` — name, email, password (≥6), **invite_code** = `ACCESS_CODE`
+  (`IFSI2026`). 403 code invalide, 409 email déjà pris, 422 payload invalide.
+- `POST /api/auth/login` — email + password → 401 si mauvais identifiants.
+- `GET /api/auth/me` → `UserOut` ; `POST /api/auth/logout` → 204.
+- Session : cookie **httpOnly opaque** `session` (30 j) adossé à la collection `sessions`
+  (index TTL sur `expires_at`). Aucun token en JSON, aucun token manipulé côté frontend.
+- Mots de passe : `passlib` **pbkdf2_sha256** (`backend/lib/security.py`), jamais renvoyés.
+- Dépendance partagée `current_user` (`routers/auth.py`) : protège **toutes** les routes
+  sheets / flashcards / study / progress. Sans session → 401.
+- Frontend : `App.tsx` interroge `["me"]` ; 401 → `pages/Login.tsx` (onglets Connexion /
+  Créer un compte). `lib/session.ts` → `beginSession()` après login/signup,
+  `endSession()` pour toute déconnexion (vide le cache react-query).
 
 ## Données (Mongo, db "app")
-- `sheets` : `id` (uuid4 str), `title`, `domain` (A|B|C|D|E), **`unit`** (UE libre, ex. "A1",
-  "" si non renseignée), `author`, `description`, `filename`, `stored_name` (uuid disque, jamais
-  exposé), `mime`, `size`, `downloads`, `created_at` (UTC aware).
-  `SheetOut.from_doc` normalise les datetimes naïfs et coerce `unit: None → ""` (docs antérieurs).
-- `flashcards` : `id`, `sheet_id`, `question`, `answer`, `order`.
-- Indexes (`backend/lib/db.py`) : sheets → `id` unique, `created_at` desc, `domain`+`created_at` ;
-  flashcards → `id` unique, `sheet_id`+`order`.
+- `users` : id, email (unique), name, password_hash, created_at.
+- `sessions` : token (unique), user_id, created_at, expires_at (TTL).
+- `sheets` : id, title, domain (A–E), `unit` (UE libre, ex. "A1"), author (nom du compte),
+  **`uploader_id`**, description, filename, stored_name (uuid disque), mime, size, downloads,
+  created_at. `SheetOut.from_doc` normalise les datetimes naïfs et coerce
+  `unit`/`uploader_id` `None → ""`.
+- `flashcards` : id, sheet_id, question, answer, **`distractors`** (3 mauvaises réponses pour
+  le QCM), order.
+- `card_results` : id, user_id, card_id, sheet_id, domain, unit, correct, mode
+  ("flash"|"quiz"), answered_at.
 - Fichiers disque : `backend/uploads/`.
-- Domaines A–E : `backend/models/sheet.py` (DOMAINS) ↔ miroir TS `frontend/src/lib/domains.ts`.
-  Les **UE sont libres** (pas de liste figée) : les puces de filtre et les suggestions du
-  formulaire sont dérivées des valeurs déjà présentes dans les fiches du domaine.
+- Domaines A–E : `backend/models/sheet.py` (DOMAINS) ↔ `frontend/src/lib/domains.ts`.
+  Les **UE sont libres** : puces de filtre et suggestions dérivées des fiches du domaine.
 
 ## Endpoints (tous sur api_router, prefix /api)
-- `POST /auth/unlock` (401 code faux), `GET /auth/status`, `POST /auth/lock`
-- `GET /sheets?domain=` — tri created_at desc, limite 500
-- `POST /sheets` multipart : file, title, domain, **unit** (optionnel), author, description
-  → 201 ; 413 >10 Mo ; 422 format/domaine/champs (ext: pdf, png, jpg, jpeg, docx, txt)
-- `GET /sheets/{id}/file` (inline), `GET /sheets/{id}/download` (attachment + `$inc downloads`)
-- `DELETE /sheets/{id}` → 204, supprime doc + fichier + **flashcards en cascade**
-- `GET /sheets/{id}/flashcards` → liste triée par `order`
-- `POST /sheets/{id}/flashcards/generate` → extrait le texte puis génère ; remplace le paquet
-  existant (pas de doublon). 422 si texte < 60 car. (image/PDF scanné), 502 si le LLM ne rend
-  rien d'exploitable, 404 fiche inconnue.
+- Auth : voir ci-dessus.
+- `GET /sheets?domain=` ; `POST /sheets` multipart (file, title, domain, unit?, description?) —
+  l'auteur vient du compte connecté, plus de champ nom. 413 >10 Mo, 422 format/domaine.
+- `GET /sheets/{id}/file` (inline), `GET /sheets/{id}/download` (+`$inc downloads`)
+- `DELETE /sheets/{id}` → 204 + cascade fichier, flashcards **et** card_results
+- `GET /sheets/{id}/flashcards` ; `POST /sheets/{id}/flashcards/generate` (remplace le paquet ;
+  422 texte < 60 car., 502 LLM inexploitable, 404 fiche inconnue)
+- `GET /study/deck?domain=&unit=` → cartes agrégées + contexte fiche + **`due`** (jamais vue ou
+  ratée la dernière fois), triées ratées d'abord. 422 domaine inconnu.
+- `POST /progress/answer` (card_id, correct, mode) → 201 ; carte inconnue → `{recorded:false}`
+- `GET /progress/me` → réponses, réussite %, maîtrisées, à revoir, jours de révision, par domaine
+- `GET /progress/leaderboard` → top 50 trié par bonnes réponses puis fiches déposées, `is_me`
 
-## Flashcards / IA
-- Extraction texte : `backend/lib/extract.py` — PDF via `pypdf`, DOCX via XML (stdlib), TXT direct,
-  tronqué à 12 000 car. Échec de lecture → chaîne vide (jamais un 500).
-- Génération : `backend/lib/flashcards.py` — `emergentintegrations.llm.chat.LlmChat`,
-  provider `openai`, modèle `gpt-5.4`, clé `EMERGENT_LLM_KEY` (backend/.env).
-  Prompt FR exigeant un tableau JSON `[{question, answer}]` ; parsing tolérant (regex sur le
-  tableau) ; max 12 cartes.
-- Déclenchement : automatique après un upload non-image (appel best-effort côté frontend dans
-  `UploadSheetDialog`), et manuel via le bouton « Générer » / « Régénérer » du dialog de révision.
+## Flashcards / QCM / IA
+- Extraction : `lib/extract.py` — PDF (`pypdf`), DOCX (XML stdlib), TXT ; 12 000 car. max ;
+  échec de lecture → chaîne vide (jamais un 500).
+- Génération : `lib/flashcards.py` — `emergentintegrations` `LlmChat`, provider `openai`,
+  modèle `gpt-5.4`, clé `EMERGENT_LLM_KEY`. Le prompt exige
+  `[{question, answer, distractors[3]}]` ; parsing tolérant ; max 12 cartes ; les distracteurs
+  égaux à la réponse sont filtrés.
+- Déclenchement : **tâche de fond FastAPI** lancée par `POST /sheets` (après la réponse) pour
+  tout fichier non-image — la génération aboutit même si l'utilisateur ferme son onglet ;
+  `lib/flashcards.build_deck_for_sheet()` est le point d'entrée partagé avec la route
+  `/generate` (bouton « Générer / Régénérer »). Compter ~15-30 s avant que les cartes
+  apparaissent. Une panne LLM n'échoue jamais l'upload (codes `NO_TEXT` / `NO_CARDS`).
+- Mode QCM : `StudyRunner` tire 4 propositions (réponse + 3 distracteurs, mélangées). Une carte
+  sans distracteurs retombe en mode flashcard avec un bandeau explicatif ; l'onglet QCM est
+  désactivé si aucune carte du paquet n'en a.
 
 ## Frontend
-- Page unique `/` (Home) : AppHeader, DomainFilterBar (Tous + A–E avec compteurs **+ rangée de
-  puces UE** quand un domaine est sélectionné), recherche instantanée client-side, grille de
-  SheetCard (badges UE + domaine, auteur, date, taille, téléchargements, boutons Réviser / Aperçu /
-  Télécharger, suppression confirmée).
-- `FlashcardsDialog` : paquet question → révélation → auto-évaluation « Je savais » / « À revoir »,
-  mélange, régénération, écran de score final, animations `motion`.
-- `UploadSheetDialog` : dropzone drag-and-drop, champ UE avec `datalist` de suggestions du domaine,
-  auteur mémorisé en localStorage.
-- Données de démo : `backend/seed.py` (idempotent, met à jour les fiches `seed-*` sans toucher aux
-  fiches réelles) — 4 fiches UE A1/B1/C1/D1 + 4 flashcards prêtes sur la fiche PDF bioéthique.
+- `pages/Login.tsx` : connexion / inscription (code d'invitation).
+- `pages/Home.tsx` : AppHeader (compteur, « Ma progression », « Déposer une fiche », menu compte
+  avec déconnexion), DomainFilterBar (Tous + A–E + rangée UE), recherche client-side,
+  bouton **« Réviser la sélection »** (domaine ou UE selon les filtres actifs), grille SheetCard.
+  Le domaine est **obligatoire et sans présélection** à l'upload (évite les fiches mal classées).
+- `components/StudyRunner.tsx` : moteur partagé flashcards/QCM, auto-évaluation, mélange,
+  score final, enregistrement de chaque réponse (`/progress/answer`) + invalidation de
+  `["progress"]` et `["leaderboard"]`.
+- `components/FlashcardsDialog.tsx` (une fiche) et `components/StudySessionDialog.tsx`
+  (domaine/UE agrégés, badge « À revoir » sur les cartes dues).
+- `components/ProgressDialog.tsx` : onglets « Mon suivi » (4 tuiles + barres par domaine) et
+  « Classement promo ».
+- Seed : `backend/seed.py` — 3 comptes, 4 fiches (UE A1/B1/C1/D1) rattachées à leurs auteurs,
+  7 flashcards avec distracteurs QCM (fiches bioéthique + asepsie).
 
 ## Identifiants de test
-`memory/test_credentials.md` — le code promo suffit pour tout tester.
+`memory/test_credentials.md` — comptes de démo + code d'invitation.

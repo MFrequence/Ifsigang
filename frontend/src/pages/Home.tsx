@@ -1,21 +1,28 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Layers, Search } from "lucide-react";
 import { toast } from "sonner";
 import { apiDelete, apiGet } from "@/lib/api";
-import type { DomainFilter, Sheet } from "@/lib/types";
+import { DOMAIN_MAP } from "@/lib/domains";
+import type { DomainFilter, DomainKey, Sheet, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import DomainFilterBar from "@/components/DomainFilterBar";
 import EmptyState from "@/components/EmptyState";
 import FlashcardsDialog from "@/components/FlashcardsDialog";
+import ProgressDialog from "@/components/ProgressDialog";
 import SheetCard from "@/components/SheetCard";
 import SheetPreviewDialog from "@/components/SheetPreviewDialog";
+import StudySessionDialog from "@/components/StudySessionDialog";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-export default function Home() {
+interface HomeProps {
+  user: User;
+}
+
+export default function Home({ user }: HomeProps) {
   const [domain, setDomain] = useState<DomainFilter>("ALL");
   const [unit, setUnit] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -24,6 +31,8 @@ export default function Home() {
   const [previewSheet, setPreviewSheet] = useState<Sheet | null>(null);
   const [reviseOpen, setReviseOpen] = useState(false);
   const [reviseSheet, setReviseSheet] = useState<Sheet | null>(null);
+  const [sessionOpen, setSessionOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // One query for the whole library — counts, filtering and search are derived client-side.
@@ -67,6 +76,7 @@ export default function Home() {
     mutationFn: (sheet: Sheet) => apiDelete<void>(`/sheets/${sheet.id}`),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["sheets"] });
+      void queryClient.invalidateQueries({ queryKey: ["study-deck"] });
       toast.success("Fiche supprimée");
     },
     onError: () => toast.error("Suppression impossible — réessaie"),
@@ -82,9 +92,22 @@ export default function Home() {
     setReviseOpen(true);
   };
 
+  // Libellé du bouton de session agrégée, selon la sélection courante.
+  const sessionLabel =
+    domain === "ALL"
+      ? "Réviser toute la bibliothèque"
+      : unit
+        ? `Réviser l'UE ${unit}`
+        : `Réviser tout le ${DOMAIN_MAP[domain].label.toLowerCase()}`;
+
   return (
     <div className="min-h-svh bg-background">
-      <AppHeader totalSheets={sheets.length} onUploadClick={() => setUploadOpen(true)} />
+      <AppHeader
+        user={user}
+        totalSheets={sheets.length}
+        onUploadClick={() => setUploadOpen(true)}
+        onProgressClick={() => setProgressOpen(true)}
+      />
 
       <main className="dot-grid mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="mb-8">
@@ -92,8 +115,8 @@ export default function Home() {
             Les fiches de révision de la promo
           </h1>
           <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate-600">
-            Dépose tes fiches par domaine et UE, prévisualise-les, télécharge-les — et révise-les
-            avec des flashcards générées automatiquement.
+            Dépose tes fiches par domaine et UE, révise-les en flashcards ou en QCM, et suis ta
+            progression — les cartes ratées reviennent en priorité.
           </p>
         </section>
 
@@ -109,19 +132,31 @@ export default function Home() {
             activeUnit={unit}
             onUnitSelect={setUnit}
           />
-          <div className="relative shrink-0 md:w-72">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              aria-hidden
-            />
-            <Input
-              data-testid="sheet-search-input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une fiche…"
-              aria-label="Rechercher une fiche"
-              className="pl-9"
-            />
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row md:items-start">
+            <div className="relative md:w-64">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                aria-hidden
+              />
+              <Input
+                data-testid="sheet-search-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher une fiche…"
+                aria-label="Rechercher une fiche"
+                className="pl-9"
+              />
+            </div>
+            <Button
+              variant="outline"
+              data-testid="start-session-button"
+              onClick={() => setSessionOpen(true)}
+              title={sessionLabel}
+              aria-label={sessionLabel}
+              className="shrink-0 transition-transform duration-75 active:scale-[0.98]"
+            >
+              <Layers className="h-4 w-4" /> Réviser la sélection
+            </Button>
           </div>
         </div>
 
@@ -155,7 +190,7 @@ export default function Home() {
             hint={
               search.trim()
                 ? "Essaie un autre mot-clé, ou dépose la fiche qu'il te manque."
-                : "Soyez le premier à partager vos révisions avec la promo."
+                : "Sois le premier à partager tes révisions avec la promo."
             }
             ctaLabel="Déposer une fiche"
             onCta={() => setUploadOpen(true)}
@@ -179,6 +214,13 @@ export default function Home() {
       <UploadSheetDialog open={uploadOpen} onOpenChange={setUploadOpen} sheets={sheets} />
       <SheetPreviewDialog sheet={previewSheet} open={previewOpen} onOpenChange={setPreviewOpen} />
       <FlashcardsDialog sheet={reviseSheet} open={reviseOpen} onOpenChange={setReviseOpen} />
+      <StudySessionDialog
+        domain={domain === "ALL" ? null : (domain as DomainKey)}
+        unit={unit}
+        open={sessionOpen}
+        onOpenChange={setSessionOpen}
+      />
+      <ProgressDialog open={progressOpen} onOpenChange={setProgressOpen} />
     </div>
   );
 }

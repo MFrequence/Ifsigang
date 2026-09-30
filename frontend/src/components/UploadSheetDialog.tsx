@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileUp, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { ApiError, apiPost, apiPostForm } from "@/lib/api";
+import { ApiError, apiPostForm } from "@/lib/api";
 import { DOMAINS, DOMAIN_MAP } from "@/lib/domains";
 import { formatBytes } from "@/lib/format";
 import type { DomainKey, Sheet } from "@/lib/types";
@@ -39,9 +39,8 @@ interface UploadSheetDialogProps {
 export default function UploadSheetDialog({ open, onOpenChange, sheets }: UploadSheetDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
-  const [domain, setDomain] = useState<DomainKey>("A");
+  const [domain, setDomain] = useState<DomainKey | "">("");
   const [unit, setUnit] = useState("");
-  const [author, setAuthor] = useState(() => localStorage.getItem("fiches-author") ?? "");
   const [description, setDescription] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,10 +52,10 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
     );
     return [...set].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
   }, [sheets, domain]);
-
   const reset = () => {
     setFile(null);
     setTitle("");
+    setDomain("");
     setUnit("");
     setDescription("");
     setDragging(false);
@@ -88,22 +87,20 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
       fd.set("title", title.trim());
       fd.set("domain", domain);
       fd.set("unit", unit.trim());
-      fd.set("author", author.trim());
       fd.set("description", description.trim());
       return apiPostForm<Sheet>("/sheets", fd);
     },
     onSuccess: (created) => {
-      localStorage.setItem("fiches-author", author.trim());
       void queryClient.invalidateQueries({ queryKey: ["sheets"] });
+      void queryClient.invalidateQueries({ queryKey: ["study-deck"] });
       toast.success("Fiche déposée avec succès");
+      // Le serveur construit les cartes en tâche de fond : rien à déclencher ici, et la
+      // génération continue même si l'onglet est fermé.
+      if (!created.mime.startsWith("image/")) {
+        toast.info("Flashcards et QCM en préparation — disponibles dans quelques secondes");
+      }
       reset();
       onOpenChange(false);
-      // Génération automatique des flashcards pour les formats texte-extractibles.
-      if (!created.mime.startsWith("image/")) {
-        void apiPost<unknown>(`/sheets/${created.id}/flashcards/generate`)
-          .then(() => queryClient.invalidateQueries({ queryKey: ["flashcards"] }))
-          .catch(() => {});
-      }
     },
     onError: (err: unknown) => {
       if (err instanceof ApiError) {
@@ -118,7 +115,8 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
     },
   });
 
-  const canSubmit = file !== null && title.trim() !== "" && author.trim() !== "" && !upload.isPending;
+  const canSubmit =
+    file !== null && title.trim() !== "" && domain !== "" && !upload.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,8 +124,8 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
         <DialogHeader>
           <DialogTitle>Déposer une fiche</DialogTitle>
           <DialogDescription>
-            PDF, image, DOCX ou TXT — 10 Mo maximum. Les flashcards seront générées automatiquement
-            pour les fichiers lisibles.
+            PDF, image, DOCX ou TXT — 10 Mo maximum. La fiche sera publiée à ton nom, et ses
+            flashcards générées automatiquement pour les fichiers lisibles.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -202,7 +200,7 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
                 onValueChange={(value: string) => setDomain(value as DomainKey)}
               >
                 <SelectTrigger id="upload-domain" data-testid="upload-domain-select" className="w-full">
-                  <SelectValue>
+                  <SelectValue placeholder="Choisir un domaine">
                     {(value: string) => DOMAIN_MAP[value as DomainKey]?.label ?? "Choisir un domaine"}
                   </SelectValue>
                 </SelectTrigger>
@@ -233,18 +231,6 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
                 ))}
               </datalist>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="upload-author">Ton prénom et nom</Label>
-            <Input
-              id="upload-author"
-              data-testid="upload-author-input"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Ex. Léa Martin"
-              maxLength={80}
-            />
           </div>
 
           <div className="flex flex-col gap-2">

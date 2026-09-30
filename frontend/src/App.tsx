@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, Route, Routes } from "react-router-dom";
-import AccessGateModal from "@/components/AccessGateModal";
+import { ApiError, apiGet } from "@/lib/api";
+import type { User } from "@/lib/types";
 import { Toaster } from "@/components/ui/sonner";
-import { apiGet } from "@/lib/api";
-import type { UnlockStatus } from "@/lib/types";
 import Home from "@/pages/Home";
+import Login from "@/pages/Login";
 
 function BootSplash() {
   return (
     <div className="flex min-h-svh items-center justify-center bg-background">
-      <p className="font-heading text-lg font-semibold text-slate-400 animate-pulse">Chargement…</p>
+      <p className="animate-pulse font-heading text-lg font-semibold text-slate-400">Chargement…</p>
     </div>
   );
 }
@@ -27,26 +27,28 @@ function NotFound() {
 }
 
 export default function App() {
-  const status = useQuery({
-    queryKey: ["auth-status"],
-    queryFn: () => apiGet<UnlockStatus>("/auth/status"),
+  // "Qui suis-je" : le cookie httpOnly de session répond, aucun token côté frontend.
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiGet<User>("/auth/me"),
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  if (status.isPending) return <BootSplash />;
+  if (me.isPending) return <BootSplash />;
 
-  // Backend unreachable (e.g. static preview) → fail open to the shell; data regions
-  // degrade to their empty states instead of an outage screen.
-  const locked = !status.isError && status.data !== undefined && !status.data.unlocked;
+  // 401 → écran de connexion. Toute autre panne (backend absent sur un preview statique)
+  // laisse aussi l'écran de connexion, qui reste lisible sans backend.
+  const user = me.data;
+  const unauthenticated = user === undefined || (me.error instanceof ApiError && me.error.status === 401);
 
   return (
     <>
-      {locked ? (
-        <AccessGateModal />
+      {unauthenticated ? (
+        <Login />
       ) : (
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home user={user} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}

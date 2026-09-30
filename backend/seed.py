@@ -1,17 +1,26 @@
-"""Seed idempotent : fiches de démonstration (+ unités, + flashcards du PDF).
+"""Seed idempotent : comptes de démo, fiches (UE), flashcards avec distracteurs QCM.
 
 Run: cd /app/backend && python seed.py
-Met à jour les fiches de démo existantes (même stored_name) sans toucher aux autres.
+Met à jour les fiches de démo existantes (mêmes stored_name) sans toucher aux fiches réelles.
 """
 
 import asyncio
 from pathlib import Path
 
 from lib.db import db
+from lib.security import hash_password
 from models.flashcard import Flashcard
 from models.sheet import Sheet
+from models.user import User
 
 UPLOADS_DIR = Path(__file__).parent / "uploads"
+
+# (email, nom, mot de passe)
+DEMO_USERS = [
+    ("lea.martin@ifsi.fr", "Léa Martin", "Promo2026!"),
+    ("marc.dupont@ifsi.fr", "Marc Dupont", "Promo2026!"),
+    ("sarah.kaddour@ifsi.fr", "Sarah Kaddour", "Promo2026!"),
+]
 
 
 def make_png(width: int, height: int, rgb: tuple[int, int, int]) -> bytes:
@@ -67,13 +76,13 @@ def make_pdf(lines: list[str]) -> bytes:
     return bytes(out)
 
 
-# (title, domain, unit, author, description, filename, content)
+# (title, domain, unit, author_email, description, filename, content)
 DEMO: list[tuple[str, str, str, str, str, str, bytes]] = [
     (
         "Les 4 principes de la bioéthique",
         "A",
         "A1",
-        "Marc Dupont",
+        "marc.dupont@ifsi.fr",
         "Autonomie, bienfaisance, non-malfaisance, justice — avec exemples de situations.",
         "domaine-a-bioethique.pdf",
         make_pdf(
@@ -95,7 +104,7 @@ DEMO: list[tuple[str, str, str, str, str, str, bytes]] = [
         "Physiologie respiratoire — l'essentiel",
         "B",
         "B1",
-        "Léa Martin",
+        "lea.martin@ifsi.fr",
         "Ventilation, hématose, VEMS : ce qu'il faut retenir pour l'examen.",
         "domaine-b-respi.txt",
         (
@@ -112,7 +121,7 @@ DEMO: list[tuple[str, str, str, str, str, str, bytes]] = [
         "Schéma — les étapes du raisonnement clinique",
         "C",
         "C1",
-        "Sarah Kaddour",
+        "sarah.kaddour@ifsi.fr",
         "Carte visuelle des 6 étapes du raisonnement infirmier.",
         "domaine-c-raisonnement.png",
         make_png(640, 360, (2, 132, 199)),
@@ -121,7 +130,7 @@ DEMO: list[tuple[str, str, str, str, str, str, bytes]] = [
         "Asepsie et antisepsie — protocole",
         "D",
         "D1",
-        "Léa Martin",
+        "lea.martin@ifsi.fr",
         "Différences, niveaux de précaution et traçabilité du geste.",
         "domaine-d-asepsie.txt",
         (
@@ -135,24 +144,70 @@ DEMO: list[tuple[str, str, str, str, str, str, bytes]] = [
     ),
 ]
 
-# Flashcards prêtes à l'emploi pour la fiche PDF (pas d'appel LLM au seed).
-SEED_FLASHCARDS: dict[str, list[tuple[str, str]]] = {
+# Flashcards prêtes à l'emploi, avec distracteurs pour le mode QCM (aucun appel LLM au seed).
+SEED_FLASHCARDS: dict[str, list[tuple[str, str, list[str]]]] = {
     "domaine-a-bioethique.pdf": [
         (
             "Quel principe de la bioéthique impose de respecter le consentement du patient ?",
             "L'autonomie : respect des choix et du consentement de la personne.",
+            [
+                "La bienfaisance : agir activement dans l'intérêt du patient.",
+                "La justice : répartir équitablement les ressources de soin.",
+                "La non-malfaisance : s'abstenir de tout acte nuisible.",
+            ],
         ),
         (
             "Que signifie le principe de non-malfaisance ?",
-            "Ne pas nuire au patient — éviter de créer du dommage par une action ou une omission.",
+            "Ne pas nuire au patient, par une action comme par une omission.",
+            [
+                "Obtenir systématiquement le consentement écrit avant tout soin.",
+                "Donner la priorité aux patients les plus gravement atteints.",
+                "Informer la famille avant d'informer le patient lui-même.",
+            ],
         ),
         (
             "Comment s'appelle le principe qui consiste à agir dans l'intérêt du patient ?",
             "La bienfaisance.",
+            ["L'autonomie.", "La non-malfaisance.", "La justice distributive."],
         ),
         (
             "Que recouvre le principe de justice en bioéthique ?",
             "Répartir équitablement les ressources et les soins entre les patients.",
+            [
+                "Respecter en toutes circonstances la volonté exprimée du patient.",
+                "Protéger le secret professionnel vis-à-vis des tiers.",
+                "Limiter les actes techniques aux seuls soins prescrits.",
+            ],
+        ),
+    ],
+    "domaine-d-asepsie.txt": [
+        (
+            "Quelle est la différence entre asepsie et antisepsie ?",
+            "L'asepsie vise l'absence de micro-organismes (geste stérile) ; l'antisepsie réduit "
+            "transitoirement les germes sur la peau.",
+            [
+                "L'asepsie concerne la peau du patient, l'antisepsie le matériel stérile.",
+                "L'asepsie s'applique au bloc opératoire, l'antisepsie uniquement en réanimation.",
+                "Les deux termes sont équivalents, seul l'usage diffère selon les services.",
+            ],
+        ),
+        (
+            "Quels éléments doivent être tracés dans le dossier de soins après un geste antiseptique ?",
+            "Le produit utilisé, son lot, l'horaire du geste et l'opérateur.",
+            [
+                "Uniquement le nom de l'opérateur et la date du soin.",
+                "Le diagnostic médical et la prescription associée.",
+                "Le nombre de compresses utilisées et le volume de produit.",
+            ],
+        ),
+        (
+            "Que signifie la règle « du propre au sale » ?",
+            "On progresse toujours de la zone la plus propre vers la plus contaminée, sans jamais revenir en arrière.",
+            [
+                "On nettoie d'abord les zones souillées pour éliminer le plus gros des germes.",
+                "On alterne les zones propres et sales pour économiser les compresses.",
+                "On recommence le geste dès qu'une zone propre a été touchée deux fois.",
+            ],
         ),
     ],
 }
@@ -168,14 +223,30 @@ def mime_for(filename: str) -> str:
 
 async def main() -> None:
     UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-    for title, domain, unit, author, description, filename, content in DEMO:
+
+    # 1. Comptes de démonstration (idempotents sur l'email).
+    users_by_email: dict[str, dict] = {}
+    for email, name, password in DEMO_USERS:
+        existing = await db.users.find_one({"email": email})
+        if existing:
+            users_by_email[email] = existing
+            continue
+        user = User(email=email, name=name, password_hash=hash_password(password))
+        await db.users.insert_one(user.model_dump())
+        users_by_email[email] = user.model_dump()
+    print(f"seed: {len(users_by_email)} comptes de demonstration prets")
+
+    # 2. Fiches de démo, rattachées à leur auteur.
+    for title, domain, unit, author_email, description, filename, content in DEMO:
         stored_name = f"seed-{filename}"
         (UPLOADS_DIR / stored_name).write_bytes(content)
+        owner = users_by_email[author_email]
         fields = dict(
             title=title,
             domain=domain,
             unit=unit,
-            author=author,
+            author=owner["name"],
+            uploader_id=owner["id"],
             description=description,
             filename=filename,
             mime=mime_for(filename),
@@ -190,15 +261,27 @@ async def main() -> None:
             await db.sheets.insert_one(sheet.model_dump())
             sheet_id = sheet.id
 
+        # 3. Flashcards de démo avec distracteurs QCM.
         cards = SEED_FLASHCARDS.get(filename)
-        if cards and await db.flashcards.count_documents({"sheet_id": sheet_id}) == 0:
-            await db.flashcards.insert_many(
-                [
-                    Flashcard(sheet_id=sheet_id, question=q, answer=a, order=i).model_dump()
-                    for i, (q, a) in enumerate(cards)
-                ]
+        if cards:
+            has_distractors = await db.flashcards.count_documents(
+                {"sheet_id": sheet_id, "distractors": {"$exists": True, "$ne": []}}
             )
-    print("seed: fiches et flashcards de demonstration a jour")
+            if has_distractors == 0:
+                await db.flashcards.delete_many({"sheet_id": sheet_id})
+                await db.flashcards.insert_many(
+                    [
+                        Flashcard(
+                            sheet_id=sheet_id,
+                            question=q,
+                            answer=a,
+                            distractors=d,
+                            order=i,
+                        ).model_dump()
+                        for i, (q, a, d) in enumerate(cards)
+                    ]
+                )
+    print("seed: fiches et flashcards (avec distracteurs QCM) a jour")
 
 
 if __name__ == "__main__":
