@@ -7,6 +7,7 @@ import {
   BookOpen,
   Calculator,
   Pill,
+  RotateCcw,
   ShapesIcon,
   Timer,
   CalendarCheck,
@@ -16,10 +17,11 @@ import {
   Upload,
 } from "lucide-react";
 import { apiGet } from "@/lib/api";
-import type { RevisionPlan, Sheet, Streak, User } from "@/lib/types";
+import type { RevisionCard, RevisionPlan, Sheet, Streak, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import StreakCard from "@/components/StreakCard";
 import DailyRevisionDialog from "@/components/DailyRevisionDialog";
+import MistakesDialog from "@/components/MistakesDialog";
 import ProgressDialog from "@/components/ProgressDialog";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
 import { cn } from "@/lib/utils";
@@ -106,6 +108,7 @@ function ActionTile({
 // déposer directement dans la liste des cours.
 export default function Today({ user }: TodayProps) {
   const [dailyOpen, setDailyOpen] = useState(false);
+  const [mistakesOpen, setMistakesOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -120,12 +123,18 @@ export default function Today({ user }: TodayProps) {
     queryFn: () => apiGet<Streak>("/revision/streak"),
     refetchOnWindowFocus: false,
   });
+  const mistakesQuery = useQuery({
+    queryKey: ["revision-mistakes"],
+    queryFn: () => apiGet<RevisionCard[]>("/revision/mistakes"),
+    refetchOnWindowFocus: false,
+  });
   const sheetsQuery = useQuery({
     queryKey: ["sheets"],
     queryFn: () => apiGet<Sheet[]>("/sheets"),
     refetchOnWindowFocus: false,
   });
 
+  const mistakeCount = mistakesQuery.data?.length ?? 0;
   const plan = planQuery.data;
   const sheets = sheetsQuery.data ?? [];
   const firstName = user.name.split(/\s+/)[0];
@@ -207,6 +216,19 @@ export default function Today({ user }: TodayProps) {
             ring="hover:border-primary/60/60"
             wide
             onClick={openDaily}
+          />
+          <ActionTile
+            testId="action-mistakes"
+            title="Réviser mes erreurs"
+            description="Rejoue uniquement les cartes que tu as ratées, tous cours confondus."
+            icon={<RotateCcw className="h-5 w-5" />}
+            badge={mistakeCount > 0 ? `${mistakeCount} carte${mistakeCount > 1 ? "s" : ""}` : "aucune"}
+            accent="bg-gradient-to-br from-rose-500 to-pink-700 shadow-rose-600/30"
+            ring="hover:border-rose-400/60"
+            onClick={() => {
+              void queryClient.invalidateQueries({ queryKey: ["revision-mistakes"] });
+              setMistakesOpen(true);
+            }}
           />
           <ActionTile
             testId="action-browse-library"
@@ -345,6 +367,7 @@ export default function Today({ user }: TodayProps) {
       </main>
 
       <DailyRevisionDialog open={dailyOpen} onOpenChange={setDailyOpen} />
+      <MistakesDialog open={mistakesOpen} onOpenChange={setMistakesOpen} />
       <UploadSheetDialog open={uploadOpen} onOpenChange={setUploadOpen} sheets={sheets} />
       <ProgressDialog open={progressOpen} onOpenChange={setProgressOpen} />
     </div>

@@ -325,3 +325,11 @@ export interface ExamHistoryEntry {
 
 // Mirror of AnswerRequest.quality in backend/models/progress.py.
 export type CardQuality = "easy" | "medium" | "hard";
+
+// Mirror of CalcSprintEntry in backend/models/calc.py.
+export interface CalcSprintEntry {
+  score: number;
+  total: number;
+  seconds: number;
+  created_at: string;
+}

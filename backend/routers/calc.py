@@ -6,7 +6,16 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from lib.calc import EXERCISE_TYPES, generate, is_correct
 from lib.db import db
-from models.calc import CalcAnswerRequest, CalcAnswerResult, CalcAttempt, CalcExercise, CalcStats
+from models.calc import (
+    CalcAnswerRequest,
+    CalcAnswerResult,
+    CalcAttempt,
+    CalcExercise,
+    CalcSprint,
+    CalcSprintEntry,
+    CalcSprintRequest,
+    CalcStats,
+)
 from routers.auth import current_user
 
 router = APIRouter(prefix="/calc", tags=["calc"])
@@ -73,6 +82,33 @@ async def answer(payload: CalcAnswerRequest, user: dict = Depends(current_user))
         steps=exercise["steps"],
         streak=streak,
     )
+
+
+@router.post("/sprint", response_model=CalcSprintEntry, status_code=201)
+async def save_sprint(payload: CalcSprintRequest, user: dict = Depends(current_user)):
+    """Résultat d'un mode chronométré (10 calculs en 5 minutes)."""
+    if payload.score > payload.total:
+        raise HTTPException(status_code=422, detail="Score supérieur au nombre d'exercices")
+    sprint = CalcSprint(
+        user_id=user["id"], score=payload.score, total=payload.total, seconds=payload.seconds
+    )
+    await db.calc_sprints.insert_one(sprint.model_dump())
+    return CalcSprintEntry(
+        score=sprint.score,
+        total=sprint.total,
+        seconds=sprint.seconds,
+        created_at=sprint.created_at,
+    )
+
+
+@router.get("/sprints", response_model=list[CalcSprintEntry])
+async def sprint_history(user: dict = Depends(current_user)):
+    docs = (
+        await db.calc_sprints.find({"user_id": user["id"]})
+        .sort("created_at", -1)
+        .to_list(20)
+    )
+    return [CalcSprintEntry(**{k: d[k] for k in ("score", "total", "seconds", "created_at")}) for d in docs]
 
 
 @router.get("/stats", response_model=CalcStats)

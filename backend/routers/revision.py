@@ -85,6 +85,63 @@ async def today_deck(
     return deck
 
 
+@router.get("/mistakes", response_model=list[RevisionCard])
+async def mistakes_deck(
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=100),
+    user: dict = Depends(current_user),
+):
+    """Cartes dont la DERNIÈRE réponse était fausse, toutes fiches confondues (les plus récentes d'abord)."""
+    results = (
+        await db.card_results.find({"user_id": user["id"]})
+        .sort("answered_at", -1)
+        .to_list(20000)
+    )
+    latest: dict[str, dict] = {}
+    for result in results:  # déjà trié du plus récent au plus ancien
+        latest.setdefault(result["card_id"], result)
+
+    wrong_ids = [card_id for card_id, r in latest.items() if not r.get("correct")]
+    if not wrong_ids:
+        return []
+
+    cards, sheets = await _cards_with_context(wrong_ids)
+    by_id = {c["id"]: c for c in cards}
+    schedules = await db.card_schedules.find(
+        {"user_id": user["id"], "card_id": {"$in": wrong_ids}}
+    ).to_list(10000)
+    levels = {s["card_id"]: s["level"] for s in schedules}
+
+    deck: list[RevisionCard] = []
+    for card_id in wrong_ids:  # ordre = du ratage le plus récent au plus ancien
+        card = by_id.get(card_id)
+        if not card or card["sheet_id"] not in sheets:
+            continue  # carte orpheline (fiche supprimée)
+        sheet = sheets[card["sheet_id"]]
+        level = levels.get(card_id, 0)
+        deck.append(
+            RevisionCard(
+                id=card["id"],
+                sheet_id=card["sheet_id"],
+                question=card["question"],
+                answer=card["answer"],
+                distractors=card.get("distractors") or [],
+                order=card.get("order", 0),
+                reports=card.get("reports", 0),
+                sheet_title=sheet.get("title", ""),
+                domain=sheet.get("domain", ""),
+                unit=sheet.get("unit") or "",
+                due=True,
+                level=level,
+                stage=stage_label(level),
+                overdue_days=0,
+                is_new=False,
+            )
+        )
+        if len(deck) >= limit:
+            break
+    return deck
+
+
 @router.get("/streak", response_model=Streak)
 async def my_streak(user: dict = Depends(current_user)):
     """Série de jours consécutifs où toutes les révisions dues ont été terminées."""

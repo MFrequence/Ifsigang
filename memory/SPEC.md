@@ -276,3 +276,20 @@ Frontend `pages/Examen.tsx`. Données purgées à la suppression d'un compte (ro
 Navigation : liens Cours / Lexique / Schémas / Calculs / Examen / Pharmaco dans l'en-tête +
 tuiles « Calculs de doses » et « Examen blanc » sur la page Aujourd'hui.
 Base remise à zéro après vérification (0 fiche, 1 compte, lexique de 108 entrées conservé).
+
+### Réviser mes erreurs
+`GET /api/revision/mistakes?limit=` : pour chaque carte, on ne garde que la **dernière** réponse
+(`card_results` trié par answered_at desc) et on renvoie celles dont la dernière tentative était
+fausse, toutes fiches confondues, du ratage le plus récent au plus ancien (cartes orphelines
+exclues). Une carte ratée puis réussie disparaît automatiquement de la liste.
+Frontend : `components/MistakesDialog.tsx` (réutilise StudyRunner) + tuile `action-mistakes` sur
+la page Aujourd'hui avec le compteur de cartes ratées ; query `["revision-mistakes"]`.
+
+### Calculs chronométrés (mode chrono)
+10 calculs en 5 minutes, piloté côté client dans `pages/Calculs.tsx` (constantes SPRINT_SIZE=10,
+SPRINT_SECONDS=300). **Piège corrigé** : le `setInterval` du décompte ne doit dépendre que de
+`sprintRunning` (booléen) et appeler la mutation via une ref — sinon l'identité de l'objet
+mutation recrée l'intervalle à chaque render et le chrono reste figé.
+Résultat enregistré par `POST /api/calc/sprint` {score, total, seconds} (422 si score > total ou
+hors bornes) ; historique et meilleur score via `GET /api/calc/sprints`. Purge à la suppression
+d'un compte.

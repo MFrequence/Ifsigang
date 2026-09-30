@@ -38,6 +38,28 @@ class CalcStats(BaseModel):
     per_type: dict[str, int]  # type -> nombre de bonnes réponses
 
 
+class CalcSprintRequest(BaseModel):
+    score: int = Field(ge=0, le=50)
+    total: int = Field(ge=1, le=50)
+    seconds: int = Field(ge=0, le=3600)
+
+
+class CalcSprintEntry(BaseModel):
+    score: int
+    total: int
+    seconds: int
+    created_at: datetime
+
+
+class CalcSprint(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    score: int
+    total: int
+    seconds: int
+    created_at: datetime = Field(default_factory=utcnow)
+
+
 class CalcAttempt(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
