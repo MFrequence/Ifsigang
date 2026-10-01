@@ -325,8 +325,11 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
   `lib/extract.py::extract_text(..., limit=READ_CHARS=200000)` (TXT, DOCX, PDF).
   422 sur une image ou un document scanné/illisible, 404 si le fichier est introuvable.
 - `GET /api/sheets/{id}/html` → `SheetHtml {html}` : **DOCX rendu en HTML** via
-  `lib/docx_html.py` (mammoth + style map FR/EN) — titres, gras, listes, tableaux et images
-  du document (base64 inline) conservés. 422 hors .docx ou si la mise en forme est illisible.
+  `lib/docx_html.py` (mammoth + style map FR/EN) — titres, gras, listes, tableaux et images.
+  Les images ne sont **pas** inlinées (un cours illustré faisait 10 Mo de HTML, donc tronqué
+  et illisible en fin de document) : elles sont extraites dans `uploads/media/` et servies par
+  `GET /api/sheets/{id}/media/{name}` (cache régénérable depuis le DOCX, 404 si le nom ne
+  commence pas par l'id de la fiche). Le HTML pèse alors ~30 Ko. 422 hors .docx ou si la mise en forme est illisible.
   LibreOffice (vraie conversion PDF) est impossible : aucun paquet système en production.
 - `components/SheetPreviewDialog.tsx` : PDF en `<iframe>`, images en `<img>`,
   **DOCX en HTML** (`sheet-html-content`, styles Tailwind sur le HTML injecté),
@@ -394,3 +397,17 @@ uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.
 aujourd'hui). Carte `plan-today-card` sur `/` : compte à rebours `plan-today-countdown`,
 fiches du jour, avancement, bouton `plan-today-study-button` (session limitée à ces fiches)
 et lien `plan-today-open-link` vers `/planning`.
+
+
+## Correctifs UX/UI de la session de révision et des calculs
+
+- `StudyRunner` : en mode QCM, le bouton générique « Suivant » est masqué (`study-next-button`
+  en `hidden`) — « Carte suivante » fait déjà avancer ; les options de QCM sont en
+  `grid sm:grid-cols-2` (2 colonnes sur PC).
+- Fenêtres de révision élargies à `sm:max-w-4xl` (StudySessionDialog, FlashcardsDialog,
+  DailyRevisionDialog, MistakesDialog) : plus d'écran restreint sur PC.
+- `lib/calc.py` : 7 familles (ajout `conversion` — solutés en % et g→mg — et `sap` — mg/h vers
+  ml/h). La famille `comprimes` n'utilise plus le facteur 1 (réponse triviale « 1 comprimé »),
+  avec variantes ampoules (volume) et au poids (dosage choisi pour rester entre 0,5 et 4
+  comprimés). `GET /api/calc/exercise?avoid=<type>` évite de tirer deux fois la même famille
+  de suite (le front transmet la famille précédente).

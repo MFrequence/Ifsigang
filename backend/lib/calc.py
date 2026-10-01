@@ -14,6 +14,8 @@ EXERCISE_TYPES: dict[str, str] = {
     "gouttes": "Débit en gouttes/min",
     "dilution": "Dilution et concentration",
     "comprimes": "Nombre de comprimés ou d'ampoules",
+    "conversion": "Conversion d'unités et solutés en %",
+    "sap": "Seringue électrique (mg/h → ml/h)",
 }
 
 
@@ -114,9 +116,57 @@ def _dilution() -> dict:
 
 
 def _comprimes() -> dict:
-    per_unit = random.choice([25, 50, 100, 250, 500])
-    factor = random.choice([0.5, 1, 1.5, 2, 3])
+    """Comprimés ou ampoules — le facteur exclut 1 pour éviter la réponse triviale."""
+    per_unit = random.choice([25, 50, 100, 125, 200, 250, 500])
+    factor = random.choice([0.5, 1.5, 2, 2.5, 3, 4])  # jamais 1 : réponse sans intérêt
     prescribed = per_unit * factor
+
+    if random.random() < 0.4:  # variante « au poids », un calcul en deux temps
+        weight = random.choice([50, 60, 70, 80, 90])
+        dose_kg = random.choice([2, 3, 5, 7.5, 10])
+        prescribed = _round(dose_kg * weight)
+        # Dosage du comprimé choisi pour rester plausible (entre 0,5 et 4 comprimés).
+        candidates = [
+            d for d in (25, 50, 100, 125, 200, 250, 500) if 0.5 <= prescribed / d <= 4
+        ]
+        per_unit = random.choice(candidates or [250])
+        count = prescribed / per_unit
+        return {
+            "type": "comprimes",
+            "statement": (
+                f"Prescription : {dose_kg} mg/kg pour un patient de {weight} kg. "
+                f"Tu disposes de comprimés dosés à {per_unit} mg. "
+                "Combien de comprimés administres-tu ?"
+            ),
+            "unit": "comprimé(s)",
+            "answer": _round(count),
+            "tolerance": 0.02,
+            "steps": [
+                f"Dose prescrite = {dose_kg} mg/kg × {weight} kg = {_round(prescribed)} mg",
+                f"Nombre = {_round(prescribed)} mg ÷ {per_unit} mg = {_round(count)}",
+            ],
+        }
+
+    if random.random() < 0.5:  # variante ampoules : on cherche un volume
+        ampoule_ml = random.choice([2, 5, 10, 20])
+        count = prescribed / per_unit
+        volume = count * ampoule_ml
+        return {
+            "type": "comprimes",
+            "statement": (
+                f"La prescription est de {_round(prescribed)} mg. "
+                f"Tu disposes d'ampoules de {per_unit} mg / {ampoule_ml} ml. "
+                "Quel volume total prélèves-tu ?"
+            ),
+            "unit": "ml",
+            "answer": _round(volume),
+            "tolerance": 0.02,
+            "steps": [
+                f"Nombre d'ampoules = {_round(prescribed)} ÷ {per_unit} = {_round(count)}",
+                f"Volume = {_round(count)} × {ampoule_ml} ml = {_round(volume)} ml",
+            ],
+        }
+
     count = prescribed / per_unit
     return {
         "type": "comprimes",
@@ -135,18 +185,84 @@ def _comprimes() -> dict:
     }
 
 
+def _conversion() -> dict:
+    """Soluté en % ou conversion g/mg/µg — très classique à l'épreuve."""
+    if random.random() < 0.5:
+        percent = random.choice([0.9, 5, 10, 20, 30])
+        volume = random.choice([100, 250, 500, 1000])
+        grams = percent * volume / 100
+        return {
+            "type": "conversion",
+            "statement": (
+                f"Une poche de {volume} ml de soluté glucosé à {percent} %. "
+                "Combien de grammes de principe actif contient-elle ?"
+            ),
+            "unit": "g",
+            "answer": _round(grams),
+            "tolerance": 0.02,
+            "steps": [
+                f"{percent} % = {percent} g pour 100 ml",
+                f"Quantité = {percent} g × ({volume} ÷ 100) = {_round(grams)} g",
+            ],
+        }
+
+    grams = random.choice([0.25, 0.5, 1.5, 2, 0.125, 0.075])
+    return {
+        "type": "conversion",
+        "statement": f"Convertis {grams} g en milligrammes.",
+        "unit": "mg",
+        "answer": _round(grams * 1000),
+        "tolerance": 0.01,
+        "steps": [
+            "1 g = 1000 mg",
+            f"{grams} g × 1000 = {_round(grams * 1000)} mg",
+        ],
+    }
+
+
+def _sap() -> dict:
+    """Seringue électrique : passer d'une prescription en mg/h à un débit en ml/h."""
+    amount = random.choice([50, 100, 250, 500])  # mg dans la seringue
+    volume = random.choice([20, 48, 50])  # ml dans la seringue
+    concentration = amount / volume
+    per_hour = random.choice([2, 3, 5, 7.5, 10, 15])
+    per_hour = min(per_hour, _round(concentration * volume / 2))
+    rate = per_hour / concentration
+    return {
+        "type": "sap",
+        "statement": (
+            f"Une seringue électrique contient {amount} mg dilués dans {volume} ml. "
+            f"La prescription est de {_round(per_hour)} mg/h. "
+            "Quel débit règles-tu en ml/h ?"
+        ),
+        "unit": "ml/h",
+        "answer": _round(rate),
+        "tolerance": 0.05,
+        "steps": [
+            f"Concentration = {amount} mg ÷ {volume} ml = {_round(concentration)} mg/ml",
+            f"Débit = {_round(per_hour)} mg/h ÷ {_round(concentration)} mg/ml = {_round(rate)} ml/h",
+        ],
+    }
+
+
 GENERATORS = {
     "mg_kg": _mg_kg,
     "ml_h": _ml_h,
     "gouttes": _gouttes,
     "dilution": _dilution,
     "comprimes": _comprimes,
+    "conversion": _conversion,
+    "sap": _sap,
 }
 
 
-def generate(kind: str | None = None) -> dict:
-    """Génère un exercice ; `kind` vide → tirage au hasard parmi les 5 familles."""
-    key = kind if kind in GENERATORS else random.choice(list(GENERATORS))
+def generate(kind: str | None = None, avoid: str | None = None) -> dict:
+    """Génère un exercice ; `kind` vide → tirage au hasard, en évitant la famille `avoid`."""
+    if kind in GENERATORS:
+        key = kind
+    else:
+        pool = [k for k in GENERATORS if k != avoid] or list(GENERATORS)
+        key = random.choice(pool)
     exercise = GENERATORS[key]()
     exercise["label"] = EXERCISE_TYPES[exercise["type"]]
     return exercise

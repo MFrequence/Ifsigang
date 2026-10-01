@@ -55,14 +55,22 @@ export default function Calculs({ user }: CalculsProps) {
     queryFn: () => apiGet<CalcStats>("/calc/stats"),
     refetchOnWindowFocus: false,
   });
+  const lastTypeRef = useRef<string | null>(null);
   const exerciseQuery = useQuery({
     queryKey: ["calc-exercise", type],
-    queryFn: () => apiGet<CalcExercise>(`/calc/exercise${type ? `?type=${type}` : ""}`),
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (type) params.set("type", type);
+      // Évite de retomber sur la même famille d'exercice deux fois de suite.
+      if (!type && lastTypeRef.current) params.set("avoid", lastTypeRef.current);
+      return apiGet<CalcExercise>(`/calc/exercise?${params.toString()}`);
+    },
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
 
   const exercise = exerciseQuery.data;
+  if (exercise) lastTypeRef.current = exercise.type;
 
   const startSprint = () => {
     setSprint({ left: SPRINT_SECONDS, done: 0, score: 0, seconds: 0, finished: false });

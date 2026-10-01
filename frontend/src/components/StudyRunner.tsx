@@ -280,7 +280,7 @@ export default function StudyRunner({
             </p>
 
             {effectiveMode === "quiz" ? (
-              <div className="mt-4 flex flex-col gap-2" data-testid="quiz-options">
+              <div className="mt-4 grid gap-2 sm:grid-cols-2" data-testid="quiz-options">
                 {options.map((option, i) => {
                   const isCorrect = option === current.answer;
                   const isPicked = picked === option;
@@ -388,10 +388,12 @@ export default function StudyRunner({
           </div>
         )}
 
+        {/* En QCM, « Carte suivante » fait déjà avancer : pas de second bouton. */}
         <Button
           variant="outline"
           size="sm"
           data-testid="study-next-button"
+          className={effectiveMode === "quiz" ? "hidden" : undefined}
           disabled={index >= deck.length - 1}
           onClick={() => {
             setIndex((i) => Math.min(i + 1, deck.length - 1));

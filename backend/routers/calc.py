@@ -27,10 +27,15 @@ async def types(_: dict = Depends(current_user)):
 
 
 @router.get("/exercise", response_model=CalcExercise)
-async def new_exercise(type: str | None = None, user: dict = Depends(current_user)):
+async def new_exercise(
+    type: str | None = None,
+    avoid: str | None = None,
+    user: dict = Depends(current_user),
+):
+    """`avoid` : famille à ne pas retirer deux fois de suite (moins de répétitions)."""
     if type and type not in EXERCISE_TYPES:
         raise HTTPException(status_code=422, detail="Type d'exercice inconnu")
-    exercise = generate(type)
+    exercise = generate(type, avoid=avoid)
     exercise_id = str(uuid.uuid4())
     # La réponse et les étapes restent côté serveur jusqu'à la validation.
     await db.calc_exercises.insert_one({"id": exercise_id, "user_id": user["id"], **exercise})

@@ -55,6 +55,8 @@ MIME_BY_EXT = {
     "txt": "text/plain",
 }
 UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
+# Images extraites des DOCX : cache régénérable (le DOCX reste la source durable).
+MEDIA_DIR = UPLOADS_DIR / "media"
 CHUNK = 1024 * 1024
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
@@ -268,12 +270,29 @@ async def sheet_html(sheet_id: str, _: dict = Depends(current_user)):
     path = await ensure_local_file(doc)
     if path is None:
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
-    html = docx_to_html(path)
+    html = docx_to_html(path, sheet_id, MEDIA_DIR)
     if not html:
         raise HTTPException(
             status_code=422, detail="Impossible de lire la mise en forme de ce document"
         )
     return SheetHtml(html=html)
+
+
+@router.get("/sheets/{sheet_id}/media/{name}")
+async def sheet_media(sheet_id: str, name: str, _: dict = Depends(current_user)):
+    """Sert une image extraite d'un DOCX ; régénère le cache s'il a disparu (redéploiement)."""
+    if not name.startswith(f"{sheet_id}-") or "/" in name or ".." in name:
+        raise HTTPException(status_code=404, detail="Image introuvable")
+    target = MEDIA_DIR / name
+    if not target.is_file():
+        doc = await _find_or_404(sheet_id)
+        path = await ensure_local_file(doc)
+        if path is None or doc["mime"] != DOCX_MIME:
+            raise HTTPException(status_code=404, detail="Image introuvable")
+        docx_to_html(path, sheet_id, MEDIA_DIR)  # réextrait toutes les images de la fiche
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="Image introuvable")
+    return FileResponse(target, headers={"Cache-Control": "public, max-age=86400"})
 
 
 @router.get("/sheets/{sheet_id}/download")

@@ -49,7 +49,7 @@ export default function DailyRevisionDialog({ open, onOpenChange }: DailyRevisio
         }
       }}
     >
-      <DialogContent className="flex max-h-[92svh] max-w-2xl flex-col overflow-y-auto">
+      <DialogContent className="flex max-h-[92svh] flex-col overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 pr-8">
             <CalendarCheck className="h-5 w-5 text-primary" /> Ma révision du jour
