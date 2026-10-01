@@ -17,6 +17,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 from lib.db import client, db, ensure_indexes
+from lib.disease_seed import seed_diseases
 from lib.lexicon_seed import seed_lexicon
 
 # App routers — one APIRouter per resource, folded into api_router below
@@ -30,6 +31,7 @@ from routers.lexicon import router as lexicon_router
 from routers.search import router as search_router
 from routers.pharmaco import router as pharmaco_router
 from routers.community import router as community_router
+from routers.disease import router as disease_router
 from routers.plan import router as plan_router
 from routers.progress import router as progress_router
 from routers.reports import router as reports_router
@@ -45,6 +47,8 @@ async def lifespan(app: FastAPI):
     app.state.index_task = asyncio.create_task(ensure_indexes())  # background: a big index build must not block boot
     # Lexique fourni avec la plateforme : seed idempotent, en tâche de fond.
     app.state.lexicon_task = asyncio.create_task(seed_lexicon())
+    # Catalogue de pathologies (insert-only, idempotent).
+    app.state.disease_task = asyncio.create_task(seed_diseases())
     # Fichiers de fiches : copie durable dans le stockage objet (le disque est éphémère).
     app.state.storage_task = asyncio.create_task(migrate_local_files_to_storage())
     yield
@@ -101,6 +105,7 @@ api_router.include_router(calc_router)
 api_router.include_router(exam_router)
 api_router.include_router(plan_router)
 api_router.include_router(community_router)
+api_router.include_router(disease_router)
 
 # Include the router in the main app
 app.include_router(api_router)

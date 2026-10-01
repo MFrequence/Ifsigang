@@ -121,6 +121,13 @@ export default function AppHeader({
             Schémas
           </Link>
           <Link
+            to="/pathologies"
+            data-testid="nav-pathologies-link"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
+          >
+            Pathologies
+          </Link>
+          <Link
             to="/planning"
             data-testid="nav-planning-link"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"

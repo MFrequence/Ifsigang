@@ -191,6 +191,35 @@ export interface AdminStatus {
   configured: boolean;
 }
 
+// Mirrors of backend/models/disease.py (DiseaseSummary, DiseaseOut).
+export interface DiseaseSummary {
+  slug: string;
+  name: string;
+  category: string;
+  category_label: string;
+  definition: string;
+  detailed: boolean;
+  source: string;
+}
+
+export interface Disease {
+  slug: string;
+  name: string;
+  category: string;
+  category_label: string;
+  definition: string;
+  incubation: string;
+  causes: string[];
+  symptoms: string[];
+  exams: string[];
+  treatments: string[];
+  side_effects: string[];
+  nursing_role: string[];
+  key_points: string[];
+  detailed: boolean;
+  source: string;
+}
+
 // Mirrors of AdminAnswer / AdminQuestion in backend/models/admin.py.
 export interface AdminAnswer {
   id: string;

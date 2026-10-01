@@ -411,3 +411,24 @@ et lien `plan-today-open-link` vers `/planning`.
   avec variantes ampoules (volume) et au poids (dosage choisi pour rester entre 0,5 et 4
   comprimés). `GET /api/calc/exercise?avoid=<type>` évite de tirer deux fois la même famille
   de suite (le front transmet la famille précédente).
+
+
+## Fiches pathologies (`/pathologies`)
+
+- Catalogue livré : `lib/disease_seed.py` — 59 pathologies du programme IFSI (nom, catégorie
+  parmi 12, définition courte, incubation/évolution), seed **insert-only** par slug au
+  démarrage (`seed_diseases`, idempotent, n'écrase jamais une fiche enrichie).
+- Rubriques détaillées (causes, symptômes, examens, traitements, effets indésirables, rôle
+  infirmier, points clés) produites **une seule fois** par le LLM (`lib/disease.py`,
+  emergentintegrations `LlmChat`, openai/gpt-5.4, ~25 s) puis stockées (`detailed: true`) :
+  la fiche profite ensuite à toute la promo. 503 si le LLM échoue.
+- `routers/disease.py` (`/api/diseases`) : `GET /categories`, `GET ?q=&category=`
+  (`DiseaseSummary`), `GET /{slug}` (génère à la première ouverture, 404 si inconnue),
+  `POST` (ajout d'une pathologie hors catalogue par n'importe quel étudiant — fiche générée
+  puis partagée ; renvoie la fiche existante si le slug existe déjà ; la fiche est supprimée
+  si la génération échoue), `PUT /{slug}` et `DELETE /{slug}` **réservés à `admin_guard`**.
+- `frontend/src/pages/Pathologies.tsx` : recherche, filtres par catégorie, grille
+  (`disease-card-{slug}`), dialogue de fiche (`disease-detail`, `disease-section-{champ}`,
+  `disease-incubation`) et **édition admin** (`disease-edit-button` visible seulement si
+  `/admin/status` renvoie `is_admin`, formulaire une puce par ligne, `disease-save-button`).
+  Lien d'en-tête `nav-pathologies-link`.
