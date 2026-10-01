@@ -29,6 +29,7 @@ from lib.storage import get_object, object_path, put_object
 from models.sheet import (
     DOMAINS,
     Sheet,
+    SheetDiseaseLink,
     SheetFavorite,
     SheetOut,
     SheetReport,
@@ -276,6 +277,31 @@ async def sheet_html(sheet_id: str, _: dict = Depends(current_user)):
             status_code=422, detail="Impossible de lire la mise en forme de ce document"
         )
     return SheetHtml(html=html)
+
+
+@router.put("/sheets/{sheet_id}/diseases", response_model=SheetOut)
+async def link_diseases(
+    sheet_id: str,
+    payload: SheetDiseaseLink,
+    request: Request,
+    user: dict = Depends(current_user),
+):
+    """Associe la fiche à des pathologies (auteur de la fiche ou admin déverrouillé)."""
+    doc = await _find_or_404(sheet_id)
+    session = await db.sessions.find_one({"token": request.cookies.get(COOKIE_NAME)})
+    if doc.get("uploader_id") != user["id"] and not bool((session or {}).get("is_admin")):
+        raise HTTPException(
+            status_code=403, detail="Seul l'auteur de la fiche peut la relier à une pathologie"
+        )
+
+    slugs = list(dict.fromkeys(s.strip() for s in payload.slugs if s.strip()))[:12]
+    known = await db.diseases.find({"slug": {"$in": slugs}}, {"_id": 0, "slug": 1}).to_list(20)
+    valid = [d["slug"] for d in known]
+    if len(valid) != len(slugs):
+        raise HTTPException(status_code=422, detail="Pathologie inconnue")
+
+    await db.sheets.update_one({"id": sheet_id}, {"$set": {"disease_slugs": valid}})
+    return SheetOut.from_doc({**doc, "disease_slugs": valid})
 
 
 @router.get("/sheets/{sheet_id}/media/{name}")

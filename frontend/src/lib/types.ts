@@ -15,6 +15,7 @@ export interface Sheet {
   mime: string;
   size: number;
   downloads: number;
+  disease_slugs: string[];
   created_at: string;
 }
 

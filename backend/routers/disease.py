@@ -9,6 +9,7 @@ from pymongo import ASCENDING
 from lib.db import db
 from lib.disease import NO_LLM, build_details
 from lib.disease_seed import CATEGORIES, slugify
+from models.sheet import SheetOut
 from models.disease import (
     Disease,
     DiseaseCreate,
@@ -32,6 +33,13 @@ def _out(doc: dict) -> DiseaseOut:
 @router.get("/categories", response_model=dict[str, str])
 async def categories(_: dict = Depends(current_user)):
     return CATEGORIES
+
+
+@router.get("/favorites", response_model=list[str])
+async def list_favorites(user: dict = Depends(current_user)):
+    """Slugs des pathologies épinglées par l'étudiant (déclaré avant `/{slug}`)."""
+    docs = await db.disease_favorites.find({"user_id": user["id"]}, {"_id": 0}).to_list(300)
+    return [doc["slug"] for doc in docs]
 
 
 @router.get("", response_model=list[DiseaseSummary])
@@ -84,6 +92,32 @@ async def get_disease(slug: str, _: dict = Depends(current_user)):
     return _out(doc)
 
 
+@router.get("/{slug}/sheets", response_model=list[SheetOut])
+async def disease_sheets(slug: str, _: dict = Depends(current_user)):
+    """Fiches de cours de la promo reliées à cette pathologie."""
+    docs = await db.sheets.find({"disease_slugs": slug}).sort("created_at", ASCENDING).to_list(100)
+    return [SheetOut.from_doc(doc) for doc in docs]
+
+
+@router.post("/{slug}/favorite", status_code=201)
+async def add_favorite(slug: str, user: dict = Depends(current_user)):
+    """Épingle une pathologie. Idempotent."""
+    if not await db.diseases.find_one({"slug": slug}, {"_id": 1}):
+        raise HTTPException(status_code=404, detail="Pathologie introuvable")
+    await db.disease_favorites.update_one(
+        {"user_id": user["id"], "slug": slug},
+        {"$setOnInsert": {"user_id": user["id"], "slug": slug}},
+        upsert=True,
+    )
+    return {"slug": slug, "favorite": True}
+
+
+@router.delete("/{slug}/favorite", status_code=204)
+async def remove_favorite(slug: str, user: dict = Depends(current_user)):
+    await db.disease_favorites.delete_one({"user_id": user["id"], "slug": slug})
+    return Response(status_code=204)
+
+
 @router.post("", response_model=DiseaseOut, status_code=201)
 async def create_disease(payload: DiseaseCreate, _: dict = Depends(current_user)):
     """Ajoute une pathologie absente du catalogue : la fiche est générée puis partagée."""
@@ -133,4 +167,6 @@ async def delete_disease(slug: str, _: dict = Depends(admin_guard)):
     result = await db.diseases.delete_one({"slug": slug})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Pathologie introuvable")
+    await db.disease_favorites.delete_many({"slug": slug})
+    await db.sheets.update_many({"disease_slugs": slug}, {"$pull": {"disease_slugs": slug}})
     return Response(status_code=204)

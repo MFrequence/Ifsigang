@@ -32,6 +32,7 @@ class Sheet(BaseModel):
     filename: str
     stored_name: str
     storage_path: str = ""  # chemin dans le stockage objet (copie durable)
+    disease_slugs: list[str] = []
     mime: str
     size: int
     downloads: int = 0
@@ -52,6 +53,7 @@ class SheetOut(BaseModel):
     mime: str
     size: int
     downloads: int = 0
+    disease_slugs: list[str] = []  # pathologies associées à la fiche
     created_at: datetime
 
     @classmethod
@@ -105,6 +107,12 @@ class SheetReportOut(BaseModel):
     user_name: str = ""
     reason: str = ""
     created_at: datetime
+
+
+class SheetDiseaseLink(BaseModel):
+    """Pathologies associées à une fiche (auteur de la fiche ou admin)."""
+
+    slugs: list[str] = Field(default_factory=list, max_length=12)
 
 
 class SheetFavorite(BaseModel):

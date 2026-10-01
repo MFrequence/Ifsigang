@@ -432,3 +432,21 @@ et lien `plan-today-open-link` vers `/planning`.
   `disease-incubation`) et **édition admin** (`disease-edit-button` visible seulement si
   `/admin/status` renvoie `is_admin`, formulaire une puce par ligne, `disease-save-button`).
   Lien d'en-tête `nav-pathologies-link`.
+
+
+## Favoris pathologies et lien fiche ↔ pathologie
+
+- **Favoris** (`disease_favorites` `{user_id, slug}`) : `GET /api/diseases/favorites`
+  (déclaré AVANT `/{slug}` pour ne pas être capturé par la route dynamique),
+  `POST|DELETE /api/diseases/{slug}/favorite` (POST idempotent, 404 si slug inconnu).
+  Front : étoile `disease-favorite-button-{slug}` sur chaque carte (stopPropagation pour ne pas
+  ouvrir la fiche) + filtre `disease-favorites-filter-button`.
+- **Lien fiche de cours ↔ pathologie** : `Sheet.disease_slugs` (max 12, slugs validés).
+  `PUT /api/sheets/{id}/diseases` body `{slugs: [...]}` — **auteur de la fiche ou admin**
+  (403 sinon, 422 si un slug est inconnu). `GET /api/diseases/{slug}/sheets` renvoie les
+  `SheetOut` reliés.
+  Front : section `disease-linked-sheets` dans la fiche pathologie — boutons
+  `disease-sheet-read-{id}` qui ouvrent `SheetPreviewDialog`, et `disease-attach-select` +
+  `disease-attach-button` pour relier une de ses propres fiches (toutes si admin ; le select
+  disparaît quand il n'y a plus rien à relier).
+- La suppression d'une pathologie purge les favoris et retire le slug des fiches.

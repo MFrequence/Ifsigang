@@ -9,13 +9,15 @@ import {
   Plus,
   Search,
   Sparkles,
+  Star,
   Stethoscope,
 } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api";
 import type { AdminStatus, Disease, DiseaseSummary, Sheet, User } from "@/lib/types";
 import AppHeader from "@/components/AppHeader";
 import ProgressDialog from "@/components/ProgressDialog";
+import SheetPreviewDialog from "@/components/SheetPreviewDialog";
 import UploadSheetDialog from "@/components/UploadSheetDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +53,9 @@ export default function Pathologies({ user }: PathologiesProps) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [editing, setEditing] = useState<Record<string, string> | null>(null);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [linkedSheet, setLinkedSheet] = useState<Sheet | null>(null);
+  const [attachSlug, setAttachSlug] = useState("");
   const [uploadOpen, setUploadOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -80,6 +85,47 @@ export default function Pathologies({ user }: PathologiesProps) {
     refetchOnWindowFocus: false,
   });
   const isAdmin = adminQuery.data?.is_admin === true;
+
+  const favoritesQuery = useQuery({
+    queryKey: ["disease-favorites"],
+    queryFn: () => apiGet<string[]>("/diseases/favorites"),
+    refetchOnWindowFocus: false,
+  });
+  const favorites = useMemo(
+    () => new Set(favoritesQuery.data ?? []),
+    [favoritesQuery.data],
+  );
+
+  const toggleFavorite = useMutation({
+    mutationFn: async ({ slug, next }: { slug: string; next: boolean }) => {
+      if (next) await apiPost<{ slug: string }>(`/diseases/${slug}/favorite`, {});
+      else await apiDelete<void>(`/diseases/${slug}/favorite`);
+    },
+    onSuccess: (_data, { next }) => {
+      void queryClient.invalidateQueries({ queryKey: ["disease-favorites"] });
+      toast.success(next ? "Pathologie épinglée" : "Pathologie retirée des favoris");
+    },
+    onError: () => toast.error("Impossible de modifier les favoris"),
+  });
+
+  // Fiches de cours de la promo reliées à la pathologie ouverte.
+  const linkedQuery = useQuery({
+    queryKey: ["disease-sheets", openSlug],
+    queryFn: () => apiGet<Sheet[]>(`/diseases/${openSlug}/sheets`),
+    enabled: openSlug !== null,
+  });
+
+  const linkSheet = useMutation({
+    mutationFn: ({ sheet, slugs }: { sheet: Sheet; slugs: string[] }) =>
+      apiPut<Sheet>(`/sheets/${sheet.id}/diseases`, { slugs }),
+    onSuccess: () => {
+      setAttachSlug("");
+      void queryClient.invalidateQueries({ queryKey: ["disease-sheets", openSlug] });
+      void queryClient.invalidateQueries({ queryKey: ["sheets"] });
+      toast.success("Fiche reliée à la pathologie");
+    },
+    onError: () => toast.error("Seul l'auteur de la fiche (ou l'admin) peut la relier"),
+  });
 
   const detailQuery = useQuery({
     queryKey: ["disease", openSlug],
@@ -118,14 +164,25 @@ export default function Pathologies({ user }: PathologiesProps) {
     const q = search.trim().toLowerCase();
     return diseases.filter(
       (disease) =>
+        (!onlyFavorites || favorites.has(disease.slug)) &&
         (category === "ALL" || disease.category === category) &&
         (q === "" ||
           disease.name.toLowerCase().includes(q) ||
           disease.definition.toLowerCase().includes(q)),
     );
-  }, [diseases, category, search]);
+  }, [diseases, category, search, onlyFavorites, favorites]);
 
   const detail = detailQuery.data;
+
+  // Fiches que l'utilisateur peut relier : les siennes (toutes si admin), pas déjà reliées.
+  const attachable = useMemo(() => {
+    if (!detail) return [];
+    return (sheetsQuery.data ?? []).filter(
+      (sheet) =>
+        (isAdmin || sheet.uploader_id === user.id) &&
+        !sheet.disease_slugs.includes(detail.slug),
+    );
+  }, [sheetsQuery.data, detail, isAdmin, user.id]);
 
   const startEditing = () => {
     if (!detail) return;
@@ -233,6 +290,20 @@ export default function Pathologies({ user }: PathologiesProps) {
           <div className="mt-3 flex flex-wrap gap-1.5" data-testid="disease-category-filters">
             <button
               type="button"
+              data-testid="disease-favorites-filter-button"
+              aria-pressed={onlyFavorites}
+              onClick={() => setOnlyFavorites((value) => !value)}
+              className={`mr-1 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+                onlyFavorites
+                  ? "border-amber-400/60 bg-amber-400/15 text-amber-300"
+                  : "border-border text-muted-foreground hover:border-amber-400/40 hover:text-foreground"
+              }`}
+            >
+              <Star className={`h-3.5 w-3.5 ${onlyFavorites ? "fill-current" : ""}`} aria-hidden />
+              Favoris {favorites.size > 0 ? `(${favorites.size})` : ""}
+            </button>
+            <button
+              type="button"
               data-testid="disease-category-all"
               aria-pressed={category === "ALL"}
               onClick={() => setCategory("ALL")}
@@ -297,9 +368,46 @@ export default function Pathologies({ user }: PathologiesProps) {
                   <h2 className="font-heading text-base font-semibold leading-snug text-foreground group-hover:text-primary">
                     {disease.name}
                   </h2>
-                  <Badge variant="outline" className="shrink-0 border-border text-[10px]">
-                    {disease.category_label}
-                  </Badge>
+                  <span className="flex shrink-0 items-center gap-1">
+                    <Badge variant="outline" className="border-border text-[10px]">
+                      {disease.category_label}
+                    </Badge>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      data-testid={`disease-favorite-button-${disease.slug}`}
+                      aria-pressed={favorites.has(disease.slug)}
+                      aria-label={
+                        favorites.has(disease.slug) ? "Retirer des favoris" : "Épingler en favori"
+                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleFavorite.mutate({
+                          slug: disease.slug,
+                          next: !favorites.has(disease.slug),
+                        });
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          toggleFavorite.mutate({
+                            slug: disease.slug,
+                            next: !favorites.has(disease.slug),
+                          });
+                        }
+                      }}
+                      className={`rounded p-1 transition-transform duration-100 active:scale-90 ${
+                        favorites.has(disease.slug)
+                          ? "text-amber-400"
+                          : "text-muted-foreground/50 hover:text-amber-400"
+                      }`}
+                    >
+                      <Star
+                        className={`h-3.5 w-3.5 ${favorites.has(disease.slug) ? "fill-current" : ""}`}
+                      />
+                    </span>
+                  </span>
                 </div>
                 <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
                   {disease.definition}
@@ -459,6 +567,67 @@ export default function Pathologies({ user }: PathologiesProps) {
                   </div>
                 );
               })}
+              <div className="border-t border-border pt-4" data-testid="disease-linked-sheets">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                  Fiches de cours de la promo
+                </p>
+                {(linkedQuery.data ?? []).length === 0 ? (
+                  <p className="mt-1.5 text-sm text-muted-foreground">
+                    Aucune fiche reliée pour l'instant.
+                  </p>
+                ) : (
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {(linkedQuery.data ?? []).map((sheet) => (
+                      <li key={sheet.id}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid={`disease-sheet-read-${sheet.id}`}
+                          onClick={() => setLinkedSheet(sheet)}
+                        >
+                          {sheet.title}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Relier une de ses propres fiches (l'admin peut relier n'importe laquelle). */}
+                {attachable.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <select
+                      data-testid="disease-attach-select"
+                      value={attachSlug}
+                      onChange={(event) => setAttachSlug(event.target.value)}
+                      className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-card px-2 text-sm text-foreground sm:max-w-xs"
+                    >
+                      <option value="">Relier une de mes fiches…</option>
+                      {attachable.map((sheet) => (
+                        <option key={sheet.id} value={sheet.id}>
+                          {sheet.title}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="disease-attach-button"
+                      disabled={attachSlug === "" || linkSheet.isPending}
+                      onClick={() => {
+                        const sheet = attachable.find((item) => item.id === attachSlug);
+                        if (!sheet || !detail) return;
+                        linkSheet.mutate({
+                          sheet,
+                          slugs: [...sheet.disease_slugs, detail.slug],
+                        });
+                      }}
+                    >
+                      Relier
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+
               <p className="border-t border-border pt-3 text-xs italic text-muted-foreground">
                 Fiche de révision : vérifie toujours avec ton cours et les protocoles du service.
               </p>
@@ -467,6 +636,13 @@ export default function Pathologies({ user }: PathologiesProps) {
         </DialogContent>
       </Dialog>
 
+      <SheetPreviewDialog
+        sheet={linkedSheet}
+        open={linkedSheet !== null}
+        onOpenChange={(open) => {
+          if (!open) setLinkedSheet(null);
+        }}
+      />
       <UploadSheetDialog
         open={uploadOpen}
         onOpenChange={setUploadOpen}
