@@ -24,10 +24,11 @@ interface LibraryProps {
   user: User;
 }
 
-type SortKey = "recent" | "downloads" | "author";
+type SortKey = "recent" | "views" | "downloads" | "author";
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "recent", label: "Plus récentes" },
+  { key: "views", label: "Plus vues" },
   { key: "downloads", label: "Plus téléchargées" },
   { key: "author", label: "Par auteur (A-Z)" },
 ];
@@ -117,6 +118,7 @@ export default function Library({ user }: LibraryProps) {
     );
     const byRecent = (a: Sheet, b: Sheet) => b.created_at.localeCompare(a.created_at);
     return [...list].sort((a, b) => {
+      if (sort === "views") return b.views - a.views || byRecent(a, b);
       if (sort === "downloads") return b.downloads - a.downloads || byRecent(a, b);
       if (sort === "author") {
         const byAuthor = a.author.localeCompare(b.author, "fr", { sensitivity: "base" });

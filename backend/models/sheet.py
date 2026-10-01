@@ -32,6 +32,7 @@ class Sheet(BaseModel):
     filename: str
     stored_name: str
     storage_path: str = ""  # chemin dans le stockage objet (copie durable)
+    views: int = 0
     disease_slugs: list[str] = []
     mime: str
     size: int
@@ -53,6 +54,8 @@ class SheetOut(BaseModel):
     mime: str
     size: int
     downloads: int = 0
+    views: int = 0  # ouvertures dans le lecteur
+    viewers: int = 0  # nombre d'étudiants distincts
     disease_slugs: list[str] = []  # pathologies associées à la fiche
     created_at: datetime
 

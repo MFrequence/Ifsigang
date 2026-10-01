@@ -453,3 +453,14 @@ et lien `plan-today-open-link` vers `/planning`.
   `disease-attach-button` pour relier une de ses propres fiches (toutes si admin ; le select
   disparaît quand il n'y a plus rien à relier).
 - La suppression d'une pathologie purge les favoris et retire le slug des fiches.
+
+
+## Compteur de vues des fiches
+
+- `Sheet.views` (ouvertures) + collection `sheet_views` `{sheet_id, user_id, count}` pour les
+  **lecteurs distincts** ; `SheetOut` expose `views` et `viewers`.
+- `POST /api/sheets/{id}/view` : appelé une fois par ouverture du lecteur
+  (`SheetPreviewDialog`, erreur ignorée pour ne jamais gêner la lecture), 404 si fiche inconnue.
+  `GET /api/sheets` calcule `viewers` en une agrégation unique.
+- Front : `sheet-views-{id}` sur la carte (« n vues », infobulle avec le nombre d'étudiants
+  distincts) et tri **« Plus vues »** (`sheet-sort-views-button`). Purgé avec la fiche.

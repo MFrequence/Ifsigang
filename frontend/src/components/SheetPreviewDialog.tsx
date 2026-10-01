@@ -396,6 +396,21 @@ function DocxReader({ sheet }: { sheet: Sheet }) {
 
 export default function SheetPreviewDialog({ sheet, open, onOpenChange }: SheetPreviewDialogProps) {
   const [expanded, setExpanded] = useState(false);
+  const queryClient = useQueryClient();
+  const countedRef = useRef<string | null>(null);
+
+  // Une ouverture du lecteur = une vue (une seule fois par ouverture de fiche).
+  useEffect(() => {
+    if (!open || !sheet || countedRef.current === sheet.id) return;
+    countedRef.current = sheet.id;
+    apiPost<unknown>(`/sheets/${sheet.id}/view`, {})
+      .then(() => queryClient.invalidateQueries({ queryKey: ["sheets"] }))
+      .catch(() => undefined); // un compteur ne doit jamais gêner la lecture
+  }, [open, sheet, queryClient]);
+
+  useEffect(() => {
+    if (!open) countedRef.current = null;
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -135,6 +135,14 @@ export default function SheetCard({
           {formatDate(sheet.created_at)}
         </span>
         <span>{formatBytes(sheet.size)}</span>
+        <span
+          className="inline-flex items-center gap-1"
+          data-testid={`sheet-views-${sheet.id}`}
+          title={`${sheet.views} ouverture${sheet.views > 1 ? "s" : ""} par ${sheet.viewers} étudiant${sheet.viewers > 1 ? "s" : ""}`}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          {sheet.views} vue{sheet.views > 1 ? "s" : ""}
+        </span>
         <span className="inline-flex items-center gap-1">
           <Download className="h-3.5 w-3.5" />
           {sheet.downloads}

@@ -125,7 +125,16 @@ async def list_sheets(domain: str | None = None, _: dict = Depends(current_user)
             raise HTTPException(status_code=422, detail="Domaine inconnu")
         query["domain"] = domain
     docs = await db.sheets.find(query).sort("created_at", DESCENDING).limit(500).to_list(500)
-    return [SheetOut.from_doc(doc) for doc in docs]
+    # Lecteurs distincts par fiche : une seule agrégation pour toute la liste.
+    viewers = {
+        row["_id"]: row["n"]
+        async for row in db.sheet_views.aggregate(
+            [{"$group": {"_id": "$sheet_id", "n": {"$sum": 1}}}]
+        )
+    }
+    return [
+        SheetOut.from_doc({**doc, "viewers": viewers.get(doc["id"], 0)}) for doc in docs
+    ]
 
 
 @router.post("/sheets", response_model=SheetOut, status_code=201)
@@ -242,6 +251,21 @@ async def sheet_file(sheet_id: str, _: dict = Depends(current_user)):
         filename=doc["filename"],
         content_disposition_type="inline",
     )
+
+
+@router.post("/sheets/{sheet_id}/view", response_model=SheetOut)
+async def register_view(sheet_id: str, user: dict = Depends(current_user)):
+    """Compte une ouverture de la fiche dans le lecteur, et l'étudiant comme lecteur distinct."""
+    doc = await _find_or_404(sheet_id)
+    await db.sheet_views.update_one(
+        {"sheet_id": sheet_id, "user_id": user["id"]},
+        {"$inc": {"count": 1}},
+        upsert=True,
+    )
+    await db.sheets.update_one({"id": sheet_id}, {"$inc": {"views": 1}})
+    views = doc.get("views", 0) + 1
+    viewers = await db.sheet_views.count_documents({"sheet_id": sheet_id})
+    return SheetOut.from_doc({**doc, "views": views, "viewers": viewers})
 
 
 @router.get("/sheets/{sheet_id}/text", response_model=SheetText)
@@ -366,6 +390,7 @@ async def delete_sheet(sheet_id: str, request: Request, user: dict = Depends(cur
     await db.sheet_reports.delete_many({"sheet_id": sheet_id})
     await db.sheet_favorites.delete_many({"sheet_id": sheet_id})  # plus d'épingle orpheline
     await db.sheet_highlights.delete_many({"sheet_id": sheet_id})
+    await db.sheet_views.delete_many({"sheet_id": sheet_id})
     questions = await db.sheet_questions.find({"sheet_id": sheet_id}).to_list(500)
     if questions:
         await db.sheet_answers.delete_many({"question_id": {"$in": [q["id"] for q in questions]}})
