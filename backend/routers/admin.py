@@ -10,16 +10,20 @@ from pathlib import Path
 
 from pymongo import DESCENDING
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from lib.db import db
 from lib.security import hash_password
 from models.admin import (
     AdminAnswer,
+    AudienceEntry,
     AdminQuestion,
     AdminStatus,
     AdminUnlockRequest,
     AdminUser,
+    SheetAudience,
     TemporaryPassword,
 )
 from models.sheet import SheetReportOut
@@ -239,3 +243,49 @@ async def delete_answer(answer_id: str, _: dict = Depends(admin_guard)):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Réponse introuvable")
     return Response(status_code=204)
+
+
+async def _audience(collection, sheet_id: str) -> list[AudienceEntry]:
+    """Active d'une collection `{sheet_id, user_id, count, last_at}`, enrichie des comptes."""
+    rows = await collection.find({"sheet_id": sheet_id}, {"_id": 0}).to_list(1000)
+    if not rows:
+        return []
+    users = await db.users.find(
+        {"id": {"$in": [row["user_id"] for row in rows]}}, {"_id": 0, "id": 1, "name": 1, "email": 1}
+    ).to_list(1000)
+    by_id = {user["id"]: user for user in users}
+
+    def as_utc(value):
+        # Motor renvoie des datetimes naïfs : on marque l'UTC pour que JS lise le bon décalage.
+        if isinstance(value, datetime) and value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
+
+    entries = [
+        AudienceEntry(
+            user_id=row["user_id"],
+            name=by_id.get(row["user_id"], {}).get("name", "Compte supprimé"),
+            email=by_id.get(row["user_id"], {}).get("email", ""),
+            count=row.get("count", 0),
+            last_at=as_utc(row.get("last_at")),
+        )
+        for row in rows
+    ]
+    entries.sort(key=lambda entry: (entry.last_at is None, entry.last_at), reverse=True)
+    return entries
+
+
+@router.get("/sheets/{sheet_id}/audience", response_model=SheetAudience)
+async def sheet_audience(sheet_id: str, _: dict = Depends(admin_guard)):
+    """Qui a ouvert la fiche dans le lecteur et qui l'a téléchargée, avec dates et compteurs."""
+    sheet = await db.sheets.find_one({"id": sheet_id}, {"_id": 0})
+    if not sheet:
+        raise HTTPException(status_code=404, detail="Fiche introuvable")
+    return SheetAudience(
+        sheet_id=sheet_id,
+        title=sheet.get("title", ""),
+        views_total=sheet.get("views", 0),
+        downloads_total=sheet.get("downloads", 0),
+        viewers=await _audience(db.sheet_views, sheet_id),
+        downloaders=await _audience(db.sheet_downloads, sheet_id),
+    )

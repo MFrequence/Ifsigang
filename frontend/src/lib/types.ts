@@ -223,6 +223,24 @@ export interface Disease {
   source: string;
 }
 
+// Mirrors of AudienceEntry / SheetAudience in backend/models/admin.py.
+export interface AudienceEntry {
+  user_id: string;
+  name: string;
+  email: string;
+  count: number;
+  last_at: string | null;
+}
+
+export interface SheetAudience {
+  sheet_id: string;
+  title: string;
+  views_total: number;
+  downloads_total: number;
+  viewers: AudienceEntry[];
+  downloaders: AudienceEntry[];
+}
+
 // Mirrors of AdminAnswer / AdminQuestion in backend/models/admin.py.
 export interface AdminAnswer {
   id: string;

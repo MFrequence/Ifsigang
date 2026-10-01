@@ -9,6 +9,8 @@ import {
   KeyRound,
   Loader2,
   Lock,
+  Download,
+  Eye,
   MessagesSquare,
   RotateCcw,
   ShieldCheck,
@@ -23,6 +25,7 @@ import type {
   AdminUser,
   Sheet,
   AdminQuestion,
+  SheetAudience,
   SheetReport,
   TemporaryPassword,
   User,
@@ -71,6 +74,14 @@ export default function Admin({ user }: AdminProps) {
     queryFn: () => apiGet<SheetReport[]>("/admin/sheet-reports"),
     enabled: unlocked,
     refetchOnWindowFocus: false,
+  });
+
+  // Audience d'une fiche : chargée seulement quand l'admin déplie la ligne.
+  const [audienceSheet, setAudienceSheet] = useState<string | null>(null);
+  const audienceQuery = useQuery({
+    queryKey: ["admin-audience", audienceSheet],
+    queryFn: () => apiGet<SheetAudience>(`/admin/sheets/${audienceSheet}/audience`),
+    enabled: unlocked && audienceSheet !== null,
   });
 
   const questionsQuery = useQuery({
@@ -391,6 +402,20 @@ export default function Admin({ user }: AdminProps) {
                           {sheet.filename}
                         </p>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid={`admin-audience-button-${sheet.id}`}
+                          aria-expanded={audienceSheet === sheet.id}
+                          onClick={() =>
+                            setAudienceSheet(audienceSheet === sheet.id ? null : sheet.id)
+                          }
+                        >
+                          <Eye className="h-4 w-4" />
+                          {audienceSheet === sheet.id ? "Masquer" : "Qui l'a vue ?"}
+                        </Button>
+                      </div>
                       {confirmSheet === sheet.id ? (
                         <div className="flex items-center gap-2">
                           <Button
@@ -421,6 +446,77 @@ export default function Admin({ user }: AdminProps) {
                           <Trash2 className="h-4 w-4" /> Supprimer
                         </Button>
                       )}
+
+                      {audienceSheet === sheet.id ? (
+                        <div
+                          data-testid={`admin-audience-panel-${sheet.id}`}
+                          className="w-full border-t border-border pt-3"
+                        >
+                          {audienceQuery.isPending ? (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Loader2 className="h-4 w-4 animate-spin" /> Chargement…
+                            </div>
+                          ) : audienceQuery.isError || !audienceQuery.data ? (
+                            <p className="text-sm text-muted-foreground">
+                              Impossible de charger l'audience de cette fiche.
+                            </p>
+                          ) : (
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              {(
+                                [
+                                  {
+                                    key: "viewers" as const,
+                                    icon: <Eye className="h-3.5 w-3.5" />,
+                                    label: `Lecteurs (${audienceQuery.data.viewers.length}) · ${audienceQuery.data.views_total} ouverture${audienceQuery.data.views_total > 1 ? "s" : ""}`,
+                                    empty: "Personne n'a encore ouvert cette fiche.",
+                                  },
+                                  {
+                                    key: "downloaders" as const,
+                                    icon: <Download className="h-3.5 w-3.5" />,
+                                    label: `Téléchargements (${audienceQuery.data.downloaders.length} étudiant${audienceQuery.data.downloaders.length > 1 ? "s" : ""}) · ${audienceQuery.data.downloads_total} au total`,
+                                    empty: "Aucun téléchargement enregistré.",
+                                  },
+                                ]
+                              ).map((block) => (
+                                <div key={block.key}>
+                                  <p className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-primary">
+                                    {block.icon}
+                                    {block.label}
+                                  </p>
+                                  {audienceQuery.data[block.key].length === 0 ? (
+                                    <p className="mt-1.5 text-xs text-muted-foreground">
+                                      {block.empty}
+                                    </p>
+                                  ) : (
+                                    <ul className="mt-1.5 space-y-1">
+                                      {audienceQuery.data[block.key].map((entry) => (
+                                        <li
+                                          key={entry.user_id}
+                                          data-testid={`admin-audience-${block.key}-${entry.user_id}`}
+                                          className="flex items-center justify-between gap-2 rounded-lg bg-secondary/60 px-2.5 py-1.5 text-xs"
+                                        >
+                                          <span className="min-w-0 truncate">
+                                            <span className="text-foreground">{entry.name}</span>{" "}
+                                            <span className="font-mono text-[10px] text-muted-foreground/70">
+                                              {entry.email}
+                                            </span>
+                                          </span>
+                                          <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                                            ×{entry.count}
+                                            {entry.last_at
+                                              ? ` · ${new Date(entry.last_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`
+                                              : ""}
+                                          </span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                 </div>

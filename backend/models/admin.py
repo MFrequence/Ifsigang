@@ -48,3 +48,24 @@ class AdminQuestion(BaseModel):
     answer_count: int = 0
     answers: list[AdminAnswer] = []
     created_at: datetime | None = None
+
+
+class AudienceEntry(BaseModel):
+    """Un étudiant et son activité sur une fiche (vues ou téléchargements)."""
+
+    user_id: str
+    name: str = ""
+    email: str = ""
+    count: int = 0
+    last_at: datetime | None = None
+
+
+class SheetAudience(BaseModel):
+    """Qui a lu et qui a téléchargé une fiche donnée."""
+
+    sheet_id: str
+    title: str = ""
+    views_total: int = 0
+    downloads_total: int = 0
+    viewers: list[AudienceEntry] = []
+    downloaders: list[AudienceEntry] = []

@@ -6,6 +6,7 @@ metadata lives in Mongo. Toutes les routes exigent une session (compte étudiant
 
 import logging
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import (
@@ -259,7 +260,7 @@ async def register_view(sheet_id: str, user: dict = Depends(current_user)):
     doc = await _find_or_404(sheet_id)
     await db.sheet_views.update_one(
         {"sheet_id": sheet_id, "user_id": user["id"]},
-        {"$inc": {"count": 1}},
+        {"$inc": {"count": 1}, "$set": {"last_at": datetime.now(timezone.utc)}},
         upsert=True,
     )
     await db.sheets.update_one({"id": sheet_id}, {"$inc": {"views": 1}})
@@ -346,12 +347,17 @@ async def sheet_media(sheet_id: str, name: str, _: dict = Depends(current_user))
 
 
 @router.get("/sheets/{sheet_id}/download")
-async def sheet_download(sheet_id: str, _: dict = Depends(current_user)):
+async def sheet_download(sheet_id: str, user: dict = Depends(current_user)):
     doc = await _find_or_404(sheet_id)
     path = await ensure_local_file(doc)
     if path is None:
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
     await db.sheets.update_one({"id": sheet_id}, {"$inc": {"downloads": 1}})
+    await db.sheet_downloads.update_one(
+        {"sheet_id": sheet_id, "user_id": user["id"]},
+        {"$inc": {"count": 1}, "$set": {"last_at": datetime.now(timezone.utc)}},
+        upsert=True,
+    )
     return FileResponse(path, media_type=doc["mime"], filename=doc["filename"])
 
 
@@ -391,6 +397,7 @@ async def delete_sheet(sheet_id: str, request: Request, user: dict = Depends(cur
     await db.sheet_favorites.delete_many({"sheet_id": sheet_id})  # plus d'épingle orpheline
     await db.sheet_highlights.delete_many({"sheet_id": sheet_id})
     await db.sheet_views.delete_many({"sheet_id": sheet_id})
+    await db.sheet_downloads.delete_many({"sheet_id": sheet_id})
     questions = await db.sheet_questions.find({"sheet_id": sheet_id}).to_list(500)
     if questions:
         await db.sheet_answers.delete_many({"question_id": {"$in": [q["id"] for q in questions]}})

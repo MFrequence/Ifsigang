@@ -462,5 +462,13 @@ et lien `plan-today-open-link` vers `/planning`.
 - `POST /api/sheets/{id}/view` : appelé une fois par ouverture du lecteur
   (`SheetPreviewDialog`, erreur ignorée pour ne jamais gêner la lecture), 404 si fiche inconnue.
   `GET /api/sheets` calcule `viewers` en une agrégation unique.
+- `sheet_downloads` `{sheet_id, user_id, count, last_at}` : alimentée par
+  `GET /api/sheets/{id}/download` (en plus du compteur `downloads`).
+- **Audit admin** : `GET /api/admin/sheets/{id}/audience` (derrière `admin_guard`, 404 si fiche
+  inconnue) → `SheetAudience {views_total, downloads_total, viewers[], downloaders[]}` avec
+  nom, e-mail, nombre de fois et dernière date (datetimes normalisés en UTC).
+  Front : bouton `admin-audience-button-{id}` dans l'onglet « Fiches » de `/admin`, panneau
+  `admin-audience-panel-{id}`, lignes `admin-audience-viewers-{userId}` /
+  `admin-audience-downloaders-{userId}`.
 - Front : `sheet-views-{id}` sur la carte (« n vues », infobulle avec le nombre d'étudiants
   distincts) et tri **« Plus vues »** (`sheet-sort-views-button`). Purgé avec la fiche.
