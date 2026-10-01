@@ -27,7 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10 Mo
+const MAX_SIZE = 50 * 1024 * 1024; // 50 Mo — doit rester aligné sur MAX_SIZE côté backend
 const ALLOWED = [".pdf", ".png", ".jpg", ".jpeg", ".docx", ".txt"];
 
 interface UploadSheetDialogProps {
@@ -70,7 +70,7 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
       return;
     }
     if (picked.size > MAX_SIZE) {
-      toast.error("Fichier trop lourd — 10 Mo maximum");
+      toast.error("Fichier trop lourd — 50 Mo maximum");
       return;
     }
     setFile(picked);
@@ -124,7 +124,7 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
         <DialogHeader>
           <DialogTitle>Déposer une fiche</DialogTitle>
           <DialogDescription>
-            PDF, image, DOCX ou TXT — 10 Mo maximum. La fiche sera publiée à ton nom, et ses
+            PDF, image, DOCX ou TXT — 50 Mo maximum. La fiche sera publiée à ton nom, et ses
             flashcards générées automatiquement pour les fichiers lisibles.
           </DialogDescription>
         </DialogHeader>
@@ -175,7 +175,7 @@ export default function UploadSheetDialog({ open, onOpenChange, sheets }: Upload
                 <p className="text-sm font-medium text-foreground">
                   Glisse ton fichier ici ou clique pour parcourir
                 </p>
-                <p className="text-xs text-muted-foreground">pdf, png, jpg, docx, txt — 10 Mo max</p>
+                <p className="text-xs text-muted-foreground">pdf, png, jpg, docx, txt — 50 Mo max</p>
               </>
             )}
           </label>

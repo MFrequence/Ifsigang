@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["sheets"])
 
-MAX_SIZE = 10 * 1024 * 1024  # 10 Mo
+MAX_SIZE = 50 * 1024 * 1024  # 50 Mo (cours volumineux : diaporamas convertis, scans)
 ALLOWED_EXTS = {"pdf", "png", "jpg", "jpeg", "docx", "txt"}
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 MIME_BY_EXT = {
@@ -157,7 +157,7 @@ async def upload_sheet(
     while chunk := await file.read(CHUNK):
         size += len(chunk)
         if size > MAX_SIZE:
-            raise HTTPException(status_code=413, detail="Fichier trop lourd (10 Mo max)")
+            raise HTTPException(status_code=413, detail="Fichier trop lourd (50 Mo max)")
         chunks.append(chunk)
 
     stored_name = f"{uuid.uuid4().hex}.{ext}"

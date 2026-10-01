@@ -304,6 +304,9 @@ d'un compte.
 
 ## Stockage des fichiers de fiches (durable)
 
+Limite d'upload : **50 Mo** (`MAX_SIZE` dans `backend/routers/sheets.py`, 413 au-delà) — à garder
+aligné avec `MAX_SIZE` de `frontend/src/components/UploadSheetDialog.tsx` et les textes affichés.
+
 Le disque du conteneur est **éphémère** : un redéploiement repart d'un disque vide. Les fichiers
 uploadés vivent donc dans le **stockage objet Emergent** (`backend/lib/storage.py`, clé
 `EMERGENT_LLM_KEY`, hôte `INTEGRATION_PROXY_URL`, préfixe `fiches-ifsi/sheets/<stored_name>`).
